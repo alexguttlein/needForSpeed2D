@@ -9,11 +9,11 @@ void Car::accelerate(float distance) {
     acceleration += distance;
 }
 
-void Car::turn_right(float angle) {
+void Car::turnRight(float angle) {
     direction += angle;
 }
 
-void Car::turn_left(float angle) {
+void Car::turnLeft(float angle) {
     direction -= angle;
 }
 
@@ -31,14 +31,14 @@ void Car::reverse(float distance) {
     y -= speed * distance * std::sin(direction);
 }
 
-float Car::get_x() const {
+float Car::getX() const {
     return x;
 }
 
-float Car::get_y() const {
+float Car::getY() const {
     return y;
 }
 
-float Car::get_health() const {
+float Car::getHealth() const {
     return health;
 }
