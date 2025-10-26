@@ -30,13 +30,13 @@ public:
     * Gira el auto a la derecha
     *
     * */
-    void turn_right(float angle);
+    void turnRight(float angle);
     
 
     /*
     * Gira el auto a la izquierda
     * */
-    void turn_left(float angle);
+    void turnLeft(float angle);
 
 
     /*
@@ -57,20 +57,20 @@ public:
     * Obtiene la posición x del auto
     *
     * */
-    float get_x() const;
+    float getX() const;
 
 
     /*
     * Obtiene la posición y del auto
     *
     * */
-    float get_y() const;
+    float getY() const;
 
 
     /*
     * Obtiene la salud del auto
     *
     * */
-    float get_health() const;
+    float getHealth() const;
 };
 #endif // CAR_H
