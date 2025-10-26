@@ -3,6 +3,7 @@
 
 #include "../common/socket.h"
 #include "../common/thread.h"
+#include "server_clientHandler.h"
 
 #include <arpa/inet.h>
 
