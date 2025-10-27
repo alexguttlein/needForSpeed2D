@@ -74,5 +74,4 @@ void broadcastToAllClients(const Message& msg);
 void killDisconnectedClients();
 
 };
-
 #endif  // SERVER_MONITORCLIENTS_H
