@@ -4,6 +4,8 @@
 #include "../common/car.h"
 #include "../common/queue.h"
 
+#include <algorithm>
+
 
 /*
 * Por ahora el snapshot solo tiene el auto del jugador
@@ -27,7 +29,7 @@ public:
     * Constructor de Snapshots
     *
     * */
-    Snapshots(): snapshot_queue() {}
+    explicit Snapshots(): snapshot_queue() {}
 
 
     /*

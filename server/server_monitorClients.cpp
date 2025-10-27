@@ -38,7 +38,7 @@ void MonitorClients::forClient(int id, const std::function<void(ClientHandler&)>
 void MonitorClients::broadcastToAllClients(const Message& msg) {
     std::lock_guard<std::mutex> lock(mtx);
     for (auto& [id, client] : clients) {
-        client.sendMessage(msg);
+        client.enqueueMessage(msg);
     }
 }
 

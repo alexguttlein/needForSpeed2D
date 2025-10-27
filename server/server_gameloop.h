@@ -11,6 +11,7 @@
 #include "server_snapshots.h"
 #include "../common/car.h"
 #include "../common/thread.h"
+#include "../common/constants.h"
 
 class GameLoop : public Thread {
 

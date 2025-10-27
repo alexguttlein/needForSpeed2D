@@ -12,7 +12,7 @@ void GameLoop::run() {
         clients.killDisconnectedClients();
         processCommandQueue();
         broadcastSnapshots();
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));  // ~20 FPS
+        std::this_thread::sleep_for(std::chrono::milliseconds(Constants::THREAD_SLEEP_MS)); 
     }
 }
 

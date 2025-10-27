@@ -8,3 +8,17 @@ ClientHandler::ClientHandler(Socket socket) :
     senderThread.start();
     receiverThread.start();
 }
+
+
+void ClientHandler::enqueueMessage(const std::shared_ptr<Message>& msg) {
+    clientQueue.try_push(msg);
+}
+
+bool ClientHandler::isConnected() const {
+    return !protocol.isConnectionClosed();
+}
+
+
+Snapshots& ClientHandler::getSnapshots() {
+    return snapshots;
+}

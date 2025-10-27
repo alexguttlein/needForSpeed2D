@@ -34,6 +34,10 @@ namespace  Constants {
     static const std::string ERROR_EXC_DESCONOCIDA_SERVER_MAIN =
         "Error: Excepción desconocida en server_main: ";
 
+
+    // constante tiempo sleep de loop
+    static constexpr int THREAD_SLEEP_MS = 50;
+
 }
 
 #endif //CONSTANTS_H
