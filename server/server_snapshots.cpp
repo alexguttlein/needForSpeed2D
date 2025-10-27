@@ -1,4 +1,4 @@
-#include "snapshots.h"
+#include "server_snapshots.h"
 
 
 void Snapshots::addSnapshot(const Snapshot& snapshot) {
