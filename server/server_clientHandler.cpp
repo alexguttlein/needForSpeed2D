@@ -21,19 +21,19 @@ void ClientHandler::startThreads() {
             if (cmd == 0x01) {
                 uint8_t resp = 0x10;
                 protocol.getSocket().sendall(&resp, sizeof(resp));
-                std::cout << "comando recibido" << std::endl;
+                std::cout << "comando recibido: w" << std::endl;
             } else if (cmd == 0x02) {
                 uint8_t resp = 0x11;
                 protocol.getSocket().sendall(&resp, sizeof(resp));
-                std::cout << "comando recibido" << std::endl;
+                std::cout << "comando recibido: s" << std::endl;
             } else if (cmd == 0x03) {
                 uint8_t resp = 0x12;
                 protocol.getSocket().sendall(&resp, sizeof(resp));
-                std::cout << "comando recibido" << std::endl;
+                std::cout << "comando recibido: a" << std::endl;
             } else if (cmd == 0x04) {
                 uint8_t resp = 0x13;
                 protocol.getSocket().sendall(&resp, sizeof(resp));
-                std::cout << "comando recibido" << std::endl;
+                std::cout << "comando recibido: d" << std::endl;
             } else {
                 break;
             }

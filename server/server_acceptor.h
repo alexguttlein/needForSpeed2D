@@ -43,8 +43,5 @@ class Acceptor : public Thread {
     *
     * */
    void addNewClient(int id, Socket newSocket);
-    
-
 };
-
 #endif //SERVER_ACCEPTOR_H

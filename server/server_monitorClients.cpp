@@ -15,6 +15,9 @@ void MonitorClients::deleteClient(int id) {
 
 void MonitorClients::clear() {
     std::lock_guard<std::mutex> lock(mtx);
+    for (auto& [id, client] : clients) {
+        client.shutdown();
+    }
     clients.clear();
 }
 
