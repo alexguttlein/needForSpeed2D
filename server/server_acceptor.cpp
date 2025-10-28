@@ -14,30 +14,30 @@ void Acceptor::run() {
             // TODO: agregar cliente a lista de clientes
             std::cout << "New client " << client << std::endl;
 
-            // uint8_t msg = 0x00;
-            // newSocket.sendall(&msg, sizeof(msg));
-            // bool seguir = true;
-            // while (seguir) {
-            //     uint8_t msg2;
-            //     newSocket.recvall(&msg2, sizeof(msg2));
-            //     if (msg2 == 0x01) {
-            //         std::cout << "comando recibido" << std::endl;
-            //         uint8_t msg3 = 0x10;
-            //         newSocket.sendall(&msg3, sizeof(msg3));
-            //     } else if (msg2 == 0x02) {
-            //         std::cout << "comando recibido" << std::endl;
-            //         uint8_t msg3 = 0x11;
-            //         newSocket.sendall(&msg3, sizeof(msg3));
-            //     } else if (msg2 == 0x03) {
-            //         std::cout << "comando recibido" << std::endl;
-            //         uint8_t msg3 = 0x12;
-            //         newSocket.sendall(&msg3, sizeof(msg3));
-            //     } else if (msg2 == 0x04) {
-            //         std::cout << "comando recibido" << std::endl;
-            //         uint8_t msg3 = 0x13;
-            //         newSocket.sendall(&msg3, sizeof(msg3));
-                // }
-            // }
+            uint8_t msg = 0x00;
+            newSocket.sendall(&msg, sizeof(msg));
+            bool seguir = true;
+            while (seguir) {
+                uint8_t msg2;
+                newSocket.recvall(&msg2, sizeof(msg2));
+                if (msg2 == 0x01) {
+                    std::cout << "comando recibido" << std::endl;
+                    uint8_t msg3 = 0x10;
+                    newSocket.sendall(&msg3, sizeof(msg3));
+                } else if (msg2 == 0x02) {
+                    std::cout << "comando recibido" << std::endl;
+                    uint8_t msg3 = 0x11;
+                    newSocket.sendall(&msg3, sizeof(msg3));
+                } else if (msg2 == 0x03) {
+                    std::cout << "comando recibido" << std::endl;
+                    uint8_t msg3 = 0x12;
+                    newSocket.sendall(&msg3, sizeof(msg3));
+                } else if (msg2 == 0x04) {
+                    std::cout << "comando recibido" << std::endl;
+                    uint8_t msg3 = 0x13;
+                    newSocket.sendall(&msg3, sizeof(msg3));
+                }
+            }
         } catch (const std::exception& e) {
             if (keepAccepting) {
                 std::cerr << "Unexpected exception: " << e.what() << std::endl;

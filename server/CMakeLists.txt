@@ -8,6 +8,9 @@ target_sources(taller_server
     server_protocol.cpp
     server_senderThread.cpp
     server_receiverThread.cpp
+    server_monitorClients.cpp
+    server_snapshots.cpp
+    server_gameloop.cpp
     PUBLIC
     # .h files
     server_class.h
@@ -16,4 +19,7 @@ target_sources(taller_server
     server_protocol.h
     server_senderThread.h
     server_receiverThread.h
+    server_monitorClients.h
+    server_snapshots.h
+    server_gameloop.h
     )

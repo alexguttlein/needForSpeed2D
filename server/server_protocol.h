@@ -7,6 +7,7 @@
 class ServerProtocol {
 public:
     explicit ServerProtocol(Socket socket);
+    bool isConnectionClosed() const;
 private:
     Socket socket;
     bool isClosed;

@@ -4,6 +4,8 @@
 #include "../common/socket.h"
 #include "../common/queue.h"
 #include "server_acceptor.h"
+#include "server_gameloop.h"
+#include "server_monitorClients.h"
 
 #include <iostream>
 #include <ostream>
@@ -11,12 +13,36 @@
 #include <string>
 
 class Server {
-public:
-    explicit Server(const char* port);
-    void run();
-private:
-    Acceptor acceptor;
-    void closeAcceptor();
-};
 
+private:
+    Queue<std::string> commandQueue;
+    MonitorClients monitor;
+    Acceptor acceptor;
+    GameLoop gameLoop;
+
+    void closeAcceptor();
+    void closeGameLoop();
+    void closeClients();
+
+
+public:
+    
+    /*
+    * Constructor de Server
+    *
+    * */
+    explicit Server(const char* port);
+    
+    /*
+    * Inicia el servidor
+    *
+    * */
+    void run();
+
+    /*
+    * Destructor de Server
+    *
+    * */
+    ~Server();
+};
 #endif //SERVER_CLASS_H
