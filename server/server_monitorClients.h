@@ -9,11 +9,12 @@
 #include <utility>
 #include "server_clientHandler.h"
 #include "../common/message.h"
+#include <algorithm>
 
 class MonitorClients {
 
 private:
-std::unordered_map<int, ClientHandler> clients;
+std::unordered_map<int, std::unique_ptr<ClientHandler>> clients;
 mutable std::mutex mtx;
 
 
@@ -29,7 +30,7 @@ MonitorClients() = default;
 * Inserta un cliente en el monitor
 *
 * */
-void insertClient(int id, ClientHandler&& client);
+void insertClient(int id, std::unique_ptr<ClientHandler> client);
 
 /*
 * Elimina un cliente del monitor
@@ -65,7 +66,7 @@ void forClient(int id, const std::function<void(ClientHandler&)>& func);
 * Envía un mensaje a todos los clientes conectados
 *
 * */
-void broadcastToAllClients(const Message& msg);
+void broadcastToAllClients(const std::shared_ptr<Message>& msg);
 
 /*
 * Elimina los clientes desconectados del monitor

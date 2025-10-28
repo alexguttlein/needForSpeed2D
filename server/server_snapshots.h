@@ -50,5 +50,11 @@ public:
     *
     * */
     void close();
+    
+    /*
+    * Destructor de Snapshots
+    *
+    * */
+    ~Snapshots();
 }; 
 #endif // SNAPSHOT_H

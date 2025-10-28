@@ -43,6 +43,6 @@ public:
     * Destructor de Server
     *
     * */
-    Server::~Server();
+    ~Server();
 };
 #endif //SERVER_CLASS_H

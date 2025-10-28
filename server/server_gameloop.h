@@ -6,6 +6,7 @@
 #include <chrono>
 #include <iostream>
 #include <string>
+#include <memory>
 
 #include "server_monitorClients.h"
 #include "server_snapshots.h"

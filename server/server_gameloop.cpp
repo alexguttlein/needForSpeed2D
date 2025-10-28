@@ -1,5 +1,6 @@
 #include "server_gameloop.h"
 
+
 GameLoop::GameLoop(Queue<std::string>& commandQueue, MonitorClients& clients)
     : running(false), clients(clients), commandQueue(commandQueue) {}
 
@@ -24,19 +25,19 @@ void GameLoop::processCommandQueue() {
     }
 }
 
-
 void GameLoop::broadcastSnapshots() {
     clients.forEachClient([this](ClientHandler& client){
         Snapshot snapshot;
         if (client.getSnapshots().popSnapshot(snapshot)) {
-            Message msg;
-            msg.code = 1;      // codigo de respuesta de snapshot? 
-            msg.car = snapshot.car;
+            auto msg = std::make_shared<Message>();
+            msg->code = 1;      // codigo de respuesta de snapshot? 
+            msg->car = snapshot.car;
 
             clients.broadcastToAllClients(msg);
         }
     });
 }
+
 
 
 void GameLoop::stop() {

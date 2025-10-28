@@ -1,9 +1,6 @@
 #include "server_snapshots.h"
 
 
-Snapshots::Snapshots() : snapshot_queue() {}
-
-
 void Snapshots::addSnapshot(const Snapshot& snapshot) {
     std::unique_lock<std::mutex> lock(mtx);
     snapshot_queue.try_push(snapshot);
