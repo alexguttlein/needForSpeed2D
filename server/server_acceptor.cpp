@@ -12,36 +12,44 @@ void Acceptor::run() {
             // se acepta un nuevo cliente
             Socket newSocket = socket.accept();
             int id = newSocket.get_fd();
-            std::unique_ptr<ClientHandler> client(new ClientHandler(std::move(newSocket)));
             
-            // TODO: agregar cliente a lista de clientes
-            //std::cout << "New client " << client << std::endl;
-            addNewClient(id, std::move(client));
-            
-            // uint8_t msg = 0x00;
-            // newSocket.sendall(&msg, sizeof(msg));
-            // bool seguir = true;
-            // while (seguir) {
-            //     uint8_t msg2;
-            //     newSocket.recvall(&msg2, sizeof(msg2));
-            //     if (msg2 == 0x01) {
-            //         std::cout << "comando recibido" << std::endl;
-            //         uint8_t msg3 = 0x10;
-            //         newSocket.sendall(&msg3, sizeof(msg3));
-            //     } else if (msg2 == 0x02) {
-            //         std::cout << "comando recibido" << std::endl;
-            //         uint8_t msg3 = 0x11;
-            //         newSocket.sendall(&msg3, sizeof(msg3));
-            //     } else if (msg2 == 0x03) {
-            //         std::cout << "comando recibido" << std::endl;
-            //         uint8_t msg3 = 0x12;
-            //         newSocket.sendall(&msg3, sizeof(msg3));
-            //     } else if (msg2 == 0x04) {
-            //         std::cout << "comando recibido" << std::endl;
-            //         uint8_t msg3 = 0x13;
-            //         newSocket.sendall(&msg3, sizeof(msg3));
-            //     }
-            // }
+            // Prueba de comunicación simple
+            uint8_t msg = 0x00;
+            newSocket.sendall(&msg, sizeof(msg));
+            bool seguir = true;
+            while (seguir) {
+                uint8_t msg2;
+                newSocket.recvall(&msg2, sizeof(msg2));
+                if (msg2 == 0x01) {
+                    std::cout << "comando recibido" << std::endl;
+                    uint8_t msg3 = 0x10;
+                    newSocket.sendall(&msg3, sizeof(msg3));
+                } else if (msg2 == 0x02) {
+                    std::cout << "comando recibido" << std::endl;
+                    uint8_t msg3 = 0x11;
+                    newSocket.sendall(&msg3, sizeof(msg3));
+                } else if (msg2 == 0x03) {
+                    std::cout << "comando recibido" << std::endl;
+                    uint8_t msg3 = 0x12;
+                    newSocket.sendall(&msg3, sizeof(msg3));
+                } else if (msg2 == 0x04) {
+                    std::cout << "comando recibido" << std::endl;
+                    uint8_t msg3 = 0x13;
+                    newSocket.sendall(&msg3, sizeof(msg3));
+                }
+                else{
+                    seguir = false;
+                }
+            }
+
+            // std::unique_ptr<ClientHandler> client(new ClientHandler(std::move(newSocket)));
+            // client->startThreads();
+            // addNewClient(id, std::move(client));
+            auto client = std::make_unique<ClientHandler>(std::move(newSocket));
+            client->startThreads();                       
+            addNewClient(id, std::move(client));  
+    
+
         } catch (const std::exception& e) {
             if (keepAccepting) {
                 std::cerr << "Unexpected exception: " << e.what() << std::endl;
@@ -67,7 +75,7 @@ void Acceptor::closeSocket() {
 void Acceptor::addNewClient(int id, std::unique_ptr<ClientHandler> newClient) {
     monitorClients.insertClient(id, std::move(newClient));
     std::cout << "Cliente agregado con id: " << id << std::endl;
-    monitorClients.forClient(id, [this](ClientHandler& c) {
-        c.startThreads();
-    });
+    // monitorClients.forClient(id, [this](ClientHandler& c) {
+    //     c.startThreads();
+    // });
 }
