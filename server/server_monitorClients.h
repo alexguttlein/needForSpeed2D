@@ -14,7 +14,8 @@
 class MonitorClients {
 
 private:
-std::unordered_map<int, std::unique_ptr<ClientHandler>> clients;
+
+std::unordered_map<int, ClientHandler> clients;
 mutable std::mutex mtx;
 
 
@@ -27,10 +28,10 @@ public:
 MonitorClients() = default;
 
 /*
-* Inserta un cliente en el monitor
+* Inserta un cliente en el monitor y lo devuelve
 *
 * */
-void insertClient(int id, std::unique_ptr<ClientHandler> client);
+ClientHandler& insertClient(int id, Socket socket);
 
 /*
 * Elimina un cliente del monitor
