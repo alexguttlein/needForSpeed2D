@@ -36,6 +36,12 @@ public:
     void startThreads();
 
     /*
+    * Cierra los threads y la conexión con el cliente
+    *
+    * */
+    void shutdown();
+
+    /*
     * Encola un mensaje para ser enviado al cliente
     *
     * */

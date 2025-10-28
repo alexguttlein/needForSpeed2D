@@ -42,8 +42,7 @@ class Acceptor : public Thread {
     * Agrega un nuevo cliente al monitor de clientes
     *
     * */
-    void addNewClient(int id, std::unique_ptr<ClientHandler> newClient);
-   
+   void addNewClient(int id, Socket newSocket);
     
 
 };

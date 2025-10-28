@@ -14,3 +14,7 @@ void ServerProtocol::closeSocket() {
 bool ServerProtocol::isConnectionClosed() const {
     return socket.is_stream_send_closed() || socket.is_stream_recv_closed();
 }
+
+Socket& ServerProtocol::getSocket() {
+    return socket;
+}
