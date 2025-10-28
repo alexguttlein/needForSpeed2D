@@ -469,6 +469,13 @@ bool Socket::is_stream_recv_closed() const {
     return stream_status & STREAM_RECV_CLOSED;
 }
 
+
+int Socket::get_fd() const {
+    chk_skt_or_fail();
+    return this->skt;
+}
+
+
 int Socket::close() {
     chk_skt_or_fail();
     this->closed = true;

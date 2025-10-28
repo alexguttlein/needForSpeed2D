@@ -13,11 +13,6 @@
 #include <algorithm>
 
 class ClientHandler {
-public:
-    explicit ClientHandler(Socket socket);
-    void enqueueMessage(const std::shared_ptr<Message>& msg);
-    bool isConnected() const;
-    Snapshots& getSnapshots();
 
 private:
     ServerProtocol protocol;
@@ -25,6 +20,38 @@ private:
     Snapshots snapshots;
     SenderThread senderThread;
     ReceiverThread receiverThread;
-};
 
+public:
+
+    /*
+    * Constructor de ClientHandler
+    *
+    * */
+    explicit ClientHandler(Socket socket);
+
+    /*
+    * Inicia los threads de envío y recepción de mensajes
+    *
+    * */
+    void startThreads();
+
+    /*
+    * Encola un mensaje para ser enviado al cliente
+    *
+    * */
+    void enqueueMessage(const std::shared_ptr<Message>& msg);
+    
+    /*
+    * Indica si el cliente sigue conectado
+    *
+    * */
+    bool isConnected() const;
+    
+    /*
+    * Obtiene los snapshots del cliente
+    *
+    * */
+    Snapshots& getSnapshots();
+
+};
 #endif //CLIENTHANDLER_H

@@ -182,6 +182,11 @@ bool is_stream_recv_closed() const;
 int close();
 
 /*
+ * Obtiene el file descriptor del socket.
+ * */
+int get_fd() const;
+
+/*
  * Destruye el socket. Si aun esta conectado,
  * se llamara a `Socket::shutdown` y `Socket::close`
  * automáticamente.

@@ -1,6 +1,6 @@
 #include "server_class.h"
 
-Server::Server(const char* port) : commandQueue(), monitor(), acceptor(port), gameLoop(commandQueue, monitor) {
+Server::Server(const char* port) : commandQueue(), monitor(), acceptor(port, monitor), gameLoop(commandQueue, monitor) {
 
     acceptor.start();
     gameLoop.start();
