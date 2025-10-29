@@ -1,7 +1,7 @@
 #ifndef SNAPSHOT_H
 #define SNAPSHOT_H
 
-#include "../common/car.h"
+#include "car.h"
 #include "../common/queue.h"
 
 #include <algorithm>

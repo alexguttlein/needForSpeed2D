@@ -11,6 +11,7 @@ target_sources(taller_server
     server_monitorClients.cpp
     server_snapshots.cpp
     server_gameloop.cpp
+    car.cpp
     PUBLIC
     # .h files
     server_class.h
@@ -22,4 +23,5 @@ target_sources(taller_server
     server_monitorClients.h
     server_snapshots.h
     server_gameloop.h
+    car.h
     )
