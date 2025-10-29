@@ -26,16 +26,16 @@ void GameLoop::processCommandQueue() {
 }
 
 void GameLoop::broadcastSnapshots() {
-    clients.forEachClient([this](ClientHandler& client){
-        Snapshot snapshot;
-        if (client.getSnapshots().popSnapshot(snapshot)) {
-            auto msg = std::make_shared<Message>();
-            msg->code = 1;      // codigo de respuesta de snapshot? 
-            msg->car = snapshot.car;
+    // clients.forEachClient([this](ClientHandler& client){
+    //     Snapshot snapshot;
+    //     if (client.getSnapshots().popSnapshot(snapshot)) {
+    //         auto msg = std::make_shared<Message>();
+    //         msg->code = 1;      // codigo de respuesta de snapshot? 
+    //         msg->car = snapshot.car;
 
-            clients.broadcastToAllClients(msg);
-        }
-    });
+    //         clients.broadcastToAllClients(msg);
+    //     }
+    // });
 }
 
 
