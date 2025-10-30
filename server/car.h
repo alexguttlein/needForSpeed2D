@@ -3,21 +3,23 @@
 
 #include <cmath>
 #include "common/constants.h"
+#include "common/vector2D.h"
 
 class Car {
 private:
     // posiciones
-    float x, y;
+    Vector2D<float> position;  
+    Vector2D<float> direction;
     
     // fisica del auto
-    float acceleration, direction, control, weight;
+    float acceleration, control, weight;
     float speed = Constants::INITIAL_SPEED;
     float maxSpeed, maxReverseSpeed;
     float friction = Constants::FRICTION_BASE;
 
     // estado del auto
     float health;
-    float maxHealth;
+    float maxHealth = health;
     bool destroyed = false;
 
 public:
@@ -25,21 +27,14 @@ public:
     * Constructor de Car.
     * Inicializa los atributos del auto con los valores recibidos por parámetro.
     * */
-    explicit Car(float x, float y, float acceleration, float direction,
-        float control, float weight, float maxSpeed, float maxReverseSpeed, 
-        float health, float maxHealth);
+    explicit Car(Vector2D<float> position, float acceleration, float control,
+        float weight, float maxSpeed, float maxReverseSpeed, float health);
 
     /*
-    * Obtiene la posicion x del auto
+    * Obtiene la posicion del auto en el plano
     *
     * */
-    float getX() const;
-    
-    /*
-    * Obtiene la posicion y del auto
-    *
-    * */
-    float getY() const;
+    Vector2D<float> getPosition() const;
     
     /*
     * Obtiene la velocidad del auto
@@ -72,6 +67,12 @@ public:
     void breakReverse();
 
     /*
+    * Funcion auxiliar para rotar un vector en un ángulo dado,
+    * usada para evitar codigo repetido en turnLeft y turnRight.
+    * */
+    static Vector2D<float> rotateVec(const Vector2D<float>& v, float angle);
+
+    /*
     * Cambiar la dirección del auto hacia la izquierda, el ángulo depende de la velocidad actual  
     * para ser más realista.
     * */
@@ -96,13 +97,13 @@ public:
     void updatePosition();
 
     /*
-    * reduce la salud del auto (por ahora que sea fija)
+    * reduce la salud del auto según el daño recibido
     *
     * */
-    void takeDamage();
+    void takeDamage(float damage);
 
     /*
-    * Mejora la salud del auto
+    * Mejora la salud del auto, el min es para que no supere la salud máxima
     *
     * */
     void upgradeHealth();
