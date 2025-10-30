@@ -2,15 +2,14 @@
 
 Car::Car(Vector2D<float> position, float acceleration, float control,
     float weight, float maxSpeed, float maxReverseSpeed, 
-    float health, float maxHealth)
+    float health)
     : position(position)
     , acceleration(acceleration)
     , control(control)
     , weight(weight)
     , maxSpeed(maxSpeed)
     , maxReverseSpeed(maxReverseSpeed)
-    , health(health)
-    , maxHealth(maxHealth) {
+    , health(health) {
         direction = Vector2D<float>(1.0f, 0.0f).normalized(); // por ahora apunta a la derecha
     }
 

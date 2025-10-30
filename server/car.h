@@ -19,7 +19,7 @@ private:
 
     // estado del auto
     float health;
-    float maxHealth;
+    float maxHealth = health;
     bool destroyed = false;
 
 public:
@@ -28,8 +28,7 @@ public:
     * Inicializa los atributos del auto con los valores recibidos por parámetro.
     * */
     explicit Car(Vector2D<float> position, float acceleration, float control,
-        float weight, float maxSpeed, float maxReverseSpeed, 
-        float health, float maxHealth);
+        float weight, float maxSpeed, float maxReverseSpeed, float health);
 
     /*
     * Obtiene la posicion del auto en el plano
