@@ -50,14 +50,14 @@ public:
     }
 
     /*
-    * Normalización del vector
+    * Normalización del vector (para las direcciones del auto)
     *
     * */
-    // Vector2D<T> normalized() const {
-    //     T len = length();
-    //     if (len == 0) return Vector2D<T>(0, 0);
-    //     return Vector2D<T>(x / len, y / len);
-    // }
+    Vector2D<T> normalized() const {
+        T len = length();
+        if (len == 0) return Vector2D<T>(0, 0);
+        return Vector2D<T>(x / len, y / len);
+    }
 
     /*
     * Cálculo de la distancia entre dos vectores

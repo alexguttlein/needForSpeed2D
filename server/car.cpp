@@ -1,26 +1,22 @@
 #include "car.h"
 
-Car::Car(float x, float y, float acceleration, float direction,
-    float control, float weight, float maxSpeed, float maxReverseSpeed, 
+Car::Car(Vector2D<float> position, float acceleration, float control,
+    float weight, float maxSpeed, float maxReverseSpeed, 
     float health, float maxHealth)
-    : x(x)
-    , y(y)
+    : position(position)
     , acceleration(acceleration)
-    , direction(direction)
     , control(control)
     , weight(weight)
     , maxSpeed(maxSpeed)
     , maxReverseSpeed(maxReverseSpeed)
     , health(health)
-    , maxHealth(maxHealth) {}
-
-float Car::getX() const {
-    return x;
-}
+    , maxHealth(maxHealth) {
+        direction = Vector2D<float>(1.0f, 0.0f).normalized(); // por ahora apunta a la derecha
+    }
 
 
-float Car::getY() const {
-    return y;
+Vector2D<float> Car::getPosition() const {
+    return position;
 }
 
 
@@ -50,39 +46,44 @@ void Car::breakReverse() {
 }
 
 
-void Car::turnLeft() {
-    float speedFactor = std::max(0.1f, 1.0f - std::abs(speed)/maxSpeed); 
-    direction -= control * speedFactor;
+static Vector2D<float> rotateVec(const Vector2D<float>& v, float angle) {
+    float cosA = std::cos(angle);
+    float sinA = std::sin(angle);
+    return Vector2D<float>(v.x * cosA - v.y * sinA,
+                           v.x * sinA + v.y * cosA).normalized();
 }
 
+void Car::turnLeft() {
+    float denom = (maxSpeed > 0.0f ? maxSpeed : 1.0f);
+    float speedFactor = std::max(0.1f, 1.0f - std::abs(speed) / denom);
+    float angle = -control * speedFactor;
+    direction = rotateVec(direction, angle);
+}
 
 void Car::turnRight() {
-    float speedFactor = std::max(0.1f, 1.0f - std::abs(speed)/maxSpeed); 
-    direction += control * speedFactor;
+    float denom = (maxSpeed > 0.0f ? maxSpeed : 1.0f);
+    float speedFactor = std::max(0.1f, 1.0f - std::abs(speed) / denom);
+    float angle = control * speedFactor; 
+    direction = rotateVec(direction, angle);
 }
 
 
 void Car::applyFriction() {
-    if (speed > 0) {
-        speed -= friction;
-        if (speed < 0) speed = 0;
-    } else if (speed < 0) {
-        speed += friction;
-        if (speed > 0) speed = 0;
-    }
+    if (speed > 0) speed = std::max(0.0f, speed - friction);
+    else if (speed < 0) speed = std::min(0.0f, speed + friction);
 }
 
 
 void Car::updatePosition() {
-    x += speed * std::cos(direction);
-    y += speed * std::sin(direction);
+    position = direction * speed;
 }
 
 
-void Car::takeDamage() {
-    health -= 10.0f; // daño fijo por ahora
-    if (health <= 0) {
+void Car::takeDamage(float damage) {
+    health -= damage;
+    if (health <= Constants::NO_HEALTH) {
         health = Constants::NO_HEALTH;
+        speed = 0.0f;
         destroyed = true;
     }
 }
@@ -99,10 +100,7 @@ void Car::upgradeAcceleration() {
 
 
 void Car::upgradeHealth(){
-    health += Constants::HEALTH_UPGRADE;
-    if (health > maxHealth) {
-        health = maxHealth;
-    }
+    health = std::min(maxHealth, health + Constants::HEALTH_UPGRADE);
 }
 
 
