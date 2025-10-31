@@ -1,9 +1,7 @@
 #include "server_class.h"
 
-Server::Server(const char* port) : commandQueue(), monitor(), acceptor(port, monitor), gameLoop(commandQueue, monitor) {
-
+Server::Server(const char* port) : acceptor(port) {
     acceptor.start();
-    gameLoop.start();
 }
 
 void Server::run() {
@@ -21,18 +19,6 @@ void Server::closeAcceptor() {
     acceptor.join();
 }
 
-void Server::closeGameLoop() {
-    gameLoop.stop();
-    gameLoop.join();
-}
-
-void Server::closeClients() {
-    monitor.clear();
-}
-
-
 Server::~Server() {
-    closeGameLoop();
     closeAcceptor();
-    closeClients();
 }

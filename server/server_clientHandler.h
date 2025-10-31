@@ -8,18 +8,22 @@
 #include "server/server_protocol.h"
 #include "server/server_senderThread.h"
 #include "server/server_receiverThread.h"
-#include "server/server_snapshots.h"
+#include "common/snapshot.h"
+#include "server/server_gameMonitor.h"
 
 #include <algorithm>
 
 class ClientHandler {
-
 private:
     ServerProtocol protocol;
-    Queue<std::shared_ptr<Message>> clientQueue;
-    Snapshots snapshots;
+    GameMonitor& gameMonitor;
+    Queue<Snapshot> clientQueue;
+    Queue<std::shared_ptr<Message>>* sharedQueue;
     SenderThread senderThread;
     ReceiverThread receiverThread;
+    int id;
+    bool alive;
+    Snapshot snapshot;
 
 public:
 
@@ -27,7 +31,7 @@ public:
     * Constructor de ClientHandler
     *
     * */
-    explicit ClientHandler(Socket socket);
+    explicit ClientHandler(Socket socket, int id, GameMonitor& gameMonitor);
 
     /*
     * Inicia los threads de envío y recepción de mensajes
@@ -40,24 +44,15 @@ public:
     *
     * */
     void shutdown();
-
-    /*
-    * Encola un mensaje para ser enviado al cliente
-    *
-    * */
-    void enqueueMessage(const std::shared_ptr<Message>& msg);
     
     /*
     * Indica si el cliente sigue conectado
     *
     * */
     bool isConnected() const;
-    
-    /*
-    * Obtiene los snapshots del cliente
-    *
-    * */
-    Snapshots& getSnapshots();
-
+    bool isAlive() const;
+    void killClient();
+    void assignGameQueue(Queue<std::shared_ptr<Message>>& queue);
+    int getId() const;
 };
 #endif //CLIENTHANDLER_H

@@ -5,15 +5,21 @@
 #include "../common/queue.h"
 #include "common/message.h"
 #include "server/server_protocol.h"
+#include "server/server_gameMonitor.h"
 
+class ClientHandler;
 class ReceiverThread : public Thread {
 public:
-    ReceiverThread(ServerProtocol& protocol, Queue<std::shared_ptr<Message>>& client_queue);
+    // ReceiverThread(ServerProtocol& protocol, Queue<std::shared_ptr<Message>>& serverQueue);
+    ReceiverThread(ServerProtocol& protocol, GameMonitor& gameMonitor, ClientHandler& handler);
     virtual void run() override;
 
 private:
     ServerProtocol& protocol;
-    Queue<std::shared_ptr<Message>>& client_queue;
+    GameMonitor& gameMonitor;
+    ClientHandler& clientHandler;
+    Queue<std::shared_ptr<Message>>* gameQueue;
+    bool keepRunning;
 };
 
 #endif //SERVER_RECEIVERTHREAD_H

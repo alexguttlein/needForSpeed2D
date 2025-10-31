@@ -6,6 +6,7 @@ target_sources(taller_common
     resolver.cpp
     resolvererror.cpp
     socket.cpp
+    commandConstants.cpp
     PUBLIC
     # .h files
     foo.h
@@ -18,4 +19,6 @@ target_sources(taller_common
     constants.h
     car.h
     message.h
+    commandConstants.h
+    snapshot.h
     )

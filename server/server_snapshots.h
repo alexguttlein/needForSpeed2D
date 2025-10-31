@@ -12,7 +12,8 @@
 *
 * */
 struct Snapshot{
-    Car car;
+    int posX;
+    int posY;
 };
 
 

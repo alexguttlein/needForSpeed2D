@@ -17,7 +17,8 @@ namespace  Constants {
     static constexpr int PORT_SERVER_ARG_INDEX = 1;
 
     // constantes de tamanios de queues
-    static const unsigned int CLIENT_QUEUE_MAXSIZE = 500;
+    static const unsigned int CLIENT_QUEUE_MAXSIZE = 100;
+    static const unsigned int GAME_QUEUE_MAXSIZE = 500;
 
     // constantes de ingresos del cliente
     static const std::string INPUT_EXIT = "exit";

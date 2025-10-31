@@ -1,19 +1,23 @@
 #include "server_acceptor.h"
 
-Acceptor::Acceptor(const char* port, MonitorClients& monitorClients) :
+Acceptor::Acceptor(const char* port) :
     socket(port),
-    monitorClients(monitorClients),
-    keepAccepting(true) {}
+    keepAccepting(true),
+    clients() {}
 
 void Acceptor::run() {
-
+    GameMonitor gameMonitor;
     while (keepAccepting && !socket.is_stream_recv_closed()) {
         try {
             Socket newSocket = socket.accept();
             int id = newSocket.get_fd();
-            
-            addNewClient(id, std::move(newSocket));
 
+            ClientHandler* client = new ClientHandler(std::move(newSocket), id, gameMonitor);
+
+            client->startThreads();
+
+            clients.push_back(client);
+            killDeadClients();
         } catch (const std::exception& e) {
             if (keepAccepting) {
                 std::cerr << "Unexpected exception: " << e.what() << std::endl;
@@ -28,7 +32,6 @@ void Acceptor::endAccepting() {
     closeSocket();
 }
 
-
 void Acceptor::closeSocket() {
     if (!socket.is_stream_recv_closed() && !socket.is_stream_send_closed()) {
         this->socket.shutdown(SHUT_RDWR);
@@ -36,8 +39,26 @@ void Acceptor::closeSocket() {
     }
 }
 
-void Acceptor::addNewClient(int id, Socket newSocket) {
-    ClientHandler& client = monitorClients.insertClient(id, std::move(newSocket));
-    std::cout << "Cliente agregado con id: " << id << std::endl;
-    client.startThreads();
+void Acceptor::killDeadClients() {
+    clients.remove_if([this](ClientHandler* client) {
+        if (!client->isAlive()) {
+            killClient(client);
+            return true;
+        }
+        return false;
+    });
+}
+
+void Acceptor::killClient(ClientHandler* client) {
+    client->killClient();
+    delete client;
+}
+
+Acceptor::~Acceptor() {
+    for (auto &client : clients) {
+        killClient(client);
+    }
+    clients.clear();
+    socket.shutdown(SHUT_RDWR);
+    socket.close();
 }
