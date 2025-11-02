@@ -18,7 +18,7 @@ class GameLoop : public Thread {
 
 private:
     std::atomic<bool> running;
-    MonitorClients& clients;
+    // MonitorClients& clients;
     Queue<std::string>& commandQueue;
 
     void run() override;
@@ -29,13 +29,13 @@ public:
     * Constructor de GameLoop
     *
     * */
-    explicit GameLoop(Queue<std::string>& commandQueue, MonitorClients& clients);
+    explicit GameLoop(Queue<std::string>& commandQueue);
 
     /*
     * Envía snapshots a todos los clientes conectados
     *
     * */
-    void broadcastSnapshots();
+    // void broadcastSnapshots();
     
     /*
     * Procesa la cola de comandos recibidos

@@ -1,19 +1,17 @@
 #include "server_gameloop.h"
 
 
-GameLoop::GameLoop(Queue<std::string>& commandQueue, MonitorClients& clients)
-    : running(false), clients(clients), commandQueue(commandQueue) {}
+GameLoop::GameLoop(Queue<std::string>& commandQueue)
+    : running(false), commandQueue(commandQueue) {}
 
 
 void GameLoop::run() {
     running = true;
 
     while (running) {
-   
-        clients.killDisconnectedClients();
         processCommandQueue();
-        broadcastSnapshots();
-        std::this_thread::sleep_for(std::chrono::milliseconds(Constants::THREAD_SLEEP_MS)); 
+        // broadcastSnapshots();
+        // std::this_thread::sleep_for(std::chrono::milliseconds(Constants::THREAD_SLEEP_MS));
     }
 }
 
@@ -25,7 +23,7 @@ void GameLoop::processCommandQueue() {
     }
 }
 
-void GameLoop::broadcastSnapshots() {
+// void GameLoop::broadcastSnapshots() {
     // clients.forEachClient([this](ClientHandler& client){
     //     Snapshot snapshot;
     //     if (client.getSnapshots().popSnapshot(snapshot)) {
@@ -36,7 +34,7 @@ void GameLoop::broadcastSnapshots() {
     //         clients.broadcastToAllClients(msg);
     //     }
     // });
-}
+// }
 
 
 

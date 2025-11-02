@@ -49,7 +49,7 @@ void Car::breakReverse() {
 }
 
 
-static Vector2D<float> rotateVec(const Vector2D<float>& v, float angle) {
+Vector2D<float> Car::rotateVec(const Vector2D<float>& v, float angle) {
     float cosA = std::cos(angle);
     float sinA = std::sin(angle);
     return Vector2D<float>(v.x * cosA - v.y * sinA,

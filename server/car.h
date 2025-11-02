@@ -76,7 +76,7 @@ public:
     * Funcion auxiliar para rotar un vector en un ángulo dado,
     * usada para evitar codigo repetido en turnLeft y turnRight.
     * */
-    static Vector2D<float> rotateVec(const Vector2D<float>& v, float angle);
+    Vector2D<float> rotateVec(const Vector2D<float>& v, float angle);
 
     /*
     * Cambiar la dirección del auto hacia la izquierda, el ángulo depende de la velocidad actual  
