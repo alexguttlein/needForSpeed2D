@@ -16,6 +16,26 @@ void ReceiverThread::lobbyCommands(Message msg) {
         clientHandler.assignGameQueue(*gameQueue, newId);
         std::cout << "Debug: Client " << clientHandler.getId() << " created game " << newId << std::endl;
         protocol.sendControl(Constants::CREATE_JOIN_ACCEPTED);
+
+    } else if (msg.code == Constants::LIST_GAMES) {
+        // construir vector de pares (id, totalPlayers)
+        std::cout << "Debug: List games: se arma lista de partidas" << std::endl;
+        std::vector<uint8_t> buffer;
+        auto gamesSnapshot = gameMonitor.listGames();
+        std::cout << "Debug: List games: se armó la lista de partidas" << std::endl;
+        for (auto& [id, total] : gamesSnapshot) {
+            // id y totalPlayers en big endian
+            uint32_t idBE = htonl(id);
+            uint32_t totalBE = htonl(total);
+            buffer.insert(buffer.end(), reinterpret_cast<uint8_t*>(&idBE), reinterpret_cast<uint8_t*>(&idBE)+4);
+            buffer.insert(buffer.end(), reinterpret_cast<uint8_t*>(&totalBE), reinterpret_cast<uint8_t*>(&totalBE)+4);
+        }
+
+        // se envia lista de partidas
+        std::cout << "Debug: se va a enviar lista desde server" << std::endl;
+        uint8_t type = Constants::TYPE_GAME_LIST;
+        protocol.sendGamesList(type, buffer);
+
     } else if (msg.code == Constants::JOIN_GAME) {
         int joinId = msg.intValue;
 

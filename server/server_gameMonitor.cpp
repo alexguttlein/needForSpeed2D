@@ -40,3 +40,12 @@ void GameMonitor::leaveGame(int id) {
     // si totalPlayers == 0 se borra la partida
     if (game->totalPlayers == 0) games.erase(it);
 }
+
+std::vector<std::pair<int, int>> GameMonitor::listGames() {
+    std::lock_guard<std::mutex> lock(mtx);
+    std::vector<std::pair<int,int>> result;
+    for (auto& [id, gamePtr] : games) {
+        result.emplace_back(id, gamePtr->totalPlayers);
+    }
+    return result;
+}

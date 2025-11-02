@@ -93,3 +93,16 @@ void ServerProtocol::sendControl(uint8_t code) {
     socket.sendall(buffer.data(), buffer.size());
 }
 
+void ServerProtocol::sendGamesList(uint8_t& type, const std::vector<unsigned char>& vector) {
+    if (socket.is_stream_send_closed()) return;
+    std::vector<uint8_t> buffer;
+    buffer.push_back(type);
+
+    uint32_t vecSizeBE = htonl(static_cast<uint32_t>(vector.size()));
+    uint8_t* sizeBytes = reinterpret_cast<uint8_t*>(&vecSizeBE);
+    buffer.insert(buffer.end(), sizeBytes, sizeBytes + sizeof(vecSizeBE));
+
+    buffer.insert(buffer.end(), vector.begin(), vector.end());
+
+    socket.sendall(buffer.data(), buffer.size());
+}

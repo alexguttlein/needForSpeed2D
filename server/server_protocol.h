@@ -26,6 +26,7 @@ public:
 
     void sendSnapshot(const Snapshot& snapshot);
     void sendControl(uint8_t code);
+    void sendGamesList(uint8_t& type, const std::vector<unsigned char>& buffer);
 
 private:
     Socket socket;

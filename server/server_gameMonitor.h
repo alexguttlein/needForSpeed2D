@@ -19,6 +19,7 @@ public:
     Queue<std::shared_ptr<Message>>& getGameQueue(int gameId);
     bool tryJoinGame(int id, Queue<std::shared_ptr<Message>>*& outQueue);
     void leaveGame(int id);
+    std::vector<std::pair<int,int>> listGames();
 };
 
 #endif //SERVER_GAMEMONITOR_H

@@ -55,7 +55,6 @@ uint32_t ClientProtocol::readBigEndianUInt32(const std::vector<uint8_t>& buffer,
 
 bool ClientProtocol::sendLobbyOption(const std::string& input) {
     if (socket.is_stream_send_closed()) return false;
-
     std::istringstream iss(input);
     std::string command;
     iss >> command;
@@ -78,6 +77,11 @@ bool ClientProtocol::sendLobbyOption(const std::string& input) {
         uint16_t matchIdBE = htons(matchId);
         socket.sendall(reinterpret_cast<uint8_t*>(&matchIdBE), sizeof(matchIdBE));
         return true;
+
+    } else if (command == "listar") {
+        uint8_t msg = Constants::LIST_GAMES;
+        socket.sendall(&msg, sizeof(msg));
+        return false; // sigue en el lobby
     }
     std::cerr << "Opción inválida. Usa 'crear' o 'unirse <id>'" << std::endl;
     return false;
@@ -122,6 +126,30 @@ std::optional<Snapshot> ClientProtocol::receiveMessageFromServer() {
         }
         return std::nullopt;
     }
+
+    if (type == Constants::TYPE_GAME_LIST) {
+        // Leer tamaño de la lista (4 bytes)
+        uint32_t sizeBE = 0;
+        if (socket.recvall(&sizeBE, sizeof(sizeBE)) <= 0) return std::nullopt;
+        uint32_t listSize = ntohl(sizeBE);
+
+        // Leer la lista completa
+        std::vector<uint8_t> data(listSize);
+        if (socket.recvall(data.data(), listSize) <= 0) return std::nullopt;
+
+        // se arma la lista
+        std::cout << "Partidas activas:\n";
+        size_t offset = 0;
+        while (offset + 8 <= data.size()) { // 4 bytes id + 4 bytes jugadores
+            uint32_t id = readUInt32(data, offset);
+            uint32_t players = readUInt32(data, offset);
+            std::cout << "ID: " << id <<
+                ", Jugadores: " << players << " / " <<
+                    Constants::MAX_PLAYERS_IN_GAME << std::endl;
+        }
+        return std::nullopt; // sigue en lobby
+    }
+
     std::cerr << "Mensaje desconocido recibido del servidor. Tipo = " << std::hex << (int)type << std::endl;
     return std::nullopt;
 }

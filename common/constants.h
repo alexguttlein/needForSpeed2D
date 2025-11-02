@@ -21,8 +21,10 @@ namespace  Constants {
     static constexpr unsigned char JOIN_GAME = 0x21;
     static constexpr unsigned char JOIN_REJECTED = 0x22;
     static constexpr unsigned char CREATE_JOIN_ACCEPTED = 0x23;
+    static constexpr unsigned char LIST_GAMES = 0x24;
     static constexpr unsigned char TYPE_SNAPSHOT = 0x30;
     static constexpr unsigned char TYPE_CONTROL = 0x31;
+    static constexpr unsigned char TYPE_GAME_LIST = 0x32;
     static constexpr int MAX_PLAYERS_IN_GAME = 2;
 
     // constantes de tamanios de queues
