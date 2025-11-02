@@ -37,6 +37,12 @@ public:
     Vector2D<float> getPosition() const;
     
     /*
+    * Obtiene la dirección del auto como un vector normalizado
+    *
+    * */
+    Vector2D<float> getDirection() const;
+    
+    /*
     * Obtiene la velocidad del auto
     *
     * */

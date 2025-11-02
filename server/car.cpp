@@ -18,6 +18,10 @@ Vector2D<float> Car::getPosition() const {
     return position;
 }
 
+Vector2D<float> Car::getDirection() const {
+    return direction;
+}
+
 
 float Car::getSpeed() const {
     return speed;
