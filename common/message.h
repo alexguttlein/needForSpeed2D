@@ -2,13 +2,14 @@
 #define MESSAGE_H
 
 #include <cstdint>
-#include "car.h"
+#include <string>
 
 #pragma pack(push, 1)  // para evitar padding
 struct Message {
     uint8_t code = 0;
     char key    = '\0';
-    int value   = 0;
+    int intValue   = 0;
+    std::string stringValue = std::string();
 
     // constructor por defecto
     Message() = default;

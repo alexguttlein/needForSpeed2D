@@ -4,16 +4,18 @@
 #include "../common/thread.h"
 #include "../common/queue.h"
 #include "client/client_protocol.h"
+#include "common/eventType.h"
 
 #include <iostream>
 
 class ReceiverThread : public Thread {
 public:
-    ReceiverThread(ClientProtocol& protocol, Queue<Snapshot>& queue);
+    ReceiverThread(ClientProtocol& protocol, Queue<Snapshot>& queue, Queue<Event>& eventQueue);
     void run() override;
 private:
     ClientProtocol& protocol;
     Queue<Snapshot>& snapshotQueue;
+    Queue<Event>& eventQueue;
     bool keepRunning;
 };
 

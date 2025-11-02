@@ -17,6 +17,8 @@ public:
     GameMonitor();
     int createGame();
     Queue<std::shared_ptr<Message>>& getGameQueue(int gameId);
+    bool tryJoinGame(int id, Queue<std::shared_ptr<Message>>*& outQueue);
+    void leaveGame(int id);
 };
 
 #endif //SERVER_GAMEMONITOR_H

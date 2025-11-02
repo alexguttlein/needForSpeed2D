@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <stdexcept>
 #include <cstring>
+#include <iostream>
 
 class ServerProtocol {
 public:
@@ -23,7 +24,9 @@ public:
     template<typename T>
     void appendBigEndian(std::vector<uint8_t>& vec, T value);
 
-    void sendMessage(const Snapshot& snapshot);
+    void sendSnapshot(const Snapshot& snapshot);
+    void sendControl(uint8_t code);
+
 private:
     Socket socket;
     bool isClosed;

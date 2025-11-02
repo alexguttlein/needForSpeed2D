@@ -4,8 +4,10 @@
 #include "../common/thread.h"
 #include "../common/queue.h"
 #include "common/message.h"
-#include "server_snapshots.h"
+#include "common/constants.h"
+#include "common/snapshot.h"
 #include "server/server_protocol.h"
+#include "common/eventType.h"
 
 class SenderThread : public Thread {
 public:

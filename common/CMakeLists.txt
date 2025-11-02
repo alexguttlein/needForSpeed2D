@@ -21,4 +21,5 @@ target_sources(taller_common
     message.h
     commandConstants.h
     snapshot.h
+    eventType.h
     )

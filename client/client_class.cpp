@@ -3,12 +3,12 @@
 #include <cstdio>
 
 Client::Client(const char* host, const char* port) :
-    protocol(host, port), snapshotQueue(100),
-    receiver(protocol, snapshotQueue) {}
+    protocol(host, port), snapshotQueue(100), eventQueue(10),
+    receiver(protocol, snapshotQueue, eventQueue), playing(false) {}
 
 void Client::run() {
     receiver.start();
-    protocol.sendCreateGame(); //instruccion de prueba, esto va en el lobby
+    lobbyOptions();
 
     // Inicialización general (una sola vez)
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
@@ -53,19 +53,19 @@ void Client::run() {
                         running = false;
                         break;
                     case SDLK_w: {
-                        protocol.send(SDLK_w);
+                        protocol.sendKey(SDLK_w);
                         break;
                     }
                     case SDLK_s: {
-                        protocol.send(SDLK_s);
+                        protocol.sendKey(SDLK_s);
                         break;
                     }
                     case SDLK_a: {
-                        protocol.send(SDLK_a);
+                        protocol.sendKey(SDLK_a);
                         break;
                     }
                     case SDLK_d: {
-                        protocol.send(SDLK_d);
+                        protocol.sendKey(SDLK_d);
                         break;
                     }
                 }
@@ -91,4 +91,19 @@ void Client::run() {
     SDL_DestroyRenderer(ren);
     SDL_DestroyWindow(win);
     SDL_Quit();
+}
+
+void Client::lobbyOptions() {
+    std::string input;
+    while (!playing) {
+        std::getline(std::cin, input);
+        playing = protocol.sendLobbyOption(input);
+
+        if (playing) {
+            Event event = eventQueue.pop();
+            if (event.type == EventType::CREATE_JOIN_ACCEPTED) {
+                playing = true;
+            } else playing = false;
+        }
+    }
 }

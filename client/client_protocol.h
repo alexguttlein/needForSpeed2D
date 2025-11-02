@@ -9,6 +9,8 @@
 #include <SDL.h>
 #include <vector>
 #include <cstring>
+#include <sstream>
+#include <optional>
 
 #include "../common/constants.h"
 #include "../common/commandConstants.h"
@@ -19,10 +21,10 @@ class ClientProtocol {
 public:
     ClientProtocol(const char* host, const char* port);
     ~ClientProtocol();
-    void send(const SDL_KeyCode msg);
+    void sendKey(const SDL_KeyCode msg);
     CommandConstants::Key sdlToKey(const SDL_KeyCode input);
-    Snapshot receiveSnapshot();
-    void sendCreateGame();
+    bool sendLobbyOption(const std::string& input);
+    std::optional<Snapshot> receiveMessageFromServer();
 
 private:
     Socket socket;

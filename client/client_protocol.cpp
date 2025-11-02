@@ -12,7 +12,7 @@ ClientProtocol::~ClientProtocol() {
     }
 }
 
-void ClientProtocol::send(const SDL_KeyCode input) {
+void ClientProtocol::sendKey(const SDL_KeyCode input) {
     try {
         auto key = sdlToKey(input);
         uint8_t msg = CommandConstants::keyToBit(key);
@@ -29,30 +29,6 @@ CommandConstants::Key ClientProtocol::sdlToKey(const SDL_KeyCode input) {
         case SDLK_s: return CommandConstants::S;
         case SDLK_d: return CommandConstants::D;
         default: throw std::invalid_argument("Tecla no válida");
-    }
-}
-
-Snapshot ClientProtocol::receiveSnapshot() {
-    Snapshot snapshot{};
-    std::vector<uint8_t> buffer(8);
-
-    if (socket.is_stream_recv_closed()) return snapshot;
-
-    socket.recvall(buffer.data(), buffer.size());
-
-    size_t offset = 0;
-    snapshot.posX = readUInt32(buffer, offset);
-    snapshot.posY = readUInt32(buffer, offset);
-
-    return snapshot;
-}
-
-void ClientProtocol::sendCreateGame() {
-    try {
-        uint8_t msg = 0x09;
-        socket.sendall(&msg, sizeof(msg));
-    } catch (const std::exception& e) {
-        // tecla no reconocida, no enviamos nada
     }
 }
 
@@ -75,4 +51,77 @@ uint32_t ClientProtocol::readBigEndianUInt32(const std::vector<uint8_t>& buffer,
     value |= static_cast<uint32_t>(buffer[offset + 3]);
     offset += 4;
     return value;
+}
+
+bool ClientProtocol::sendLobbyOption(const std::string& input) {
+    if (socket.is_stream_send_closed()) return false;
+
+    std::istringstream iss(input);
+    std::string command;
+    iss >> command;
+
+    if (command == "crear") {
+        uint8_t msg = Constants::CREATE_GAME;
+        socket.sendall(&msg, sizeof(msg));
+        return true;
+    } else if (command == "unirse") {
+        uint8_t msg = Constants::JOIN_GAME;
+        socket.sendall(&msg, sizeof(msg));
+
+        uint16_t matchId;
+        if (!(iss >> matchId)) {
+            std::cerr << "Debes ingresar un ID de partida.\n";
+            return false;
+        }
+
+        // se convierte a big endian (2 bytes)
+        uint16_t matchIdBE = htons(matchId);
+        socket.sendall(reinterpret_cast<uint8_t*>(&matchIdBE), sizeof(matchIdBE));
+        return true;
+    }
+    std::cerr << "Opción inválida. Usa 'crear' o 'unirse <id>'" << std::endl;
+    return false;
+}
+
+std::optional<Snapshot> ClientProtocol::receiveMessageFromServer() {
+    if (socket.is_stream_recv_closed()) return std::nullopt;
+
+    uint8_t type;
+    ssize_t bytes = socket.recvall(&type, sizeof(type));
+    if (bytes <= 0) return std::nullopt;
+
+    if (type == Constants::TYPE_SNAPSHOT) {
+        // se recibio un Snapshot
+        Snapshot snapshot{};
+        std::vector<uint8_t> buffer(8);
+
+        socket.recvall(buffer.data(), buffer.size());
+
+        size_t offset = 0;
+        snapshot.posX = readUInt32(buffer, offset);
+        snapshot.posY = readUInt32(buffer, offset);
+
+        return snapshot;
+    }
+
+    if (type == Constants::TYPE_CONTROL) {
+        // se recibio un codigo de control
+        uint8_t code;
+        socket.recvall(&code, sizeof(code));
+
+        if (code == Constants::CREATE_JOIN_ACCEPTED) {
+            Snapshot snapshot{};
+            snapshot.controlEvent = EventType::CREATE_JOIN_ACCEPTED;
+            return snapshot;
+        } else if (code == Constants::JOIN_REJECTED) {
+            Snapshot snapshot{};
+            snapshot.controlEvent = EventType::JOIN_REJECTED;
+            return snapshot;
+        } else {
+            std::cerr << "Código de control recibido: " << std::hex << (int)code << std::endl;
+        }
+        return std::nullopt;
+    }
+    std::cerr << "Mensaje desconocido recibido del servidor. Tipo = " << std::hex << (int)type << std::endl;
+    return std::nullopt;
 }

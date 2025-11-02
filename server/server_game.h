@@ -9,6 +9,7 @@ class Game {
 public:
     explicit Game(int gameId);
     Queue<std::shared_ptr<Message>>& getSharedQueue();
+    int totalPlayers;
 private:
     int gameId;
     Queue<std::shared_ptr<Message>> sharedQueue;

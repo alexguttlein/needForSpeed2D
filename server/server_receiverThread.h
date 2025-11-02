@@ -10,8 +10,10 @@
 class ClientHandler;
 class ReceiverThread : public Thread {
 public:
-    // ReceiverThread(ServerProtocol& protocol, Queue<std::shared_ptr<Message>>& serverQueue);
     ReceiverThread(ServerProtocol& protocol, GameMonitor& gameMonitor, ClientHandler& handler);
+
+    void lobbyCommands(Message msg);
+
     virtual void run() override;
 
 private:

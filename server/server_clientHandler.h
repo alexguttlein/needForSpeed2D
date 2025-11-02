@@ -24,9 +24,9 @@ private:
     int id;
     bool alive;
     Snapshot snapshot;
+    int currentGameId;
 
 public:
-
     /*
     * Constructor de ClientHandler
     *
@@ -52,7 +52,9 @@ public:
     bool isConnected() const;
     bool isAlive() const;
     void killClient();
-    void assignGameQueue(Queue<std::shared_ptr<Message>>& queue);
+    void assignGameQueue(Queue<std::shared_ptr<Message>>& queue, int gameId);
     int getId() const;
+    int getCurrentGameId() const;
+
 };
 #endif //CLIENTHANDLER_H

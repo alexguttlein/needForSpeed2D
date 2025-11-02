@@ -10,6 +10,7 @@
 #include "../common/queue.h"
 #include "client_protocol.h"
 #include "client_receiverThread.h"
+#include "common/eventType.h"
 
 class Client {
 public:
@@ -18,7 +19,10 @@ public:
 private:
     ClientProtocol protocol;
     Queue<Snapshot> snapshotQueue;
+    Queue<Event> eventQueue;
     ReceiverThread receiver;
+    bool playing;
+    void lobbyOptions();
 };
 
 #endif //CLIENT_H
