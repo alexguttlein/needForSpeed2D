@@ -100,7 +100,7 @@ public:
     * Actualiza la posición según la velocidad y dirección, si no toca ninguna tecla
     * empieza a aplicar fricción para reducir la velocidad.
     * */
-    void updatePosition();
+    void updatePosition(float dt);
 
     /*
     * reduce la salud del auto según el daño recibido

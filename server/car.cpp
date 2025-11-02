@@ -77,8 +77,8 @@ void Car::applyFriction() {
 }
 
 
-void Car::updatePosition() {
-    position = direction * speed;
+void Car::updatePosition(float dt) {
+    position = position + direction * speed * dt;
 }
 
 

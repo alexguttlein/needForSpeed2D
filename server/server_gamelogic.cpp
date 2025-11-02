@@ -30,7 +30,9 @@ GameLogic::GameLogic() {
 // }
 
 void GameLogic::update(float dt) {
-
+    for (auto const& [id, car] : cars) {
+        car->updatePosition(dt);
+    }
 }
 
 
