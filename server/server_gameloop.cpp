@@ -30,7 +30,7 @@ void GameLoop::broadcastSnapshots() {
     //     Snapshot snapshot;
     //     if (client.getSnapshots().popSnapshot(snapshot)) {
     //         auto msg = std::make_shared<Message>();
-    //         msg->code = 1;      // codigo de respuesta de snapshot? 
+    //         msg->code = 1;      // codigo de respuesta de snapshot?
     //         msg->car = snapshot.car;
 
     //         clients.broadcastToAllClients(msg);

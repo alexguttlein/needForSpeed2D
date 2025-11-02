@@ -4,8 +4,9 @@
 #include "../common/socket.h"
 #include "../common/thread.h"
 #include "server_clientHandler.h"
-#include "server_monitorClients.h"
+#include "server/server_gameMonitor.h"
 
+#include <list>
 #include <arpa/inet.h>
 #include <memory>
 
@@ -13,18 +14,18 @@ class Acceptor : public Thread {
 
     private:
     Socket socket;
-    MonitorClients& monitorClients;
     bool keepAccepting;
+    std::list<ClientHandler*> clients;
     void closeSocket();
-
+    void killDeadClients();
+    void killClient(ClientHandler* client);
 
     public:
-
     /*
     * Constructor de Acceptor
     *
     * */
-    Acceptor(const char* port, MonitorClients& monitorClients);
+    Acceptor(const char* port);
     
     /*
     * Inicializa el Acceptor
@@ -39,9 +40,9 @@ class Acceptor : public Thread {
     void endAccepting();
 
     /*
-    * Agrega un nuevo cliente al monitor de clientes
+    * Destructor de Acceptor
     *
     * */
-   void addNewClient(int id, Socket newSocket);
+    ~Acceptor() override;
 };
 #endif //SERVER_ACCEPTOR_H

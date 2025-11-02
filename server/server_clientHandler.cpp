@@ -1,51 +1,20 @@
 #include "server_clientHandler.h"
 
-ClientHandler::ClientHandler(Socket socket) :
-    protocol(std::move(socket)),
-        clientQueue(Constants::CLIENT_QUEUE_MAXSIZE),
-        senderThread(protocol, clientQueue),
-        receiverThread(protocol, clientQueue) {
-}
+#include "server_gameMonitor.h"
 
+ClientHandler::ClientHandler(Socket socket, int id, GameMonitor& gameMonitor) :
+    protocol(std::move(socket)), gameMonitor(gameMonitor),
+        clientQueue(Constants::CLIENT_QUEUE_MAXSIZE),
+        sharedQueue(nullptr),
+        senderThread(protocol, clientQueue),
+        receiverThread(protocol, gameMonitor, *this),
+        id(id), alive(true), snapshot(), currentGameId(0) {}
 
 void ClientHandler::startThreads() {
-    try {
-        uint8_t init = 0x00;
-        protocol.getSocket().sendall(&init, sizeof(init));
-
-        // loop de handshake/comandos corto; sale al recibir algo distinto
-        while (!protocol.isConnectionClosed()) {
-            uint8_t cmd;
-            protocol.getSocket().recvall(&cmd, sizeof(cmd));
-
-            if (cmd == 0x01) {
-                uint8_t resp = 0x10;
-                protocol.getSocket().sendall(&resp, sizeof(resp));
-                std::cout << "comando recibido: w" << std::endl;
-            } else if (cmd == 0x02) {
-                uint8_t resp = 0x11;
-                protocol.getSocket().sendall(&resp, sizeof(resp));
-                std::cout << "comando recibido: s" << std::endl;
-            } else if (cmd == 0x03) {
-                uint8_t resp = 0x12;
-                protocol.getSocket().sendall(&resp, sizeof(resp));
-                std::cout << "comando recibido: a" << std::endl;
-            } else if (cmd == 0x04) {
-                uint8_t resp = 0x13;
-                protocol.getSocket().sendall(&resp, sizeof(resp));
-                std::cout << "comando recibido: d" << std::endl;
-            } else {
-                break;
-            }
-        }
-    } catch (const std::exception& e) {
-        std::cerr << "ClientHandler handshake error: " << e.what() << std::endl;
-    }
-    senderThread.start();
+    std::cout << "DEBUG: Client threads starting..." << std::endl;
     receiverThread.start();
+    senderThread.start();
 }
-
-
 
 void ClientHandler::shutdown() {
     try {
@@ -57,21 +26,30 @@ void ClientHandler::shutdown() {
         if (!protocol.isConnectionClosed()) {
             protocol.closeSocket();
         }
+
+        if (currentGameId == 0) gameMonitor.leaveGame(currentGameId);
     } catch (const std::exception& e) {
         std::cerr << "ClientHandler::shutdown exception: " << e.what() << std::endl;
     }
-}
-
-
-void ClientHandler::enqueueMessage(const std::shared_ptr<Message>& msg) {
-    clientQueue.try_push(msg);
 }
 
 bool ClientHandler::isConnected() const {
     return !protocol.isConnectionClosed();
 }
 
-
-Snapshots& ClientHandler::getSnapshots() {
-    return snapshots;
+bool ClientHandler::isAlive() const {
+    return alive;
 }
+
+void ClientHandler::killClient() {
+    alive = false;
+}
+
+void ClientHandler::assignGameQueue(Queue<std::shared_ptr<Message>>& queue, int gameId) {
+    sharedQueue = &queue;
+    currentGameId = gameId;
+}
+
+int ClientHandler::getId() const { return id; }
+
+int ClientHandler::getCurrentGameId() const { return currentGameId; }

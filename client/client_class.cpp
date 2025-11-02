@@ -3,10 +3,13 @@
 #include <cstdio>
 
 Client::Client(const char* host, const char* port) :
-    protocol(host, port) {
-}
+    protocol(host, port), snapshotQueue(100), eventQueue(10),
+    receiver(protocol, snapshotQueue, eventQueue), playing(false) {}
 
 void Client::run() {
+    receiver.start();
+    lobbyOptions();
+
     // Inicialización general (una sola vez)
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         std::fprintf(stderr, "SDL_Init error: %s\n", SDL_GetError());
@@ -35,15 +38,12 @@ void Client::run() {
     // Variables del juego
     int x = W / 2;
     int y = H / 2;
-    bool running = true;
 
-    // Comunicación inicial con el servidor
-    uint8_t msg = protocol.recibir();
-    if (msg == 0x00)
-        std::cout << "recibido" << std::endl;
+    bool running = true;
 
     // Loop principal SDL
     while (running) {
+        Snapshot snapshot{};
         SDL_Event e;
         while (SDL_PollEvent(&e)) {
             if (e.type == SDL_QUIT) running = false;
@@ -53,36 +53,28 @@ void Client::run() {
                         running = false;
                         break;
                     case SDLK_w: {
-                        msg = 0x01;
-                        protocol.send(msg);
-                        uint8_t response = protocol.recibir();
-                        if (response == 0x10) y -= 10;
+                        protocol.sendKey(SDLK_w);
                         break;
                     }
                     case SDLK_s: {
-                        msg = 0x02;
-                        protocol.send(msg);
-                        uint8_t response = protocol.recibir();
-                        if (response == 0x11) y += 10;
+                        protocol.sendKey(SDLK_s);
                         break;
                     }
                     case SDLK_a: {
-                        msg = 0x03;
-                        protocol.send(msg);
-                        uint8_t response = protocol.recibir();
-                        if (response == 0x12) x -= 10;
+                        protocol.sendKey(SDLK_a);
                         break;
                     }
                     case SDLK_d: {
-                        msg = 0x04;
-                        protocol.send(msg);
-                        uint8_t response = protocol.recibir();
-                        if (response == 0x13) x += 10;
+                        protocol.sendKey(SDLK_d);
                         break;
                     }
                 }
             }
         }
+
+        snapshotQueue.try_pop(snapshot);
+        x = snapshot.posX;
+        y = snapshot.posY;
 
         // Dibujar puntito
         SDL_SetRenderDrawColor(ren, 20, 20, 20, 255);
@@ -99,4 +91,19 @@ void Client::run() {
     SDL_DestroyRenderer(ren);
     SDL_DestroyWindow(win);
     SDL_Quit();
+}
+
+void Client::lobbyOptions() {
+    std::string input;
+    while (!playing) {
+        std::getline(std::cin, input);
+        playing = protocol.sendLobbyOption(input);
+
+        if (playing) {
+            Event event = eventQueue.pop();
+            if (event.type == EventType::CREATE_JOIN_ACCEPTED) {
+                playing = true;
+            } else playing = false;
+        }
+    }
 }

@@ -15,15 +15,8 @@
 class Server {
 
 private:
-    Queue<std::string> commandQueue;
-    MonitorClients monitor;
     Acceptor acceptor;
-    GameLoop gameLoop;
-
     void closeAcceptor();
-    void closeGameLoop();
-    void closeClients();
-
 
 public:
     
