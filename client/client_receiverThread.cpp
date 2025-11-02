@@ -10,18 +10,24 @@ void ReceiverThread::run() {
             if (!optSnapshot.has_value()) continue;
 
             Snapshot snapshot = optSnapshot.value();
-            if (snapshot.controlEvent == EventType::CREATE_JOIN_ACCEPTED) {
-                eventQueue.push(Event(EventType::CREATE_JOIN_ACCEPTED,
+            EventType eventType = snapshot.controlEvent;
+            switch (eventType) {
+                case EventType::CREATE_JOIN_ACCEPTED: {
+                    eventQueue.push(Event(EventType::CREATE_JOIN_ACCEPTED,
                     "Creación o unión a partida satisfactoria."));
-                continue;
-            } else if (snapshot.controlEvent == EventType::JOIN_REJECTED) {
-                eventQueue.push(Event(EventType::JOIN_REJECTED,
+                    continue;
+                }
+                case EventType::JOIN_REJECTED: {
+                    eventQueue.push(Event(EventType::JOIN_REJECTED,
                     "No se pudo unir a la partida."));
-                continue;
+                    continue;
+                }
+                // case EventType::GAME_LIST_RECEIVED: {
+                //     eventQueue.push(Event(EventType::GAME_LIST_RECEIVED,""));
+                //     continue;
+                // }
+                default: snapshotQueue.push(snapshot);
             }
-
-            std::cout << "debug: client recibio " << snapshot.posY << std::endl;
-            snapshotQueue.push(snapshot);
         }
     } catch (const std::exception& e) {
         std::cerr << "[ReceiverThread] Excepción: " << e.what() << "\n";
