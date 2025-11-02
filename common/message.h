@@ -2,7 +2,7 @@
 #define MESSAGE_H
 
 #include <cstdint>
-#include "car.h"
+#include "../server/car.h"
 
 #pragma pack(push, 1)  // para evitar padding
 struct Message {

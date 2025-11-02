@@ -38,6 +38,13 @@ namespace  Constants {
     // constante tiempo sleep de loop
     static constexpr int THREAD_SLEEP_MS = 50;
 
-}
 
+    //constantes del juego
+    static constexpr float HEALTH_UPGRADE = 20.0f;
+    static constexpr float ACCELERATION_UPGRADE = 5.0f;
+    static constexpr float CONTROL_UPGRADE = 0.1f;
+    static constexpr float NO_HEALTH = 0.0f;
+    static constexpr float FRICTION_BASE = 0.1f;
+    static constexpr float INITIAL_SPEED = 0.0f;
+}
 #endif //CONSTANTS_H

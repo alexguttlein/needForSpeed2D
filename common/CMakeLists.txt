@@ -16,6 +16,5 @@ target_sources(taller_common
     thread.h
     queue.h
     constants.h
-    car.h
     message.h
     )
