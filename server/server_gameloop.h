@@ -8,20 +8,19 @@
 #include <string>
 #include <memory>
 
-#include "server_monitorClients.h"
+
 #include "server_snapshots.h"
-#include "car.h"
 #include "../common/thread.h"
 #include "../common/constants.h"
+#include "server_gamelogic.h"
 
 class GameLoop : public Thread {
 
 private:
     std::atomic<bool> running;
-    // MonitorClients& clients;
     Queue<std::string>& commandQueue;
-
-    void run() override;
+    GameLogic gameLogic;
+    WorldSnapshots snapshots;
 
 public:
 
@@ -32,11 +31,11 @@ public:
     explicit GameLoop(Queue<std::string>& commandQueue);
 
     /*
-    * Envía snapshots a todos los clientes conectados
+    * Agrega las snapshots a la queue de snapshots
     *
     * */
-    // void broadcastSnapshots();
-    
+    void saveSnapshots();
+
     /*
     * Procesa la cola de comandos recibidos
     *
@@ -48,6 +47,12 @@ public:
     *
     * */
     void stop() override;
+
+    /*
+    * Ejecuta el GameLoop
+    *
+    * */
+    void run() override;
     
     /*
     * Destructor de GameLoop

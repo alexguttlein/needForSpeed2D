@@ -1,24 +1,18 @@
 #include "server_snapshots.h"
 
 
-void Snapshots::addSnapshot(const Snapshot& snapshot) {
-    std::unique_lock<std::mutex> lock(mtx);
-    snapshot_queue.try_push(snapshot);
+void WorldSnapshots::addSnapshot(const GameSnapshot& snapshot) {
+    snapshot_queue.push(snapshot);
 }
 
 
-bool Snapshots::popSnapshot(Snapshot& snapshot) {
-    std::unique_lock<std::mutex> lock(mtx);
-    if (snapshot_queue.try_pop(snapshot)) {
-        return true;
-    }
-
-    return false;
+bool WorldSnapshots::popSnapshot(GameSnapshot& snapshot) {
+    return snapshot_queue.try_pop(snapshot);
 }
 
-void Snapshots::close() { snapshot_queue.close(); }
+void WorldSnapshots::close() { snapshot_queue.close(); }
 
 
-Snapshots::~Snapshots() {
+WorldSnapshots::~WorldSnapshots() {
     close();
 }

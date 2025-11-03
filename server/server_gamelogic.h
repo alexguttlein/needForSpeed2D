@@ -12,20 +12,25 @@
 
 class GameLogic {
 private:
-    std::map<uint8_t, std::shared_ptr<Car>> cars;
+    std::map<int, std::shared_ptr<Car>> cars;
     
 public:
+
+    /*
+    * Constructor de GameLogic. (por ahora vacío)
+    *
+    * */
     GameLogic();
     
     /*
     * Procesa un comando recibido para un auto específico
     *
     * */
-   // void processCommand(uint8_t car_id, const std::string& command);
+   void processCommand(int car_id, const std::string& command);
 
     /*
     * Actualiza la lógica del juego (física, estado de autos, etc.)
-    *
+    * Por ahora solo actualiza la posición de los autos.
     * */
     void update(float dt);
 
