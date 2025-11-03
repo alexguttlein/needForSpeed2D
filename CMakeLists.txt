@@ -11,10 +11,10 @@ endif()
 set(CMAKE_CXX_EXTENSIONS ON)
 
 project(taller_tp
-    VERSION 1.0
-    HOMEPAGE_URL "https://github.com/URL-HERE"
-    LANGUAGES CXX
-    )
+        VERSION 1.0
+        HOMEPAGE_URL "https://github.com/URL-HERE"
+        LANGUAGES CXX
+)
 
 option(TALLER_TESTS "Enable / disable tests." ON)
 option(TALLER_CLIENT "Enable / disable client program." ON)
@@ -55,45 +55,45 @@ target_include_directories(taller_common PUBLIC .)
 if(TALLER_CLIENT OR TALLER_EDITOR)
     include(FetchContent)
     FetchContent_Declare(
-        SDL2
-        GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
-        GIT_TAG release-2.30.8
-        GIT_SHALLOW TRUE
-        GIT_PROGRESS TRUE
-        OVERRIDE_FIND_PACKAGE
+            SDL2
+            GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
+            GIT_TAG release-2.30.8
+            GIT_SHALLOW TRUE
+            GIT_PROGRESS TRUE
+            OVERRIDE_FIND_PACKAGE
     )
 
     FetchContent_Declare(
-        SDL2_image
-        GIT_REPOSITORY https://github.com/libsdl-org/SDL_image.git
-        GIT_TAG release-2.8.2
-        GIT_SHALLOW TRUE
-        GIT_PROGRESS TRUE
-        OVERRIDE_FIND_PACKAGE
+            SDL2_image
+            GIT_REPOSITORY https://github.com/libsdl-org/SDL_image.git
+            GIT_TAG release-2.8.2
+            GIT_SHALLOW TRUE
+            GIT_PROGRESS TRUE
+            OVERRIDE_FIND_PACKAGE
     )
 
     FetchContent_Declare(
-        SDL2_mixer
-        GIT_REPOSITORY https://github.com/libsdl-org/SDL_mixer.git
-        GIT_TAG release-2.8.0
-        GIT_SHALLOW TRUE
-        GIT_PROGRESS TRUE
-        OVERRIDE_FIND_PACKAGE
+            SDL2_mixer
+            GIT_REPOSITORY https://github.com/libsdl-org/SDL_mixer.git
+            GIT_TAG release-2.8.0
+            GIT_SHALLOW TRUE
+            GIT_PROGRESS TRUE
+            OVERRIDE_FIND_PACKAGE
     )
 
     FetchContent_Declare(
-        SDL2_ttf
-        GIT_REPOSITORY https://github.com/libsdl-org/SDL_ttf.git
-        GIT_TAG release-2.22.0
-        GIT_SHALLOW TRUE
-        GIT_PROGRESS TRUE
-        OVERRIDE_FIND_PACKAGE
+            SDL2_ttf
+            GIT_REPOSITORY https://github.com/libsdl-org/SDL_ttf.git
+            GIT_TAG release-2.22.0
+            GIT_SHALLOW TRUE
+            GIT_PROGRESS TRUE
+            OVERRIDE_FIND_PACKAGE
     )
 
     FetchContent_Declare(
-        libSDL2pp
-        OVERRIDE_FIND_PACKAGE
-        URL https://github.com/libSDL2pp/libSDL2pp/archive/cc198c9a5657048bee67ece82de620b2d5661084.zip
+            libSDL2pp
+            OVERRIDE_FIND_PACKAGE
+            URL https://github.com/libSDL2pp/libSDL2pp/archive/cc198c9a5657048bee67ece82de620b2d5661084.zip
     )
 
     FetchContent_MakeAvailable(SDL2 SDL2_image SDL2_mixer SDL2_ttf libSDL2pp)
@@ -118,7 +118,7 @@ if(TALLER_CLIENT)
     target_include_directories(taller_client PRIVATE ${libSDL2pp_SOURCE_DIR})
 
     # Link the taller_common lib target
-    target_link_libraries(taller_client taller_common SDL2pp::SDL2pp)
+    target_link_libraries(taller_client taller_common SDL2pp::SDL2pp SDL2_image::SDL2_image SDL2_ttf::SDL2_ttf SDL2_mixer::SDL2_mixer)
 endif()
 
 if(TALLER_SERVER)
@@ -166,8 +166,8 @@ if(TALLER_TESTS)
     # Let's use google test
     include(FetchContent)
     FetchContent_Declare(
-        googletest
-        URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
+            googletest
+            URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
     )
 
     # For Windows: Prevent overriding the parent project's compiler/linker settings
@@ -197,15 +197,15 @@ if(TALLER_TESTS)
 
     # Say where googletest headers can be found
     target_include_directories(taller_tests
-        PUBLIC
-        ${gtest_SOURCE_DIR}/include
-        ${gmock_SOURCE_DIR}/include
-        )
+            PUBLIC
+            ${gtest_SOURCE_DIR}/include
+            ${gmock_SOURCE_DIR}/include
+    )
 
     # HEY!! TODO XXX: I'm assuming that the code under testing is in taller_common
     # Change this if you have to.
     target_link_libraries(taller_tests
-        taller_common
-        GTest::gtest_main
+            taller_common
+            GTest::gtest_main
     )
 endif()
