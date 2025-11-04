@@ -71,10 +71,10 @@ void Client::run() {
             if (e.type == SDL_KEYDOWN) {
                 switch (e.key.keysym.sym) {
                     case SDLK_ESCAPE: running = false; break;
-                    case SDLK_w: protocol.sendKey(SDLK_w); break;
-                    case SDLK_s: protocol.sendKey(SDLK_s); break;
-                    case SDLK_a: protocol.sendKey(SDLK_a); break;
-                    case SDLK_d: protocol.sendKey(SDLK_d); break;
+                    case SDLK_w: commandQueue.push(SDLK_w); break;
+                    case SDLK_s: commandQueue.push(SDLK_s); break;
+                    case SDLK_a: commandQueue.push(SDLK_a); break;
+                    case SDLK_d: commandQueue.push(SDLK_d); break;
                 }
             }
         }
