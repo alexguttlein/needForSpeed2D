@@ -12,7 +12,7 @@ public:
     bool loadMap(const std::string& pathPng);
 
     bool loadCarAtlas(const std::string& pathPng, int cols = 8, int rows = 2,
-                      float angle0Deg = -90.0f, bool clockwise = true);
+                      float angle0Deg = -0.0f, bool clockwise = true);
 
     void renderFrame(int playerX, int playerY);
 
@@ -34,12 +34,12 @@ private:
     SDL_Texture* carTex = nullptr;
     int atlasCols = 8, atlasRows = 2;
     int cellW = 0, cellH = 0;
-    float angle0 = -90.0f; // frame 0 = “arriba”
+    float angle0 = 0.0f; // frame 0 = “arriba”
     bool clockwise = true;
 
     int camX = 0, camY = 0;
 
-    float facingDeg = -90.0f;
+    float facingDeg = 0.0f;
     int lastX = -1, lastY = -1;
 };
 #endif //TP_TALLER_G7_CLIENT_DIBUJADOR_H

@@ -54,14 +54,15 @@ void Client::run() {
         std::fprintf(stderr, "No pude cargar assets/maps/iberty.png\n");
     }
 
-    if (!dib.loadCarAtlas("assets/need-for-speed/cars/auto-1.png", 8, 2, -90.0f, true)) {
+    if (!dib.loadCarAtlas("assets/need-for-speed/cars/auto-1.png", 8, 2, 0.0f, true)) {
         std::fprintf(stderr, "No pude cargar atlas del auto\n");
     }
 
+    dib.setFacingDeg(0.0f);
     bool running = true;
     //CAMBIAR
-    int x = 520, y = 240;
-
+    int x = 90, y = 90 ;
+    bool havePos = true;
     while (running) {
         auto start = std::chrono::steady_clock::now();
         Snapshot snapshot{};
@@ -80,10 +81,15 @@ void Client::run() {
         }
 
         if (snapshotQueue.try_pop(snapshot)) {
+            std::cout << "REcibo snapshot" << std::endl;
             x = snapshot.posX;
             y = snapshot.posY;
+            havePos = true;
         }
-        dib.renderFrame(x, y);
+        if (havePos) {
+            dib.renderFrame(x, y);
+        }
+
         auto end = std::chrono::steady_clock::now();
         auto elapsed = std::chrono::duration_cast<ms>(end - start);
         if (elapsed < FRAME_MS) {

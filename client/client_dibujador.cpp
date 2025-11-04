@@ -42,20 +42,29 @@ bool ClientDibujador::loadCarAtlas(const std::string& pathPng, int cols, int row
 }
 
 static inline float norm360(float a) {
-    while (a < 0)   a += 360.f;
+    while (a < 0.0f)   a += 360.f;
     while (a >= 360.f) a -= 360.f;
     return a;
 }
 
+static inline float shortestsDelta(float fromDeg, float toDeg) {
+    float d = norm360(toDeg - fromDeg);
+    if (d > 180.0f) d -= 360.0f;
+    return d;
+}
+
+static inline float approachAngle(float curDeg, float targetDeg, float maxStepDeg) {
+    float d = shortestsDelta(curDeg, targetDeg);
+    if (std::fabs(d) <= maxStepDeg) return norm360(targetDeg);
+    return norm360(curDeg + (d > 0 ? maxStepDeg : -maxStepDeg));
+}
+
 int ClientDibujador::frameForAngle_(float angleDeg) const {
-    float step = 360.0f / float(atlasCols * atlasRows);
-    float rel = norm360(angleDeg - angle0);
-    int idx = int(std::floor((rel + step/2.f) / step)) % (atlasCols * atlasRows);
-    if (!clockwise) {
-        if (idx == 0) return 0;
-        idx = (atlasCols*atlasRows) - idx;
-        idx %= (atlasCols*atlasRows);
-    }
+    const int total = atlasCols * atlasRows;
+    const float step = 360.0f / static_cast<float>(total);
+    float rel = clockwise ? (angleDeg - angle0) : (angle0 - angleDeg);
+    rel = norm360(rel);
+    const int idx = static_cast<int>(std::floor((rel + step * 0.5f) / step)) % (total);
     return idx;
 }
 
@@ -94,15 +103,20 @@ void ClientDibujador::renderFrame(int playerX, int playerY) {
     int py = playerY;
 
     // Ángulo de frente según el delta real
+    static float target = 0.0f;
     if (lastX >= 0 && lastY >= 0) {
         int dx = px - lastX, dy = py - lastY;
         if (dx || dy) {
-            facingDeg = std::atan2((float)dy, (float)dx) * 180.0f / float(M_PI);
+            float hd = std::atan2(float(dy), float(dx)) * 180.0f / float(M_PI);
+            if (hd < 0.f) hd += 360.f;
+            target = hd;
         }
     }
     lastX = px; lastY = py;
+    const int totalDirs = atlasCols * atlasRows;
+    const float stepDEg = 360.0f / float(totalDirs);
+    facingDeg = approachAngle(facingDeg, target, stepDEg);
 
-    // Cámara con dead-zone (suave, sin “irse a cualquier lado”)
     updateCamera_(px, py);
 
     SDL_SetRenderDrawColor(ren, 20,20,20,255);

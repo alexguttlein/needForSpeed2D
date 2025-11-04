@@ -21,7 +21,6 @@ private:
     Queue<std::shared_ptr<Message>>& commandQueue; //queue compartida
     std::vector<Queue<std::shared_ptr<Snapshot>>*> clientQueues; //queues privadas de los jugadores
     std::mutex qmtx;
-
     void run() override;
 
 public:
