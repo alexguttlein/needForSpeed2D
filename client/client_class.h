@@ -10,7 +10,9 @@
 #include "../common/queue.h"
 #include "client_protocol.h"
 #include "client_receiverThread.h"
-#include "common/eventType.h"
+#include "client_senderThread.h"
+#include "../cmake-build-debug/_deps/sdl2-build/include/SDL2/SDL_keycode.h"
+#include "../common/eventType.h"
 
 class Client {
 public:
@@ -19,8 +21,10 @@ public:
 private:
     ClientProtocol protocol;
     Queue<Snapshot> snapshotQueue;
+    Queue<SDL_KeyCode> commandQueue;
     Queue<Event> eventQueue;
     ReceiverThread receiver;
+    SenderThread sender;
     bool playing;
     void lobbyOptions();
 };

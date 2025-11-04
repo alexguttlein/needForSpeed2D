@@ -4,13 +4,19 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include <cstdio>
+#include <chrono>
+
+using ms = std::chrono::milliseconds;
+constexpr int FPS = 30;
+const ms FRAME_MS {1000 / FPS };
 
 Client::Client(const char* host, const char* port) :
-    protocol(host, port), snapshotQueue(100), eventQueue(10),
-    receiver(protocol, snapshotQueue, eventQueue), playing(false) {}
+    protocol(host, port), snapshotQueue(100), commandQueue(100), eventQueue(10),
+    receiver(protocol, snapshotQueue, eventQueue), sender(protocol, commandQueue), playing(false) {}
 
 void Client::run() {
     receiver.start();
+    sender.start();
     lobbyOptions();
 
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
@@ -53,10 +59,11 @@ void Client::run() {
     }
 
     bool running = true;
-    int x = W/2, y = H/2;
-    int lastX = x, lastY = y;
+    //CAMBIAR
+    int x = 520, y = 240;
 
     while (running) {
+        auto start = std::chrono::steady_clock::now();
         Snapshot snapshot{};
         SDL_Event e;
         while (SDL_PollEvent(&e)) {
@@ -75,11 +82,13 @@ void Client::run() {
         if (snapshotQueue.try_pop(snapshot)) {
             x = snapshot.posX;
             y = snapshot.posY;
-        } else {
-            x = lastX; y = lastY;
         }
-        lastX = x; lastY = y;
         dib.renderFrame(x, y);
+        auto end = std::chrono::steady_clock::now();
+        auto elapsed = std::chrono::duration_cast<ms>(end - start);
+        if (elapsed < FRAME_MS) {
+            std::this_thread::sleep_for(FRAME_MS - elapsed);
+        }
     }
     SDL_DestroyRenderer(ren);
     SDL_DestroyWindow(win);

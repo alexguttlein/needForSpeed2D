@@ -3,8 +3,8 @@
 
 #include "../common/thread.h"
 #include "../common/queue.h"
-#include "client/client_protocol.h"
-#include "common/eventType.h"
+#include "client_protocol.h"
+#include "../common/eventType.h"
 
 #include <iostream>
 
