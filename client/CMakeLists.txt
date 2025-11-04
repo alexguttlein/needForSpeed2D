@@ -5,9 +5,13 @@ target_sources(taller_client
     client_class.cpp
     client_protocol.cpp
     client_receiverThread.cpp
+    client_dibujador.cpp
+    client_senderThread.cpp
     PUBLIC
     # .h files
     client_class.h
     client_protocol.h
     client_receiverThread.h
+    client_dibujador.h
+    client_senderThread.h
     )
