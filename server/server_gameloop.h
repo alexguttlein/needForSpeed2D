@@ -8,18 +8,19 @@
 #include <string>
 #include <memory>
 
-#include "server_monitorClients.h"
-#include "server_snapshots.h"
-#include "car.h"
+#include "common/snapshot.h"
 #include "../common/thread.h"
 #include "../common/constants.h"
+#include "common/queue.h"
+#include "common/message.h"
 
 class GameLoop : public Thread {
 
 private:
     std::atomic<bool> running;
-    // MonitorClients& clients;
-    Queue<std::string>& commandQueue;
+    Queue<std::shared_ptr<Message>>& commandQueue; //queue compartida
+    std::vector<Queue<std::shared_ptr<Snapshot>>*> clientQueues; //queues privadas de los jugadores
+    std::mutex qmtx;
 
     void run() override;
 
@@ -29,7 +30,9 @@ public:
     * Constructor de GameLoop
     *
     * */
-    explicit GameLoop(Queue<std::string>& commandQueue);
+    // explicit GameLoop(Queue<std::string>& commandQueue);
+    explicit GameLoop(Queue<std::shared_ptr<Message>>& commandQueue,
+                      std::vector<Queue<std::shared_ptr<Snapshot>>*> clientQueues);
 
     /*
     * Envía snapshots a todos los clientes conectados

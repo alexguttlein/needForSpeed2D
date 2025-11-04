@@ -41,9 +41,9 @@ void Client::run() {
 
     bool running = true;
 
+    Snapshot snapshot{};
     // Loop principal SDL
     while (running) {
-        Snapshot snapshot{};
         SDL_Event e;
         while (SDL_PollEvent(&e)) {
             if (e.type == SDL_QUIT) running = false;

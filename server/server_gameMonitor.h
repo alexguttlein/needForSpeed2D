@@ -8,6 +8,8 @@
 #include <mutex>
 #include <memory>
 
+class ClientHandler;
+
 class GameMonitor {
 private:
     std::mutex mtx;
@@ -18,6 +20,7 @@ public:
     int createGame();
     Queue<std::shared_ptr<Message>>& getGameQueue(int gameId);
     bool tryJoinGame(int id, Queue<std::shared_ptr<Message>>*& outQueue);
+    bool registerClientToGame(int id, ClientHandler* client);
     void leaveGame(int id);
     std::vector<std::pair<int,int>> listGames();
 };
