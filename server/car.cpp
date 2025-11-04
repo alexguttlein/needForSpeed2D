@@ -1,31 +1,69 @@
 #include "car.h"
 
-Car::Car(Vector2D<float> position, float acceleration, float control,
+Car::Car(b2WorldId world,Vector2D<float> position, float acceleration, float control,
     float weight, float maxSpeed, float maxReverseSpeed, 
     float health)
-    : position(position)
+    : world(world) 
+    , position(position)
     , acceleration(acceleration)
     , control(control)
     , weight(weight)
     , maxSpeed(maxSpeed)
     , maxReverseSpeed(maxReverseSpeed)
     , health(health) {
-        direction = Vector2D<float>(1.0f, 0.0f).normalized(); // por ahora apunta a la derecha
+
+        setCarBox2DBody(position);
+
     }
 
 
-Vector2D<float> Car::getPosition() const {
-    return position;
+void Car::setCarBox2DBody(Vector2D<float> position) {
+
+    b2BodyDef bodyDef = b2DefaultBodyDef();
+    bodyDef.type = b2_dynamicBody;
+    bodyDef.position = {position.x, position.y};
+    bodyDef.linearDamping = 0.5f; // aplica fricción lineal
+    bodyDef.angularDamping = 8.0f; // aplica fricción angular
+    body = b2CreateBody(world, &bodyDef);
+
+    // Forma del auto: rectángulo simple
+    b2Polygon shape = b2MakeBox(1.0f, 0.5f);
+    b2ShapeDef shapeDef = b2DefaultShapeDef();
+    shapeDef.density = weight;
+    b2CreatePolygonShape(body, &shapeDef, &shape);
 }
 
+
+b2BodyId Car::getBody() const {
+    return body;
+}
+
+
+Vector2D<float> Car::getPosition() const {
+    b2Vec2 pos = b2Body_GetPosition(body);
+    return Vector2D<float>(pos.x, pos.y);
+}
+
+
 Vector2D<float> Car::getDirection() const {
-    return direction;
+    b2Rot angle = b2Body_GetRotation(body);
+    return Vector2D<float>(angle.c, angle.s);
 }
 
 
 float Car::getSpeed() const {
-    return speed;
+   b2Vec2 velocity = b2Body_GetLinearVelocity(body);
+   return std::sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
 }
+
+
+float Car::getBoxSpeed() const {
+    b2Vec2 velocity = b2Body_GetLinearVelocity(body);
+    b2Rot rotation = b2Body_GetRotation(body);
+    b2Vec2 forward{rotation.c, rotation.s};
+    return velocity.x * forward.x + velocity.y * forward.y;
+}
+
 
 
 float Car::getHealth() const {
@@ -38,55 +76,71 @@ bool Car::isDestroyed() const {
 }
 
 
-void Car::accelerate() {
-    speed += acceleration;
-    if (speed > maxSpeed) speed = maxSpeed;
+b2Vec2 Car::getForce(bool accelerate) const {
+    b2Rot dir = b2Body_GetRotation(body);
+    b2Vec2 dirBox{dir.c, dir.s};
+    return dirBox * (accelerate ? acceleration : -acceleration);
 }
+
+
+void Car::accelerate() {
+    float speed = getBoxSpeed();
+    if (speed >= maxSpeed) return;
+    b2Vec2 force = getForce(true);
+    b2Body_ApplyForceToCenter(body, force, true);
+}
+
 
 void Car::breakReverse() {
-    speed -= acceleration;
-    if (speed < -maxReverseSpeed) speed = -maxReverseSpeed;
+    float speed = getBoxSpeed();
+    if (speed <= -maxReverseSpeed) return;
+    b2Vec2 force = getForce(false);
+    b2Body_ApplyForceToCenter(body, force, true);
 }
 
-
-Vector2D<float> Car::rotateVec(const Vector2D<float>& v, float angle) {
-    float cosA = std::cos(angle);
-    float sinA = std::sin(angle);
-    return Vector2D<float>(v.x * cosA - v.y * sinA,
-                           v.x * sinA + v.y * cosA).normalized();
-}
 
 void Car::turnLeft() {
-    float denom = (maxSpeed > 0.0f ? maxSpeed : 1.0f);
-    float speedFactor = std::max(0.1f, 1.0f - std::abs(speed) / denom);
-    float angle = -control * speedFactor;
-    direction = rotateVec(direction, angle);
+    float speed = getBoxSpeed();
+    float directionFactor = (speed < 0.0f) ? -1.0f : 1.0f;
+    if (std::abs(speed) > 0.5f) {
+        b2Body_ApplyTorque(body, -control * directionFactor, true);
+    }
 }
 
 void Car::turnRight() {
-    float denom = (maxSpeed > 0.0f ? maxSpeed : 1.0f);
-    float speedFactor = std::max(0.1f, 1.0f - std::abs(speed) / denom);
-    float angle = control * speedFactor; 
-    direction = rotateVec(direction, angle);
+    float speed = getBoxSpeed();
+    float directionFactor = (speed < 0.0f) ? -1.0f : 1.0f;
+    if (std::abs(speed) > 0.5f) {
+        b2Body_ApplyTorque(body, control * directionFactor, true);
+    }
 }
 
 
 void Car::applyFriction() {
-    if (speed > 0) speed = std::max(0.0f, speed - friction);
-    else if (speed < 0) speed = std::min(0.0f, speed + friction);
+    b2Vec2 lateralVelocity = getLateralVelocity();
+    b2Vec2 impulse = lateralVelocity * -b2Body_GetMass(body) * friction;
+    b2Body_ApplyLinearImpulse(body, impulse, b2Body_GetPosition(body), true);
 }
 
 
-void Car::updatePosition(float dt) {
-    position = position + direction * speed * dt;
+b2Vec2 Car::getLateralVelocity() const {
+    b2Vec2 currentVelocity = b2Body_GetLinearVelocity(body);
+    b2Rot rotation = b2Body_GetRotation(body);
+    
+    b2Vec2 rightVec{-rotation.s, rotation.c};
+    float lateralSpeed = currentVelocity.x * rightVec.x + currentVelocity.y * rightVec.y;
+    return rightVec * lateralSpeed;
 }
+
 
 
 void Car::takeDamage(float damage) {
     health -= damage;
     if (health <= Constants::NO_HEALTH) {
         health = Constants::NO_HEALTH;
-        speed = 0.0f;
+        // detenemos el cuerpo en box2D
+        b2Body_SetLinearVelocity(body, {0.0f, 0.0f}); 
+        b2Body_SetAngularVelocity(body, 0.0f);
         destroyed = true;
     }
 }
@@ -103,10 +157,10 @@ void Car::upgradeAcceleration() {
 
 
 void Car::upgradeHealth(){
-    health = std::min(maxHealth, health + Constants::HEALTH_UPGRADE);
+    maxHealth += Constants::HEALTH_UPGRADE;
 }
 
 
 void Car::repair() {
-    health = maxHealth;
+    health = std::min(maxHealth, health + Constants::HEALTH_UPGRADE);
 }

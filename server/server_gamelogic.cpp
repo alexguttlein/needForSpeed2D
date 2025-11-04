@@ -29,11 +29,11 @@ GameLogic::GameLogic() {
 //     }
 // }
 
-void GameLogic::update(float dt) {
-    for (auto const& [id, car] : cars) {
-        car->updatePosition(dt);
-    }
-}
+// void GameLogic::update(float dt) {
+//     for (auto const& [id, car] : cars) {
+//         car->updatePosition(dt);
+//     }
+// }
 
 
 GameSnapshot GameLogic::getSnapshot() const {

@@ -2,20 +2,25 @@
 #define CAR_H
 
 #include <cmath>
-#include "common/constants.h"
-#include "common/vector2D.h"
+#include <box2d/box2d.h>
+#include "../common/constants.h"
+#include "../common/vector2D.h"
 
 class Car {
 private:
+
+    // Box2D body
+    b2BodyId body; 
+    b2WorldId world;
+
     // posiciones
     Vector2D<float> position;  
     Vector2D<float> direction;
     
     // fisica del auto
-    float acceleration, control, weight;
-    float speed = Constants::INITIAL_SPEED;
+    float acceleration, control, weight, speed;
     float maxSpeed, maxReverseSpeed;
-    float friction = Constants::FRICTION_BASE;
+    float friction = 2.0f;
 
     // estado del auto
     float health;
@@ -27,8 +32,20 @@ public:
     * Constructor de Car.
     * Inicializa los atributos del auto con los valores recibidos por parámetro.
     * */
-    explicit Car(Vector2D<float> position, float acceleration, float control,
+    explicit Car(b2WorldId world,Vector2D<float> position, float acceleration, float control,
         float weight, float maxSpeed, float maxReverseSpeed, float health);
+
+    /*
+    * Configura el cuerpo Box2D del auto
+    *
+    * */
+    void setCarBox2DBody(Vector2D<float> position);
+
+    /*
+    * Obtiene el cuerpo Box2D del auto
+    *
+    * */
+    b2BodyId getBody() const;
 
     /*
     * Obtiene la posicion del auto en el plano
@@ -41,12 +58,18 @@ public:
     *
     * */
     Vector2D<float> getDirection() const;
-    
+
     /*
     * Obtiene la velocidad del auto
     *
     * */
     float getSpeed() const;
+
+    /*
+    * calcula la velocidad del auto en el sistema Box2D
+    *
+    * */
+    float getBoxSpeed() const;
 
     /*
     * Obtiene la salud del auto
@@ -61,6 +84,12 @@ public:
     bool isDestroyed() const;
 
     /*
+    * Calcula la fuerza a aplicar para acelerar o frenar el auto
+    *
+    * */
+    b2Vec2 getForce(bool accelerate) const;
+
+    /*
     * Acelera el auto (aumenta velocidad segun la aceleracion)
     *
     * */
@@ -71,12 +100,6 @@ public:
     *
     * */
     void breakReverse();
-
-    /*
-    * Funcion auxiliar para rotar un vector en un ángulo dado,
-    * usada para evitar codigo repetido en turnLeft y turnRight.
-    * */
-    Vector2D<float> rotateVec(const Vector2D<float>& v, float angle);
 
     /*
     * Cambiar la dirección del auto hacia la izquierda, el ángulo depende de la velocidad actual  
@@ -91,16 +114,16 @@ public:
     void turnRight();
 
     /*
-    * Aplica fricción al auto (disminuye la velocidad gradualmente) cuando no se toca ninguna tecla
+    * Aplica fricción al auto para reducir su velocidad, lo hace segun el peso y el impulso
     *
     * */
     void applyFriction();
 
     /*
-    * Actualiza la posición según la velocidad y dirección, si no toca ninguna tecla
-    * empieza a aplicar fricción para reducir la velocidad.
+    * Obtiene la velocidad lateral del auto a partir de su cuerpo Box2D
+    *
     * */
-    void updatePosition(float dt);
+    b2Vec2 getLateralVelocity() const;
 
     /*
     * reduce la salud del auto según el daño recibido

@@ -132,10 +132,37 @@ if(TALLER_SERVER)
     # HEY!! TODO XXX: add more subfolders here
     add_subdirectory(server)
 
+     # Box2D via FetchContent (solo si no lo querés instalar en el sistema)
+        include(FetchContent)
+        FetchContent_Declare(
+        box2d
+        GIT_REPOSITORY https://github.com/erincatto/box2d.git
+        GIT_TAG v3.0.0
+        GIT_SHALLOW TRUE
+        )
+        FetchContent_MakeAvailable(box2d)
+
+         if (TARGET Box2D::Box2D)
+       set(BOX2D_TARGET Box2D::Box2D)
+   elseif (TARGET box2d::box2d)
+       set(BOX2D_TARGET box2d::box2d)
+   elseif (TARGET box2d)
+       set(BOX2D_TARGET box2d)
+   else()
+       # Helpful debug info if the target is not found
+       message(STATUS "Available targets after FetchContent:")
+       get_property(_all_targets GLOBAL PROPERTY TARGETS)
+       foreach(_t ${_all_targets})
+       message(STATUS "  - ${_t}")
+       endforeach()
+       message(FATAL_ERROR "Box2D target not found. Inspect the available targets above and adjust BOX2D_TARGET accordingly.")
+   endif()
+
     set_project_warnings(taller_server ${TALLER_MAKE_WARNINGS_AS_ERRORS} FALSE)
 
     # Link the taller_common lib target
-    target_link_libraries(taller_server taller_common)
+    # target_link_libraries(taller_server taller_common)
+    target_link_libraries(taller_server PRIVATE taller_common ${BOX2D_TARGET})
 endif()
 
 if(TALLER_EDITOR)

@@ -25,7 +25,7 @@ namespace  Constants {
     static constexpr unsigned char TYPE_SNAPSHOT = 0x30;
     static constexpr unsigned char TYPE_CONTROL = 0x31;
     static constexpr unsigned char TYPE_GAME_LIST = 0x32;
-    static constexpr int MAX_PLAYERS_IN_GAME = 2;
+    static constexpr int MAX_PLAYERS_IN_GAME = 2; // por ahora
 
     // constantes de tamanios de queues
     static const unsigned int CLIENT_QUEUE_MAXSIZE = 100;

@@ -59,36 +59,41 @@ int ClientDibujador::frameForAngle_(float angleDeg) const {
     return idx;
 }
 
+
+
 void ClientDibujador::updateCamera_(int px, int py) {
-    camX = px - winW / 2;
-    camY = py - winH / 2;
+    // Tamaño de la banda muerta (25% de la ventana)
+    const int marginX = winW / 4;
+    const int marginY = winH / 4;
+
+    // Rectángulo visible actual
+    int left   = camX + marginX;
+    int right  = camX + winW - marginX;
+    int top    = camY + marginY;
+    int bottom = camY + winH - marginY;
+
+    // Mover cam lo mínimo necesario para mantener al jugador dentro de la banda
+    if (px < left)   camX -= (left - px);
+    if (px > right)  camX += (px - right);
+    if (py < top)    camY -= (top - py);
+    if (py > bottom) camY += (py - bottom);
+
+    // Limitar a los bordes del mapa
     if (mapW > 0 && mapH > 0) {
-        const int maxX = std::max(0, mapW - winW);
-        const int maxY = std::max(0, mapH - winH);
-        if (camX < 0) camX = 0;
-        if (camY < 0) camY = 0;
-        if (camX > maxX) camX = maxX;
-        if (camY > maxY) camY = maxY;
+        camX = std::clamp(camX, 0, std::max(0, mapW - winW));
+        camY = std::clamp(camY, 0, std::max(0, mapH - winH));
     } else {
-        if (camX < 0) camX = 0;
-        if (camY < 0) camY = 0;
+        camX = std::max(0, camX);
+        camY = std::max(0, camY);
     }
 }
 
 void ClientDibujador::renderFrame(int playerX, int playerY) {
-    constexpr int TILE = 16;
+    // Usamos mundo puro: sin START_OFFSET ni TILE hacks
+    int px = playerX;
+    int py = playerY;
 
-    int baseX = playerX;
-    int baseY = playerY;
-
-    if (baseX % TILE == 0) baseX += TILE / 2;
-    if (baseY % TILE == 0) baseY += TILE / 2;
-
-    constexpr int START_OFFSET_X = -128;
-    constexpr int START_OFFSET_Y = -144;
-    int px = baseX + START_OFFSET_X;
-    int py = baseY + START_OFFSET_Y;
-
+    // Ángulo de frente según el delta real
     if (lastX >= 0 && lastY >= 0) {
         int dx = px - lastX, dy = py - lastY;
         if (dx || dy) {
@@ -97,14 +102,8 @@ void ClientDibujador::renderFrame(int playerX, int playerY) {
     }
     lastX = px; lastY = py;
 
-    updateCamera_(baseX, baseY);
-
-    static bool first = true;
-    if (first) {
-        SDL_Log("map=(%d,%d) win=(%d,%d) base=(%d,%d) cam=(%d,%d) draw=(%d,%d)",
-                mapW, mapH, winW, winH, baseX, baseY, camX, camY, px, py);
-        first = false;
-    }
+    // Cámara con dead-zone (suave, sin “irse a cualquier lado”)
+    updateCamera_(px, py);
 
     SDL_SetRenderDrawColor(ren, 20,20,20,255);
     SDL_RenderClear(ren);
@@ -119,10 +118,13 @@ void ClientDibujador::renderFrame(int playerX, int playerY) {
         int frame = frameForAngle_(facingDeg);
         int col = frame % atlasCols, row = frame / atlasCols;
         SDL_Rect s{ col * cellW, row * cellH, cellW, cellH };
-        SDL_Rect d{ px - camX - cellW/2, py - camY - cellH/2, cellW, cellH };
+        SDL_Rect d{
+            px - camX - cellW/2,
+            py - camY - cellH/2,
+            cellW, cellH
+        };
         SDL_RenderCopy(ren, carTex, &s, &d);
     }
 
     SDL_RenderPresent(ren);
 }
-
