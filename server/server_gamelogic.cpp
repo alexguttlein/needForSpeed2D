@@ -44,11 +44,11 @@ void GameLogic::processCommand(int car_id, const std::string& command) {
 }
 
 
-void GameLogic::update(float dt) {
-    for (auto const& [id, car] : cars) {
-        car->updatePosition(dt);
-    }
-}
+// void GameLogic::update(float dt) {
+//     for (auto const& [id, car] : cars) {
+//         car->updatePosition(dt);
+//     }
+// }
 
 
 GameSnapshot GameLogic::getSnapshot() const {

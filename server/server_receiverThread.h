@@ -7,6 +7,7 @@
 #include "server/server_protocol.h"
 #include "server/server_gameMonitor.h"
 
+class GameMonitor;
 class ClientHandler;
 class ReceiverThread : public Thread {
 public:

@@ -1,4 +1,5 @@
 #include "server_gameMonitor.h"
+#include "server/server_clientHandler.h"
 
 GameMonitor::GameMonitor() : games() {}
 
@@ -6,7 +7,6 @@ int GameMonitor::createGame() {
     std::lock_guard<std::mutex> lock(mtx);
     gameId++;
     games[gameId] = std::make_unique<Game>(gameId);
-    games[gameId]->totalPlayers++;
     return gameId;
 }
 
@@ -48,4 +48,16 @@ std::vector<std::pair<int, int>> GameMonitor::listGames() {
         result.emplace_back(id, gamePtr->totalPlayers);
     }
     return result;
+}
+
+bool GameMonitor::registerClientToGame(int id, ClientHandler* client) {
+    std::lock_guard<std::mutex> lock(mtx);
+    auto it = games.find(id);
+    if (it == games.end()) return false;
+    Game* game = it->second.get();
+
+    //se agrega cliente al juego y se aumenta el numero de jugadores
+    game->addClientHandler(client);
+    game->totalPlayers++;
+    return true;
 }

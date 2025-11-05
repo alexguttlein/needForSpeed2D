@@ -32,7 +32,7 @@ public:
     * Actualiza la lógica del juego (física, estado de autos, etc.)
     * Por ahora solo actualiza la posición de los autos.
     * */
-    void update(float dt);
+   // void update(float dt);
 
     /*
     * Crea y devuelve un snapshot del estado actual del juego

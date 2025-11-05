@@ -8,19 +8,20 @@
 #include <string>
 #include <memory>
 
-
-#include "server_snapshots.h"
+#include "common/snapshot.h"
 #include "../common/thread.h"
 #include "../common/constants.h"
-#include "server_gamelogic.h"
+#include "common/queue.h"
+#include "common/message.h"
 
 class GameLoop : public Thread {
 
 private:
     std::atomic<bool> running;
-    Queue<std::string>& commandQueue;
-    GameLogic gameLogic;
-    WorldSnapshots snapshots;
+    Queue<std::shared_ptr<Message>>& commandQueue; //queue compartida
+    std::vector<Queue<std::shared_ptr<Snapshot>>*> clientQueues; //queues privadas de los jugadores
+    std::mutex qmtx;
+    void run() override;
 
 public:
 
@@ -28,7 +29,9 @@ public:
     * Constructor de GameLoop
     *
     * */
-    explicit GameLoop(Queue<std::string>& commandQueue);
+    // explicit GameLoop(Queue<std::string>& commandQueue);
+    explicit GameLoop(Queue<std::shared_ptr<Message>>& commandQueue,
+                      std::vector<Queue<std::shared_ptr<Snapshot>>*> clientQueues);
 
     /*
     * Agrega las snapshots a la queue de snapshots

@@ -97,13 +97,20 @@ std::optional<Snapshot> ClientProtocol::receiveMessageFromServer() {
     if (type == Constants::TYPE_SNAPSHOT) {
         // se recibio un Snapshot
         Snapshot snapshot{};
-        std::vector<uint8_t> buffer(8);
+        // leer controlEvent
+        uint8_t controlEventByte = 0;
+        socket.recvall(&controlEventByte, sizeof(controlEventByte));
+        snapshot.controlEvent = static_cast<EventType>(controlEventByte);
 
-        socket.recvall(buffer.data(), buffer.size());
+        // leer posX
+        uint32_t posXBE = 0;
+        socket.recvall(&posXBE, sizeof(posXBE));
+        snapshot.posX = ntohl(posXBE);
 
-        size_t offset = 0;
-        snapshot.posX = readUInt32(buffer, offset);
-        snapshot.posY = readUInt32(buffer, offset);
+        // leer posY
+        uint32_t posYBE = 0;
+        socket.recvall(&posYBE, sizeof(posYBE));
+        snapshot.posY = ntohl(posYBE);
 
         return snapshot;
     }

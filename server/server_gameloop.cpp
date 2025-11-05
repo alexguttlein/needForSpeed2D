@@ -1,51 +1,73 @@
 #include "server_gameloop.h"
 
+GameLoop::GameLoop(Queue<std::shared_ptr<Message>>& commandQueue,
+                   std::vector<Queue<std::shared_ptr<Snapshot>>*> clientQueues)
+    : running(false),
+      commandQueue(commandQueue),
+      clientQueues(clientQueues) {}
 
-GameLoop::GameLoop(Queue<std::string>& commandQueue)
-    : running(false), commandQueue(commandQueue), gameLogic(), snapshots() {}
+static constexpr uint32_t SPAWN_X = 90;
+static constexpr uint32_t SPAWN_Y= 90;
 
+uint32_t x = SPAWN_X;   // spawn coherente con el cliente (antes: 0)
+uint32_t y = SPAWN_Y;   // spawn coherente con el cliente (antes: 0)
 
 void GameLoop::run() {
-
-    const float dt = 0.016f; // por ahora
+    std::cout << "Arranco gameloop" << std::endl;
     running = true;
 
+    // Enviar un snapshot inicial a todos los clientes para alinear posiciones
+    auto initial = std::make_shared<Snapshot>();
+    initial->posX = x;
+    initial->posY = y;
+    initial->controlEvent = EventType::NONE;
+    {
+        std::lock_guard<std::mutex> lock(qmtx);
+        for (auto qptr : clientQueues) {
+            if (qptr) {
+                try { qptr->push(initial); std::cout << "Mande init - gameloop" << std::endl;} catch (const ClosedQueue&) {}
+            }
+        }
+    }
     while (running) {
         processCommandQueue();
-        gameLogic.update(dt);
-        saveSnapshots();
-        // std::this_thread::sleep_for(std::chrono::milliseconds(Constants::THREAD_SLEEP_MS));
+        std::this_thread::sleep_for(std::chrono::milliseconds(Constants::THREAD_SLEEP_MS));
     }
 }
-
 
 void GameLoop::processCommandQueue() {
-    std::string command;
-    while (commandQueue.try_pop(command)) {
-        std::cout << "Comando recibido: " << command << std::endl;
-        gameLogic.processCommand(1, command);  // Por ahora, todos los comandos van al auto con ID 1
+    std::shared_ptr<Message> msg;
+    while (commandQueue.try_pop(msg)) {
+        if (!msg) continue;
+
+        switch (msg->key) {
+            case 'w': y--; break;
+            case 's': y++; break;
+            case 'a': x--; break;
+            case 'd': x++; break;
+        }
+
+        auto snapshot = std::make_shared<Snapshot>();
+        snapshot->posX = x;
+        snapshot->posY = y;
+        snapshot->controlEvent = EventType::NONE;
+
+        std::lock_guard<std::mutex> lock(qmtx);
+        for (auto qptr : clientQueues) {
+            if (qptr) {
+                try {
+                    qptr->push(snapshot);
+                } catch (const ClosedQueue&) {
+                    std::cout << "[GameLoop] cola cerrada al hacer push" << std::endl;
+                }
+            }
+        }
     }
 }
-
-
-void GameLoop::saveSnapshots() {
-    GameSnapshot snapshot = gameLogic.getSnapshot();
-    std::cout << "Snapshot creado con " << snapshot.num_cars << " autos." << std::endl;
-    std::cout << "Posiciones de los autos:" << std::endl;
-    for (uint8_t i = 0; i < snapshot.num_cars; ++i) {
-        const CarStateDTO& carState = snapshot.car_states[i];
-        std::cout << "  Auto ID " << static_cast<int>(carState.car_id)
-                  << ": Pos(" << carState.position.x << ", " << carState.position.y << ")\n";
-    }
-    snapshots.addSnapshot(snapshot);
-}
-
-
 
 void GameLoop::stop() {
     running = false;
 }
-
 
 GameLoop::~GameLoop() {
     stop();

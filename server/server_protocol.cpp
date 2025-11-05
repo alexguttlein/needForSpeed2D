@@ -1,6 +1,7 @@
 #include "server_protocol.h"
 
 #include "common/constants.h"
+#include "common/eventType.h"
 
 ServerProtocol::ServerProtocol(Socket socket) :
     socket(std::move(socket)) , isClosed(false) {}
@@ -68,7 +69,7 @@ void ServerProtocol::appendBigEndian(std::vector<uint8_t>& buffer, T value) {
     }
 }
 
-void ServerProtocol::sendSnapshot(const Snapshot& snapshot) {
+void ServerProtocol::sendSnapshot(std::shared_ptr<Snapshot>& snapshot) {
     if (isConnectionClosed()) return;
 
     //se envia el tipo snapshot
@@ -77,9 +78,14 @@ void ServerProtocol::sendSnapshot(const Snapshot& snapshot) {
 
     std::vector<uint8_t> buffer;
 
-    //se envian las coordenadas
-    appendUInt32(buffer, snapshot.posX);
-    appendUInt32(buffer, snapshot.posY);
+    // controlEvent primero (1 byte)
+    buffer.push_back(static_cast<uint8_t>(snapshot->controlEvent));
+
+    // posX y posY en big-endian
+    appendUInt32(buffer, snapshot->posX);
+    appendUInt32(buffer, snapshot->posY);
+
+    std::cout << "debug: se va a enviar: " << snapshot->posX << ", " << snapshot->posY << std::endl;
 
     socket.sendall(buffer.data(), buffer.size());
 }
