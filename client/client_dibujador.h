@@ -3,6 +3,8 @@
 
 #include <SDL.h>
 #include <string>
+#include <vector>
+#include "common/player.h"
 
 class ClientDibujador {
 public:
@@ -17,6 +19,8 @@ public:
     void renderFrame(int playerX, int playerY);
 
     void setFacingDeg(float deg) { facingDeg = deg; }
+
+    void renderAll(const std::vector<Player>& players, int selfId);
 
 private:
     SDL_Texture* loadTexture_(const std::string& path);

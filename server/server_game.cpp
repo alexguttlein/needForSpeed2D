@@ -21,11 +21,17 @@ void Game::addClientHandler(ClientHandler* client) {
     clientHandlers.push_back(client);
     clientQueues.push_back(&client->getClientQueue());
 
+    if (gameloop) {
+        gameloop->addPlayer(client->getId());  // <--- nuevo método
+    }
+
     // si alcanzamos el número de jugadores, arrancamos GameLoop si aún no arrancó
     if ((int)clientQueues.size() >= Constants::MAX_PLAYERS_IN_GAME && !gameloop) {
         // como se conetaron todos los usuarios,
         // gameLoop ahora acepta la queue compartida y el vector de queues privadas
         gameloop = std::make_unique<GameLoop>(sharedQueue, clientQueues);
+        for (auto* handler : clientHandlers)
+            gameloop->addPlayer(handler->getId());
         gameloop->start(); //
         std::cout << "Debug: Game " << gameId << " starting GameLoop" << std::endl;
     }

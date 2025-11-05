@@ -30,6 +30,8 @@ public:
     void sendControl(uint8_t code);
     void sendGamesList(uint8_t& type, const std::vector<unsigned char>& buffer);
 
+    void sendCreateJoinAccepted(std::vector<uint8_t>& buffer);
+
 private:
     Socket socket;
     bool isClosed;

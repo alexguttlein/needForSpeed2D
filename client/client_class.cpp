@@ -61,11 +61,16 @@ void Client::run() {
     dib.setFacingDeg(0.0f);
     bool running = true;
     //CAMBIAR
-    int x = 90, y = 90 ;
-    bool havePos = true;
+    // int x = 90, y = 90 ;
+    bool havePos = false;
+
+    // bool haveSnapshot = false;
+    Snapshot snapshot;
+    int selfId = -1;
+
     while (running) {
         auto start = std::chrono::steady_clock::now();
-        Snapshot snapshot{};
+
         SDL_Event e;
         while (SDL_PollEvent(&e)) {
             if (e.type == SDL_QUIT) running = false;
@@ -80,14 +85,24 @@ void Client::run() {
             }
         }
 
-        if (snapshotQueue.try_pop(snapshot)) {
-            std::cout << "REcibo snapshot" << std::endl;
-            x = snapshot.posX;
-            y = snapshot.posY;
+        // if (snapshotQueue.try_pop(snapshot)) {
+        //     // std::cout << "REcibo snapshot" << std::endl;
+        //     x = snapshot.posX;
+        //     y = snapshot.posY;
+        //     havePos = true;
+        // }
+        Snapshot snapTmp;
+        if (snapshotQueue.try_pop(snapTmp)) {
+            snapshot = std::move(snapTmp);
             havePos = true;
+            if (selfId == -1 && snapshot.playerId) selfId = snapshot.playerId; // solo la primera vez
         }
+
+        // if (havePos) {
+        //     dib.renderFrame(x, y);
+        // }
         if (havePos) {
-            dib.renderFrame(x, y);
+            dib.renderAll(snapshot.players, selfId);
         }
 
         auto end = std::chrono::steady_clock::now();

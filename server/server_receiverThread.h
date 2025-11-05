@@ -12,9 +12,7 @@ class ClientHandler;
 class ReceiverThread : public Thread {
 public:
     ReceiverThread(ServerProtocol& protocol, GameMonitor& gameMonitor, ClientHandler& handler);
-
     void lobbyCommands(Message msg);
-
     virtual void run() override;
 
 private:

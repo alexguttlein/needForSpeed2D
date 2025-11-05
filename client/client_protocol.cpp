@@ -41,17 +41,17 @@ uint32_t ClientProtocol::readUInt32(const std::vector<uint8_t>& buffer, size_t& 
     return value;
 }
 
-uint32_t ClientProtocol::readBigEndianUInt32(const std::vector<uint8_t>& buffer,
-        size_t& offset) {
-
-    uint32_t value = 0;
-    value |= static_cast<uint32_t>(buffer[offset])     << 24;
-    value |= static_cast<uint32_t>(buffer[offset + 1]) << 16;
-    value |= static_cast<uint32_t>(buffer[offset + 2]) << 8;
-    value |= static_cast<uint32_t>(buffer[offset + 3]);
-    offset += 4;
-    return value;
-}
+// uint32_t ClientProtocol::readBigEndianUInt32(const std::vector<uint8_t>& buffer,
+//         size_t& offset) {
+//
+//     uint32_t value = 0;
+//     value |= static_cast<uint32_t>(buffer[offset])     << 24;
+//     value |= static_cast<uint32_t>(buffer[offset + 1]) << 16;
+//     value |= static_cast<uint32_t>(buffer[offset + 2]) << 8;
+//     value |= static_cast<uint32_t>(buffer[offset + 3]);
+//     offset += 4;
+//     return value;
+// }
 
 bool ClientProtocol::sendLobbyOption(const std::string& input) {
     if (socket.is_stream_send_closed()) return false;
@@ -102,15 +102,33 @@ std::optional<Snapshot> ClientProtocol::receiveMessageFromServer() {
         socket.recvall(&controlEventByte, sizeof(controlEventByte));
         snapshot.controlEvent = static_cast<EventType>(controlEventByte);
 
-        // leer posX
-        uint32_t posXBE = 0;
-        socket.recvall(&posXBE, sizeof(posXBE));
-        snapshot.posX = ntohl(posXBE);
+        //se lee el id del jugador/cliente
+        uint32_t playerIdBE = 0;
+        socket.recvall(&playerIdBE, sizeof(playerIdBE));
+        snapshot.playerId = ntohl(playerIdBE);
 
-        // leer posY
-        uint32_t posYBE = 0;
-        socket.recvall(&posYBE, sizeof(posYBE));
-        snapshot.posY = ntohl(posYBE);
+        //se lee la cantidad de jugadoores a recibir
+        uint32_t playersSizeBE = 0;
+        socket.recvall(&playersSizeBE, sizeof(playersSizeBE));
+        snapshot.playersSize = static_cast<uint32_t>(ntohl(playersSizeBE));
+        std::cout << "debug: Player id: " << snapshot.playerId << std::endl;
+
+        for (uint32_t i = 0; i < snapshot.playersSize; i++) {
+            Player p{};
+            uint32_t idBE = 0;
+            socket.recvall(&idBE, sizeof(idBE));
+            p.playerId = ntohl(idBE);
+
+            uint32_t posXBE = 0;
+            socket.recvall(&posXBE, sizeof(posXBE));
+            p.posX = ntohl(posXBE);
+
+            uint32_t posYBE = 0;
+            socket.recvall(&posYBE, sizeof(posYBE));
+            p.posY = ntohl(posYBE);
+
+            snapshot.players.push_back(p);
+        }
 
         return snapshot;
     }
@@ -121,8 +139,14 @@ std::optional<Snapshot> ClientProtocol::receiveMessageFromServer() {
         socket.recvall(&code, sizeof(code));
 
         if (code == Constants::CREATE_JOIN_ACCEPTED) {
+            //se recibe playerId
+            uint32_t playerIdBE = 0;
+            socket.recvall(&playerIdBE, sizeof(playerIdBE));
+            int selfId = ntohl(playerIdBE);
+
             Snapshot snapshot{};
             snapshot.controlEvent = EventType::CREATE_JOIN_ACCEPTED;
+            snapshot.playerId = selfId;
             return snapshot;
         } else if (code == Constants::JOIN_REJECTED) {
             Snapshot snapshot{};

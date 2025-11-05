@@ -24,7 +24,12 @@ void ReceiverThread::lobbyCommands(Message msg) {
             protocol.sendControl(Constants::JOIN_REJECTED);
             return;
         }
-        protocol.sendControl(Constants::CREATE_JOIN_ACCEPTED);
+        // protocol.sendControl(Constants::CREATE_JOIN_ACCEPTED);
+        std::vector<uint8_t> buffer;
+        buffer.push_back(Constants::TYPE_CONTROL);
+        buffer.push_back(Constants::CREATE_JOIN_ACCEPTED);
+        protocol.addIntToUint8tVector(buffer, clientHandler.getId());
+        protocol.sendCreateJoinAccepted(buffer);
 
     } else if (msg.code == Constants::LIST_GAMES) {
         // construir vector de pares (id, totalPlayers)
@@ -56,7 +61,12 @@ void ReceiverThread::lobbyCommands(Message msg) {
             protocol.sendControl(Constants::JOIN_REJECTED);
             return;
         } else {
-            protocol.sendControl(Constants::CREATE_JOIN_ACCEPTED);
+            // protocol.sendControl(Constants::CREATE_JOIN_ACCEPTED);
+            std::vector<uint8_t> buffer;
+            buffer.push_back(Constants::TYPE_CONTROL);
+            buffer.push_back(Constants::CREATE_JOIN_ACCEPTED);
+            protocol.addIntToUint8tVector(buffer, clientHandler.getId());
+            protocol.sendCreateJoinAccepted(buffer);
         }
 
         // exitoso: asignar queue y marcar currentGameId
@@ -93,8 +103,20 @@ void ReceiverThread::run() {
             continue;
         }
 
+        if (!gameQueue) {
+            std::cerr << "Error: mensaje recibido pero el cliente "
+                      << clientHandler.getId()
+                      << " no tiene gameQueue asignada." << std::endl;
+            continue;
+        }
+
         // si ya está en una partida encola el mensaje
-        // en la queue compartida de la partida
-        gameQueue->push(std::make_shared<Message>(msg));
+        // le agrega el id del cliente para poder identificar quien envio el mensaje
+        auto msgPtr = std::make_shared<Message>(msg);
+        msgPtr->senderId = clientHandler.getId();
+
+        // agrega el mensaje a la cola compartida
+        gameQueue->push(msgPtr);
+        // gameQueue->push(std::make_shared<Message>(msg));
     }
 }

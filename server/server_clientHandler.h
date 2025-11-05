@@ -12,8 +12,8 @@
 // #include "server/server_gameMonitor.h"
 
 #include <algorithm>
-class GameMonitor;
 class ReceiverThread;
+class GameMonitor;
 
 class ClientHandler {
 private:
@@ -22,7 +22,6 @@ private:
     Queue<std::shared_ptr<Snapshot>> clientQueue;
     Queue<std::shared_ptr<Message>>* sharedQueue;
     SenderThread senderThread;
-    // ReceiverThread receiverThread;
     std::unique_ptr<ReceiverThread> receiverThread;
     int id;
     bool alive;
