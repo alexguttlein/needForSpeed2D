@@ -81,11 +81,21 @@ void ServerProtocol::sendSnapshot(std::shared_ptr<Snapshot>& snapshot) {
     // controlEvent primero (1 byte)
     buffer.push_back(static_cast<uint8_t>(snapshot->controlEvent));
 
-    // posX y posY en big-endian
-    appendUInt32(buffer, snapshot->posX);
-    appendUInt32(buffer, snapshot->posY);
+    //player id
+    addIntToUint8tVector(buffer, snapshot->playerId);
 
-    std::cout << "debug: se va a enviar: " << snapshot->posX << ", " << snapshot->posY << std::endl;
+    //players size
+    appendUInt32(buffer, snapshot->playersSize);
+
+    for (uint32_t i = 0; i < snapshot->playersSize; ++i) {
+        addIntToUint8tVector(buffer, snapshot->players.at(i).playerId);
+        // posX y posY en big-endian
+        appendUInt32(buffer, snapshot->players.at(i).posX);
+        appendUInt32(buffer, snapshot->players.at(i).posY);
+
+        std::cout << "debug: se va a enviar: " << snapshot->players.at(i).posX << ", " <<
+            snapshot->players.at(i).posY << std::endl;
+    }
 
     socket.sendall(buffer.data(), buffer.size());
 }
@@ -110,5 +120,10 @@ void ServerProtocol::sendGamesList(uint8_t& type, const std::vector<unsigned cha
 
     buffer.insert(buffer.end(), vector.begin(), vector.end());
 
+    socket.sendall(buffer.data(), buffer.size());
+}
+
+void ServerProtocol::sendCreateJoinAccepted(std::vector<uint8_t>& buffer) {
+    if (isConnectionClosed()) return;
     socket.sendall(buffer.data(), buffer.size());
 }

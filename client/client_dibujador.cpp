@@ -142,3 +142,39 @@ void ClientDibujador::renderFrame(int playerX, int playerY) {
 
     SDL_RenderPresent(ren);
 }
+
+void ClientDibujador::renderAll(const std::vector<Player>& players, int selfId) {
+    SDL_SetRenderDrawColor(ren, 20, 20, 20, 255);
+    SDL_RenderClear(ren);
+
+    if (mapTex) {
+        SDL_Rect src{ camX, camY, winW, winH };
+        SDL_Rect dst{ 0, 0, winW, winH };
+        SDL_RenderCopy(ren, mapTex, &src, &dst);
+    }
+
+    for (const auto& p : players) {
+        int px = p.posX;
+        int py = p.posY;
+
+        // actualizar cámara centrada en tu propio jugador
+        if (p.playerId == selfId) {
+            updateCamera_(px, py);
+        }
+
+        if (carTex && cellW > 0 && cellH > 0) {
+            int frame = frameForAngle_(facingDeg);
+            int col = frame % atlasCols, row = frame / atlasCols;
+            SDL_Rect s{ col * cellW, row * cellH, cellW, cellH };
+            SDL_Rect d{
+                px - camX - cellW / 2,
+                py - camY - cellH / 2,
+                cellW, cellH
+            };
+
+            SDL_RenderCopy(ren, carTex, &s, &d);
+        }
+    }
+
+    SDL_RenderPresent(ren);
+}

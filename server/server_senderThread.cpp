@@ -50,18 +50,26 @@ void SenderThread::run() {
             continue;
         }
 
-        std::cout << "[Sender] snapshot recibido: posX=" << snapshot->posX
-                  << " posY=" << snapshot->posY
-                  << " controlEvent=" << static_cast<int>(snapshot->controlEvent)
-                  << std::endl;
+        // std::cout << "[Sender] snapshot recibido: posX=" << snapshot->posX
+        //           << " posY=" << snapshot->posY
+        //           << " controlEvent=" << static_cast<int>(snapshot->controlEvent)
+        //           << std::endl;
 
         if (snapshot->controlEvent == EventType::JOIN_REJECTED) {
             protocol.sendControl(Constants::JOIN_REJECTED);
         } else if (snapshot->controlEvent == EventType::CREATE_JOIN_ACCEPTED) {
-            protocol.sendControl(Constants::CREATE_JOIN_ACCEPTED);
+            // protocol.sendControl(Constants::CREATE_JOIN_ACCEPTED);
+            // Enviar CREATE_JOIN_ACCEPTED + playerId
+            if (protocol.isConnectionClosed()) continue;
+
+            std::vector<uint8_t> buffer;
+            buffer.push_back(Constants::TYPE_CONTROL);
+            buffer.push_back(Constants::CREATE_JOIN_ACCEPTED);
+            protocol.addIntToUint8tVector(buffer, snapshot->playerId);
+            protocol.sendCreateJoinAccepted(buffer);
         } else {
             std::cout << "[Sender] aca se deberia enviar snap" << std::endl;
-            std::cout << "el snap va a ser: " << snapshot->posX << ", " << snapshot->posY << std::endl;
+            // std::cout << "debug: el snap va a ser: " << snapshot->posX << ", " << snapshot->posY << std::endl;
             protocol.sendSnapshot(snapshot);
         }
 
