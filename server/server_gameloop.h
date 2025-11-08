@@ -13,18 +13,17 @@
 #include "../common/constants.h"
 #include "common/queue.h"
 #include "common/message.h"
-#include "common/player.h"
+#include "server_gamelogic.h"
 #include <unordered_map>
 
 class GameLoop : public Thread {
 
 private:
+    GameLogic gameLogic;
     std::atomic<bool> running;
     Queue<std::shared_ptr<Message>>& commandQueue; //queue compartida
     std::vector<Queue<std::shared_ptr<Snapshot>>*> clientQueues; //queues privadas de los jugadores
-    std::unordered_map<int, Player> players;
     std::mutex qmtx;
-    void run() override;
 
 public:
 
@@ -65,6 +64,11 @@ public:
     *
     * */
     ~GameLoop();
+
+    /*
+    * Agrega un nuevo jugador al GameLoop
+    *
+    * */
     void addPlayer(int playerId);
 };
 #endif // SERVER_GAMELOOP_H

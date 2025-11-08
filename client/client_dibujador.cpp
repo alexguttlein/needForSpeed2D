@@ -143,7 +143,7 @@ void ClientDibujador::renderFrame(int playerX, int playerY) {
     SDL_RenderPresent(ren);
 }
 
-void ClientDibujador::renderAll(const std::vector<Player>& players, int selfId) {
+void ClientDibujador::renderAll(const std::vector<CarStateDTO>& cars, int selfId) {
     SDL_SetRenderDrawColor(ren, 20, 20, 20, 255);
     SDL_RenderClear(ren);
 
@@ -153,18 +153,45 @@ void ClientDibujador::renderAll(const std::vector<Player>& players, int selfId) 
         SDL_RenderCopy(ren, mapTex, &src, &dst);
     }
 
-    for (const auto& p : players) {
-        int px = p.posX;
-        int py = p.posY;
+    // for (const auto& p : players) {
+    //     int px = p.posX;
+    //     int py = p.posY;
 
-        // actualizar cámara centrada en tu propio jugador
-        if (p.playerId == selfId) {
+    //     // actualizar cámara centrada en tu propio jugador
+    //     if (p.playerId == selfId) {
+    //         updateCamera_(px, py);
+    //     }
+
+    //     if (carTex && cellW > 0 && cellH > 0) {
+    //         int frame = frameForAngle_(facingDeg);
+    //         int col = frame % atlasCols, row = frame / atlasCols;
+    //         SDL_Rect s{ col * cellW, row * cellH, cellW, cellH };
+    //         SDL_Rect d{
+    //             px - camX - cellW / 2,
+    //             py - camY - cellH / 2,
+    //             cellW, cellH
+    //         };
+
+    //         SDL_RenderCopy(ren, carTex, &s, &d);
+    //     }
+    // }
+
+    for (const auto& carState : cars) {
+
+        int px = static_cast<int>(carState.position.x);
+        int py = static_cast<int>(carState.position.y);
+            
+        float angleRad = std::atan2(carState.angle.y, carState.angle.x);
+        float currentAngleDeg = angleRad * 180.0f / static_cast<float>(M_PI);
+
+        if (carState.car_id == selfId) { 
             updateCamera_(px, py);
         }
 
         if (carTex && cellW > 0 && cellH > 0) {
-            int frame = frameForAngle_(facingDeg);
+            int frame = frameForAngle_(currentAngleDeg);
             int col = frame % atlasCols, row = frame / atlasCols;
+            
             SDL_Rect s{ col * cellW, row * cellH, cellW, cellH };
             SDL_Rect d{
                 px - camX - cellW / 2,

@@ -46,9 +46,10 @@ void ServerProtocol::appendUInt32(std::vector<uint8_t>& buffer, uint32_t value) 
 }
 
 char ServerProtocol::commandToKey(const uint8_t& command) {
+    const uint8_t KEY_BITS = command & 0x7F; // Mask to get the lower 7 bits
     try {
         CommandConstants::Key key = CommandConstants::bitToKey(
-            static_cast<CommandConstants::Bit>(command)
+            static_cast<CommandConstants::Bit>(KEY_BITS)
         );
         return static_cast<char>(key);
     } catch (const std::invalid_argument& e) {
@@ -87,15 +88,37 @@ void ServerProtocol::sendSnapshot(std::shared_ptr<Snapshot>& snapshot) {
     //players size
     appendUInt32(buffer, snapshot->playersSize);
 
-    for (uint32_t i = 0; i < snapshot->playersSize; ++i) {
-        addIntToUint8tVector(buffer, snapshot->players.at(i).playerId);
-        // posX y posY en big-endian
-        appendUInt32(buffer, snapshot->players.at(i).posX);
-        appendUInt32(buffer, snapshot->players.at(i).posY);
 
-        std::cout << "debug: se va a enviar: " << snapshot->players.at(i).posX << ", " <<
-            snapshot->players.at(i).posY << std::endl;
+    for (const auto& carState : snapshot->cars) {
+        
+        // car_id (int, típicamente 4 bytes)
+        addIntToUint8tVector(buffer, carState.car_id);
+        
+        // health (float, 4 bytes)
+        appendUInt32(buffer, *reinterpret_cast<const uint32_t*>(&carState.health));
+        
+        // position (Vector2D<float>, 8 bytes total)
+        appendUInt32(buffer, *reinterpret_cast<const uint32_t*>(&carState.position.x));
+        appendUInt32(buffer, *reinterpret_cast<const uint32_t*>(&carState.position.y));
+
+        // angle (Vector2D<float>, 8 bytes total)
+        // Nota: asumo que angle guarda el coseno y seno (c, s) del ángulo como Vector2D.
+        appendUInt32(buffer, *reinterpret_cast<const uint32_t*>(&carState.angle.x)); // cos(angle)
+        appendUInt32(buffer, *reinterpret_cast<const uint32_t*>(&carState.angle.y)); // sin(angle)
+
+        // std::cout << "debug: se va a enviar: " << carState.position.x << ", " <<
+        //     carState.position.y << std::endl;
     }
+
+    // for (uint32_t i = 0; i < snapshot->playersSize; ++i) {
+    //     addIntToUint8tVector(buffer, snapshot->players.at(i).playerId);
+    //     // posX y posY en big-endian
+    //     appendUInt32(buffer, snapshot->players.at(i).posX);
+    //     appendUInt32(buffer, snapshot->players.at(i).posY);
+
+    //     std::cout << "debug: se va a enviar: " << snapshot->players.at(i).posX << ", " <<
+    //         snapshot->players.at(i).posY << std::endl;
+    // }
 
     socket.sendall(buffer.data(), buffer.size());
 }

@@ -27,6 +27,12 @@ private:
     float maxHealth = health;
     bool destroyed = false;
 
+    // estados de movimiento
+    bool isAccelerating = false;
+    bool isBraking = false;
+    bool isTurningLeft = false;
+    bool isTurningRight = false;
+
 public:
     /*
     * Constructor de Car.
@@ -58,6 +64,30 @@ public:
     *
     * */
     Vector2D<float> getDirection() const;
+
+    /*
+    * setea si el auto está acelerando 
+    *
+    * */
+    void setIsAccelerating(bool value);
+
+    /*
+    * setea si el auto está frenando
+    *
+    * */
+    void setIsBraking(bool value);
+
+    /*
+    * setea si el auto está girando a la izquierda
+    *
+    * */
+    void setIsTurningLeft(bool value);
+
+    /*
+    * setea si el auto está girando a la derecha
+    *
+    * */
+    void setIsTurningRight(bool value);
 
     /*
     * Obtiene la velocidad del auto
@@ -118,6 +148,12 @@ public:
     *
     * */
     void applyFriction();
+
+    /*
+    * Aplica el movimiento al auto según su estado actual
+    *
+    * */
+    void applyMovement();
 
     /*
     * Obtiene la velocidad lateral del auto a partir de su cuerpo Box2D

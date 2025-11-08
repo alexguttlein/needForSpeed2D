@@ -4,7 +4,7 @@
 #include <SDL.h>
 #include <string>
 #include <vector>
-#include "common/player.h"
+#include "../common/carStateDTO.h"
 
 class ClientDibujador {
 public:
@@ -20,7 +20,7 @@ public:
 
     void setFacingDeg(float deg) { facingDeg = deg; }
 
-    void renderAll(const std::vector<Player>& players, int selfId);
+    void renderAll(const std::vector<CarStateDTO>& cars, int selfId);
 
 private:
     SDL_Texture* loadTexture_(const std::string& path);

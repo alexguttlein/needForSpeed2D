@@ -39,7 +39,8 @@ void SenderThread::run() {
     int iter = 0; // solo para debug
 
     while (keepRunning) {
-        std::shared_ptr<Snapshot> snapshot = clientQueue.pop();
+        //std::shared_ptr<Snapshot> snapshot = clientQueue.pop();
+        std::shared_ptr<Snapshot> snapshot;
         try {
             snapshot = clientQueue.pop();
         } catch (const ClosedQueue&) {

@@ -7,82 +7,40 @@ GameLoop::GameLoop(Queue<std::shared_ptr<Message>>& commandQueue,
       clientQueues(clientQueues) {}
 
 void GameLoop::run() {
+
     std::cout << "Arranco gameloop" << std::endl;
     running = true;
 
-    // static constexpr uint32_t SPAWN_X = 90;
-    // static constexpr uint32_t SPAWN_Y= 90;
-    //
-    // uint32_t x = SPAWN_X;   // spawn coherente con el cliente (antes: 0)
-    // uint32_t y = SPAWN_Y;   // spawn coherente con el cliente (antes: 0)
-    //
-    // // Enviar un snapshot inicial a todos los clientes para alinear posiciones
-    // auto initial = std::make_shared<Snapshot>();
-    // initial->posX = x;
-    // initial->posY = y;
-    // initial->controlEvent = EventType::NONE;
-    // {
-    //     std::lock_guard<std::mutex> lock(qmtx);
-    //     for (auto qptr : clientQueues) {
-    //         if (qptr) {
-    //             try { qptr->push(initial); std::cout << "Mande init - gameloop" << std::endl;} catch (const ClosedQueue&) {}
-    //         }
-    //     }
-    // }
+    const std::chrono::milliseconds targetTickTime(Constants::THREAD_SLEEP_MS);
 
-    static constexpr uint32_t SPAWN_X = 90;
-    static constexpr uint32_t SPAWN_Y = 90;
-    static constexpr uint32_t OFFSET = 50; // para separar autos al spawnear
+    while (running) {
 
-    // inicializar posiciones de spawn para todos los jugadores
-    uint32_t spawnX = SPAWN_X;
-    uint32_t spawnY = SPAWN_Y;
+        auto start = std::chrono::steady_clock::now();
+        processCommandQueue();
+        gameLogic.update(); 
 
-    for (auto& [id, player] : players) {
-        player.posX = spawnX;
-        player.posY = spawnY;
-
-        // siguiente jugador spawnea un poco más a la derecha, por ejemplo
-        spawnX += OFFSET;
-        if (spawnX > 600) {  // salto de línea si se sale del área
-            spawnX = SPAWN_X;
-            spawnY += OFFSET;
-        }
-    }
-
-    // se crea snapshot inicial global
-    auto initial = std::make_shared<Snapshot>();
-    initial->controlEvent = EventType::NONE;
-    initial->players.reserve(players.size());
-
-    for (const auto& [pid, pstate] : players) {
-        initial->players.push_back({
-            pstate.playerId,
-            pstate.posX,
-            pstate.posY
-        });
-    }
-
-    initial->playersSize = static_cast<uint32_t>(initial->players.size());
-
-    // se envia snapshot a todos los clientes
-    {
-        std::lock_guard<std::mutex> lock(qmtx);
-        for (auto qptr : clientQueues) {
-            if (qptr) {
-                try {
-                    qptr->push(initial);
-                    std::cout << "[GameLoop] Mandé snapshot inicial a cliente" << std::endl;
-                } catch (const ClosedQueue&) {
-                    std::cout << "[GameLoop] Cola cerrada al mandar snapshot inicial" << std::endl;
+        std::shared_ptr<Snapshot> snapshotToSend = gameLogic.getSnapshot( EventType::NONE);
+        {
+            std::lock_guard<std::mutex> lock(qmtx);
+            for (auto qptr : clientQueues) {
+                if (qptr) {
+                    try {
+                        qptr->push(snapshotToSend);
+                    } catch (const ClosedQueue&) {
+                        std::cout << "[GameLoop] Cola cerrada al enviar snapshot" << std::endl;
+                    }
                 }
             }
         }
-    }
+        //std::this_thread::sleep_for(std::chrono::milliseconds(Constants::THREAD_SLEEP_MS));
+        auto end = std::chrono::steady_clock::now();
+        auto processingDuration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 
-    while (running) {
-        processCommandQueue();
-        std::this_thread::sleep_for(std::chrono::milliseconds(Constants::THREAD_SLEEP_MS));
+        // 💡 3. Dormir el tiempo restante (Delta Time Compensation)
+        if (processingDuration < targetTickTime) {
+            auto sleepDuration = targetTickTime - processingDuration;
+            std::this_thread::sleep_for(sleepDuration);
+        }
     }
 }
 
@@ -90,60 +48,17 @@ void GameLoop::processCommandQueue() {
     std::shared_ptr<Message> msg;
     while (commandQueue.try_pop(msg)) {
         if (!msg) continue;
-
-        int id = msg->senderId;
-        auto it = players.find(id);
-        if (it == players.end()) continue;  // jugador desconocido
-        auto& player = it->second;
-
-        switch (msg->key) {
-            case 'w': player.posY-=4; break;
-            case 's': player.posY+=4; break;
-            case 'a': player.posX-=4; break;
-            case 'd': player.posX+=4; break;
-        }
-
-        // // Generar snapshot del estado actual del jugador
-        // auto snapshot = std::make_shared<Snapshot>();
-        // snapshot->posX = player.posX;
-        // snapshot->posY = player.posY;
-        // snapshot->playerId = id;
-        // snapshot->controlEvent = EventType::NONE;
-
-        // Crear snapshot con el estado global de todos los jugadores
-        auto snapshot = std::make_shared<Snapshot>();
-        snapshot->controlEvent = EventType::NONE;
-        snapshot->playerId = id;  // quién generó este movimiento
-
-        // llenar la lista de jugadores
-        snapshot->players.reserve(players.size());
-        for (const auto& [pid, pstate] : players) {
-            snapshot->players.push_back({
-                pstate.playerId,
-                pstate.posX,
-                pstate.posY
-            });
-        }
-        snapshot->playersSize = static_cast<uint32_t>(snapshot->players.size());
-
-        std::lock_guard<std::mutex> lock(qmtx);
-        for (auto qptr : clientQueues) {
-            if (qptr) {
-                try {
-                    qptr->push(snapshot);
-                } catch (const ClosedQueue&) {
-                    std::cout << "[GameLoop] cola cerrada al hacer push" << std::endl;
-                }
-            }
-        }
+        bool is_pressed = (msg->code & 0x80) != 0;  
+        char key_char = msg->key; 
+        gameLogic.processCommand(msg->senderId, std::string(1, key_char), is_pressed);
     }
 }
 
 void GameLoop::addPlayer(int playerId) {
-    static constexpr uint32_t SPAWN_X = 90;
-    static constexpr uint32_t SPAWN_Y = 90;
-    players[playerId] = {playerId, SPAWN_X, SPAWN_Y};
+    static constexpr int DEFAULT_CAR_TYPE = 1;
+    gameLogic.addCar(playerId, DEFAULT_CAR_TYPE);
 }
+
 
 void GameLoop::stop() {
     running = false;

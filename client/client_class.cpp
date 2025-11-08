@@ -7,7 +7,7 @@
 #include <chrono>
 
 using ms = std::chrono::milliseconds;
-constexpr int FPS = 30;
+constexpr int FPS = 60;
 const ms FRAME_MS {1000 / FPS };
 
 Client::Client(const char* host, const char* port) :
@@ -77,32 +77,38 @@ void Client::run() {
             if (e.type == SDL_KEYDOWN) {
                 switch (e.key.keysym.sym) {
                     case SDLK_ESCAPE: running = false; break;
-                    case SDLK_w: commandQueue.push(SDLK_w); break;
-                    case SDLK_s: commandQueue.push(SDLK_s); break;
-                    case SDLK_a: commandQueue.push(SDLK_a); break;
-                    case SDLK_d: commandQueue.push(SDLK_d); break;
+                    case SDLK_w: commandQueue.push({ SDLK_w, true }); break;
+                    case SDLK_s: commandQueue.push({ SDLK_s, true }); break;
+                    case SDLK_a: commandQueue.push({ SDLK_a, true }); break;
+                    case SDLK_d: commandQueue.push({ SDLK_d, true }); break;
                 }
             }
+            else if (e.type == SDL_KEYUP) {
+            switch (e.key.keysym.sym) {
+
+                case SDLK_w: commandQueue.push({ SDLK_w, false }); break;
+                case SDLK_s: commandQueue.push({ SDLK_s, false }); break;
+                case SDLK_a: commandQueue.push({ SDLK_a, false }); break;
+                case SDLK_d: commandQueue.push({ SDLK_d, false }); break;
+            }
+        }
         }
 
-        // if (snapshotQueue.try_pop(snapshot)) {
-        //     // std::cout << "REcibo snapshot" << std::endl;
-        //     x = snapshot.posX;
-        //     y = snapshot.posY;
-        //     havePos = true;
-        // }
+       
         Snapshot snapTmp;
-        if (snapshotQueue.try_pop(snapTmp)) {
-            snapshot = std::move(snapTmp);
+        // if (snapshotQueue.try_pop(snapTmp)) {
+        //     snapshot = std::move(snapTmp);
+        //     havePos = true;
+        //     if (selfId == -1 && snapshot.playerId) selfId = snapshot.playerId; // solo la primera vez
+        // }
+        while (snapshotQueue.try_pop(snapTmp)) { 
+            snapshot = std::move(snapTmp); // Siempre guardamos el más reciente
             havePos = true;
-            if (selfId == -1 && snapshot.playerId) selfId = snapshot.playerId; // solo la primera vez
+            if (selfId == -1 && snapshot.playerId) selfId = snapshot.playerId;
         }
 
-        // if (havePos) {
-        //     dib.renderFrame(x, y);
-        // }
         if (havePos) {
-            dib.renderAll(snapshot.players, selfId);
+            dib.renderAll(snapshot.cars, selfId);
         }
 
         auto end = std::chrono::steady_clock::now();

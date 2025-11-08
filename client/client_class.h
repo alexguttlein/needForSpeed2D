@@ -13,6 +13,7 @@
 #include "client_senderThread.h"
 #include <SDL.h>
 #include "../common/eventType.h"
+#include "commandMessage.h"
 
 class Client {
 public:
@@ -21,7 +22,7 @@ public:
 private:
     ClientProtocol protocol;
     Queue<Snapshot> snapshotQueue;
-    Queue<SDL_KeyCode> commandQueue;
+    Queue<commandMessage> commandQueue;
     Queue<Event> eventQueue;
     ReceiverThread receiver;
     SenderThread sender;

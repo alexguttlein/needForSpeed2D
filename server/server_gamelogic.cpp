@@ -4,69 +4,64 @@
 
 
 GameLogic::GameLogic() {
-    // Inicialización del mundo Box2D (aún vacía, se llenará después)
-    // world = std::make_unique<b2World>(b2Vec2(0.0f, 0.0f)); // Ejemplo para el futuro
-
-    Vector2D<float> pos(0.0f, 0.0f);
-    float acceleration = 0.5f;
-    float control = 0.04f;
-    float weight = 1200.0f;
-    float maxSpeed = 20.0f;
-    float maxReverseSpeed = 6.0f;
-    float health = 100.0f;
-
-    auto testCar = std::make_shared<Car>(pos, acceleration, control, weight, maxSpeed, maxReverseSpeed, health);
-    cars.emplace(0, testCar);
-    std::cout << "GameLogic: created test car id 0\n";
+    world = raceBuilder.getWorld();
 }
 
 
-
-void GameLogic::processCommand(int car_id, const std::string& command) {
+void GameLogic::processCommand(int car_id, const std::string& command, bool isPressed) {
     auto it = cars.find(car_id);
     if (it == cars.end()) {
         std::cout << "Comando recibido para auto desconocido ID " << car_id << std::endl;
         return;
     }
     auto& car = it->second;
+    lastCommandPlayerId = car_id;
 
     if (command == "w") {
-        car->accelerate();
+        car->setIsAccelerating(isPressed);
     } else if (command == "s") {
-        car->breakReverse();
+        car->setIsBraking(isPressed);
     } else if (command == "a") {
-        car->turnLeft();
+        car->setIsTurningLeft(isPressed);
     } else if (command == "d") {
-        car->turnRight();
+        car->setIsTurningRight(isPressed);
     } else {
-        std::cout << "Comando desconocido: " << command << std::endl;
+        std::cout << "Comando desconocido: " << command << std::endl; // deberias meter funcion de lectura de cheats
     }
 }
 
 
-// void GameLogic::update(float dt) {
-//     for (auto const& [id, car] : cars) {
-//         car->updatePosition(dt);
-//     }
-// }
+void GameLogic::update() {
+    const float dt = 1.0f / 60.0f; // Suponiendo 60 FPS
+    for (auto const& [id, car] : cars) {
+        car->applyMovement();
+        car->applyFriction(); 
+    }
+    b2World_Step(world, dt, 4);
+}
 
 
-GameSnapshot GameLogic::getSnapshot() const {
-    GameSnapshot snapshot = {};
-    snapshot.num_cars = 0;
+std::shared_ptr<Snapshot> GameLogic::getSnapshot(EventType controlEvent) const {
+    auto snapshot = std::make_shared<Snapshot>();
+    snapshot->playerId = lastCommandPlayerId;
+    snapshot->controlEvent = controlEvent;
+    snapshot->playersSize = static_cast<uint32_t>(cars.size());
 
     for (auto const& [id, car] : cars) {
-        if (id < 8) { 
             CarStateDTO dto;
-            
-            // LECTURA DE DATOS DEL AUTO
             dto.car_id = id;
             dto.health = car->getHealth();
             dto.position = car->getPosition();
             dto.angle = car->getDirection();
 
-            snapshot.car_states[snapshot.num_cars++] = dto;
-        }
+            snapshot->cars.push_back(dto);
     }
     return snapshot;
+}
+
+
+void GameLogic::addCar(int playerId, int carType) {
+    raceBuilder.addSelectCar(carType);
+    std::shared_ptr<Car> newCar = raceBuilder.getCars().back();
+    cars[playerId] = newCar;
 }

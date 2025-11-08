@@ -51,6 +51,26 @@ Vector2D<float> Car::getDirection() const {
 }
 
 
+void Car::setIsAccelerating(bool value) {
+    isAccelerating = value;
+}
+
+
+void Car::setIsBraking(bool value) {
+    isBraking = value;
+}
+
+
+void Car::setIsTurningLeft(bool value) {
+    isTurningLeft = value;
+}
+
+
+void Car::setIsTurningRight(bool value) {
+    isTurningRight = value;
+}
+
+
 float Car::getSpeed() const {
    b2Vec2 velocity = b2Body_GetLinearVelocity(body);
    return std::sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
@@ -120,6 +140,22 @@ void Car::applyFriction() {
     b2Vec2 lateralVelocity = getLateralVelocity();
     b2Vec2 impulse = lateralVelocity * -b2Body_GetMass(body) * friction;
     b2Body_ApplyLinearImpulse(body, impulse, b2Body_GetPosition(body), true);
+}
+
+
+void Car::applyMovement() {
+    if (isAccelerating) {
+        accelerate();
+    }
+    if (isBraking) {
+        breakReverse();
+    }
+    if (isTurningLeft) {
+        turnLeft();
+    }
+    if (isTurningRight) {
+        turnRight();
+    }
 }
 
 

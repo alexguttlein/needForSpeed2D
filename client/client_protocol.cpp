@@ -12,10 +12,13 @@ ClientProtocol::~ClientProtocol() {
     }
 }
 
-void ClientProtocol::sendKey(const SDL_KeyCode input) {
+void ClientProtocol::sendKey(const SDL_KeyCode input, bool isPressed) {
     try {
         auto key = sdlToKey(input);
         uint8_t msg = CommandConstants::keyToBit(key);
+        if (isPressed) {
+            msg |= 0x80; // Asume BIT_KEY_DOWN = 0x80
+        }
         socket.sendall(&msg, sizeof(msg));
     } catch (const std::exception& e) {
         // tecla no reconocida, no enviamos nada
@@ -114,22 +117,44 @@ std::optional<Snapshot> ClientProtocol::receiveMessageFromServer() {
         std::cout << "debug: Player id: " << snapshot.playerId << std::endl;
 
         for (uint32_t i = 0; i < snapshot.playersSize; i++) {
-            Player p{};
-            uint32_t idBE = 0;
-            socket.recvall(&idBE, sizeof(idBE));
-            p.playerId = ntohl(idBE);
+        CarStateDTO dto{};
+        
+        uint32_t idBE = 0;
+        socket.recvall(&idBE, sizeof(idBE));
+        dto.car_id = static_cast<int>(ntohl(idBE));
 
-            uint32_t posXBE = 0;
-            socket.recvall(&posXBE, sizeof(posXBE));
-            p.posX = ntohl(posXBE);
+        uint32_t healthBE = 0;
+        socket.recvall(&healthBE, sizeof(healthBE));
+      
+        uint32_t healthHost = ntohl(healthBE);
+        dto.health = *reinterpret_cast<float*>(&healthHost);
 
-            uint32_t posYBE = 0;
-            socket.recvall(&posYBE, sizeof(posYBE));
-            p.posY = ntohl(posYBE);
+      
+        uint32_t posXBE = 0;
+        socket.recvall(&posXBE, sizeof(posXBE));
+        uint32_t xHost = ntohl(posXBE);
+        dto.position.x = *reinterpret_cast<float*>(&xHost);
 
-            snapshot.players.push_back(p);
-        }
+      
+        uint32_t posYBE = 0;
+        socket.recvall(&posYBE, sizeof(posYBE));
+        uint32_t yHost = ntohl(posYBE);
+        dto.position.y = *reinterpret_cast<float*>(&yHost);
+        
+    
+        uint32_t angleXBE = 0;
+        socket.recvall(&angleXBE, sizeof(angleXBE));
+        uint32_t angleXHost = ntohl(angleXBE);
+        dto.angle.x = *reinterpret_cast<float*>(&angleXHost);
+        
+        
+        uint32_t angleYBE = 0;
+        socket.recvall(&angleYBE, sizeof(angleYBE));
+        uint32_t angleYHost = ntohl(angleYBE);
+        dto.angle.y = *reinterpret_cast<float*>(&angleYHost);
 
+        snapshot.cars.push_back(dto);
+    }
         return snapshot;
     }
 

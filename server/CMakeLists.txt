@@ -9,14 +9,13 @@ target_sources(taller_server
     server_senderThread.cpp
     server_receiverThread.cpp
     server_monitorClients.cpp
-    server_snapshots.cpp
     server_gameloop.cpp
     server_gameMonitor.cpp
     server_game.cpp
     car.cpp
     server_gamelogic.cpp
     server_raceBuilder.cpp
-    gameloop_test.cpp
+    #gameloop_test.cpp
     PUBLIC
     # .h files
     server_class.h
@@ -26,7 +25,6 @@ target_sources(taller_server
     server_senderThread.h
     server_receiverThread.h
     server_monitorClients.h
-    server_snapshots.h
     server_gameloop.h
     server_gameMonitor.h
     server_game.h

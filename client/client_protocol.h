@@ -21,7 +21,7 @@ class ClientProtocol {
 public:
     ClientProtocol(const char* host, const char* port);
     ~ClientProtocol();
-    void sendKey(const SDL_KeyCode msg);
+    void sendKey(const SDL_KeyCode msg, bool isPressed);
     CommandConstants::Key sdlToKey(const SDL_KeyCode input);
     bool sendLobbyOption(const std::string& input);
     std::optional<Snapshot> receiveMessageFromServer();
