@@ -54,6 +54,7 @@ void GameLoop::processCommandQueue() {
     }
 }
 
+
 void GameLoop::addPlayer(int playerId) {
     static constexpr int DEFAULT_CAR_TYPE = 1;
     gameLogic.addCar(playerId, DEFAULT_CAR_TYPE);

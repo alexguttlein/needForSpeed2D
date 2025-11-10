@@ -23,6 +23,9 @@ Vector2D<float> RaceBuilder::getNextSpawnPosition() {
         nextSpawnX = Constants::SPAWN_START_X;
         nextSpawnY += Constants::SPAWN_OFFSET_X;
     }
+
+
+
     return currentPos;
 }
 
@@ -33,13 +36,13 @@ void RaceBuilder::addSelectCar(int carType) {
     std::shared_ptr<Car> car;
     switch (carType) {
         case 1:
-            car = std::make_shared<Car>(world, position, 1500.0f, 40.0f, 6.0f, 200.0f, 50.0f, 100.0f);
+            car = std::make_shared<Car>(world, Vector2D<float>{position.x / Constants::SCALE_METER_TO_PIXEL, position.y / Constants::SCALE_METER_TO_PIXEL}, 100.0f, 40.0f, 6.0f, 200.0f, 50.0f, 100.0f);
             break;
         case 2:
-            car = std::make_shared<Car>(world, position, 2000.0f, 250.0f, 40.0f, 300.0f, 40.0f, 150.0f);
+            car = std::make_shared<Car>(world, Vector2D<float>{position.x, position.y}, 200.0f, 250.0f, 40.0f, 300.0f, 40.0f, 150.0f);
             break;
         case 3:
-            car = std::make_shared<Car>(world, position, 1200.0f, 180.0f, 40.0f, 200.0f, 100.0f, 120.0f);
+            car = std::make_shared<Car>(world, Vector2D<float>{position.x, position.y}, 120.0f, 180.0f, 40.0f, 200.0f, 100.0f, 120.0f);
             break;
         default:
             std::cerr << "Tipo de auto desconocido: " << carType << std::endl;

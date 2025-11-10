@@ -49,5 +49,11 @@ public:
     *
     * */
     void addCar(int playerId, int carType);
+
+    /*
+    * Verifica y maneja las colisiones entre autos
+    *
+    * */
+    void checkCollisions();
 };
 #endif // SERVER_GAMELOGIC_H

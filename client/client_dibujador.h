@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include "../common/carStateDTO.h"
+#include "../common/constants.h"
 
 class ClientDibujador {
 public:

@@ -22,15 +22,27 @@ void Car::setCarBox2DBody(Vector2D<float> position) {
     b2BodyDef bodyDef = b2DefaultBodyDef();
     bodyDef.type = b2_dynamicBody;
     bodyDef.position = {position.x, position.y};
+    bodyDef.enableSleep = false; 
     bodyDef.linearDamping = 0.5f; // aplica fricción lineal
     bodyDef.angularDamping = 8.0f; // aplica fricción angular
     body = b2CreateBody(world, &bodyDef);
+    b2Body_SetAwake(body, true);
 
     // Forma del auto: rectángulo simple
-    b2Polygon shape = b2MakeBox(1.0f, 0.5f);
+    
+    b2Polygon shape = b2MakeBox(1.20f / 2.0f, 1.28f / 2.0f);
     b2ShapeDef shapeDef = b2DefaultShapeDef();
-    shapeDef.density = weight;
-    b2CreatePolygonShape(body, &shapeDef, &shape);
+    shapeDef.density = weight;    
+    shapeDef.enableContactEvents = true; 
+
+    // Collision filtering
+    shapeDef.filter.categoryBits = 0x0001;
+    shapeDef.filter.maskBits = 0x0001;
+    shapeDef.userData = this;          
+
+    b2ShapeId shapeId = b2CreatePolygonShape(body, &shapeDef, &shape);
+    b2Shape_SetFriction(shapeId, 0.0f);
+    b2Shape_SetRestitution(shapeId, 0.4f);
 }
 
 

@@ -153,33 +153,11 @@ void ClientDibujador::renderAll(const std::vector<CarStateDTO>& cars, int selfId
         SDL_RenderCopy(ren, mapTex, &src, &dst);
     }
 
-    // for (const auto& p : players) {
-    //     int px = p.posX;
-    //     int py = p.posY;
-
-    //     // actualizar cámara centrada en tu propio jugador
-    //     if (p.playerId == selfId) {
-    //         updateCamera_(px, py);
-    //     }
-
-    //     if (carTex && cellW > 0 && cellH > 0) {
-    //         int frame = frameForAngle_(facingDeg);
-    //         int col = frame % atlasCols, row = frame / atlasCols;
-    //         SDL_Rect s{ col * cellW, row * cellH, cellW, cellH };
-    //         SDL_Rect d{
-    //             px - camX - cellW / 2,
-    //             py - camY - cellH / 2,
-    //             cellW, cellH
-    //         };
-
-    //         SDL_RenderCopy(ren, carTex, &s, &d);
-    //     }
-    // }
-
+   
     for (const auto& carState : cars) {
 
-        int px = static_cast<int>(carState.position.x);
-        int py = static_cast<int>(carState.position.y);
+        int px = static_cast<int>(carState.position.x * Constants::SCALE_METER_TO_PIXEL);
+        int py = static_cast<int>(carState.position.y * Constants::SCALE_METER_TO_PIXEL);
             
         float angleRad = std::atan2(carState.angle.y, carState.angle.x);
         float currentAngleDeg = angleRad * 180.0f / static_cast<float>(M_PI);
@@ -196,7 +174,8 @@ void ClientDibujador::renderAll(const std::vector<CarStateDTO>& cars, int selfId
             SDL_Rect d{
                 px - camX - cellW / 2,
                 py - camY - cellH / 2,
-                cellW, cellH
+                cellW,
+                cellH
             };
 
             SDL_RenderCopy(ren, carTex, &s, &d);

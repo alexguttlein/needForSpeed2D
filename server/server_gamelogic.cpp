@@ -38,6 +38,7 @@ void GameLogic::update() {
         car->applyFriction(); 
     }
     b2World_Step(world, dt, 4);
+    checkCollisions(); // Verificar colisiones después de actualizar la física
 }
 
 
@@ -64,4 +65,49 @@ void GameLogic::addCar(int playerId, int carType) {
     raceBuilder.addSelectCar(carType);
     std::shared_ptr<Car> newCar = raceBuilder.getCars().back();
     cars[playerId] = newCar;
+}
+
+
+void GameLogic::checkCollisions() {
+    const b2ContactEvents contactEvents = b2World_GetContactEvents(world);
+
+if (contactEvents.beginCount > 0) {
+    for (int i = 0; i < contactEvents.beginCount; ++i) {
+        const b2ContactBeginTouchEvent* event = &contactEvents.beginEvents[i];
+        
+        b2BodyId bodyA = b2Shape_GetBody(event->shapeIdA);
+        b2BodyId bodyB = b2Shape_GetBody(event->shapeIdB);
+
+        b2Vec2 posA = b2Body_GetPosition(bodyA);
+        b2Vec2 posB = b2Body_GetPosition(bodyB);
+
+        std::cout << "🚗💥 CONTACTO INICIADO entre cuerpos "
+                  << bodyA.index1 << " y " << bodyB.index1
+                  << " en posiciones (" << posA.x << ", " << posA.y 
+                  << ") y (" << posB.x << ", " << posB.y << ")" << std::endl;
+
+        // ⚙️ Hack suave: "despegar" apenas el cuerpo, no mandarlo lejos
+        // Esto resetea el contacto sin romper la física del mundo.
+        const float epsilon = 0.001f;
+        b2Vec2 smallShift = {epsilon, epsilon};
+
+        // Mover apenas el cuerpo A
+        b2Vec2 shiftedPos = {posA.x + smallShift.x, posA.y + smallShift.y};
+        b2Rot rotA = b2Body_GetRotation(bodyA);
+
+        b2Body_SetTransform(bodyA, shiftedPos, rotA);
+        b2Body_SetTransform(bodyA, posA, rotA);
+    }
+}
+
+if (contactEvents.endCount > 0) {
+    for (int i = 0; i < contactEvents.endCount; ++i) {
+        const b2ContactEndTouchEvent* event = &contactEvents.endEvents[i];
+        std::cout << "✅ CONTACTO FINALIZADO entre "
+                  << b2Shape_GetBody(event->shapeIdA).index1
+                  << " y " << b2Shape_GetBody(event->shapeIdB).index1
+                  << std::endl;
+    }
+}
+
 }

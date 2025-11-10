@@ -36,7 +36,7 @@ SenderThread::SenderThread(ServerProtocol& protocol, Queue<std::shared_ptr<Snaps
 void SenderThread::run() {
     std::cout << "debug: SenderThread::run()" << std::endl;
 
-    int iter = 0; // solo para debug
+    //int iter = 0; // solo para debug
 
     while (keepRunning) {
         //std::shared_ptr<Snapshot> snapshot = clientQueue.pop();
@@ -69,15 +69,15 @@ void SenderThread::run() {
             protocol.addIntToUint8tVector(buffer, snapshot->playerId);
             protocol.sendCreateJoinAccepted(buffer);
         } else {
-            std::cout << "[Sender] aca se deberia enviar snap" << std::endl;
+            // std::cout << "[Sender] aca se deberia enviar snap" << std::endl;
             // std::cout << "debug: el snap va a ser: " << snapshot->posX << ", " << snapshot->posY << std::endl;
             protocol.sendSnapshot(snapshot);
         }
 
-        iter++;
-        if (iter % 10 == 0) {
-            std::cout << "[Sender] iteraciones totales: " << iter << std::endl;
-        }
+        // iter++;
+        // if (iter % 10 == 0) {
+        //     std::cout << "[Sender] iteraciones totales: " << iter << std::endl;
+        // }
 
         if (protocol.isConnectionClosed()) {
             keepRunning = false;
