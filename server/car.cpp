@@ -156,6 +156,8 @@ void Car::applyFriction() {
 
 
 void Car::applyMovement() {
+    if(isDestroyed()) return;
+    
     if (isAccelerating) {
         accelerate();
     }

@@ -5,6 +5,7 @@ RaceBuilder::RaceBuilder() : nextSpawnX(Constants::SPAWN_START_X), nextSpawnY(Co
 
     b2WorldDef worldDef = b2DefaultWorldDef();
     worldDef.gravity = b2Vec2{0.0f, 0.0f}; 
+    worldDef.hitEventThreshold = 0.1f;
     world = b2CreateWorld(&worldDef);
 }
 

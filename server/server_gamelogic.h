@@ -55,5 +55,23 @@ public:
     *
     * */
     void checkCollisions();
+
+    /*
+    * Aplica daño a los autos involucrados en una colisión
+    *
+    * */
+    void applyCollisionDamage(Car* carA, Car* carB, b2Vec2 normal, float hitSpeed);
+
+    /*
+    * Obtiene la velocidad de aproximación entre dos cuerpos en colisión
+    *
+    * */
+    float getCollisionSpeed(b2BodyId bodyA, b2BodyId bodyB);
+
+    /*
+    * Obtiene la normal de colisión entre dos cuerpos
+    *
+    * */
+    b2Vec2 getCollisionNormal(b2BodyId bodyA, b2BodyId bodyB);
 };
 #endif // SERVER_GAMELOGIC_H
