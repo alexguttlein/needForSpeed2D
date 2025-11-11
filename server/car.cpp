@@ -212,3 +212,8 @@ void Car::upgradeHealth(){
 void Car::repair() {
     health = std::min(maxHealth, health + Constants::HEALTH_UPGRADE);
 }
+
+
+Car::~Car() {
+    b2DestroyBody(body);
+}

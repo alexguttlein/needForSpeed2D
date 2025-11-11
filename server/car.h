@@ -190,5 +190,11 @@ public:
     *
     * */
     void repair();
+    
+    /*
+    * Destructor de Car
+    *
+    * */
+    ~Car();
 };
 #endif // CAR_H
