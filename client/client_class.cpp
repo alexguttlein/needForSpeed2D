@@ -58,6 +58,7 @@ void Client::run() {
         std::fprintf(stderr, "No pude cargar atlas del auto\n");
     }
 
+    dib.setUIFont("assets/ui/FreeSans.ttf", 16);
     dib.setFacingDeg(0.0f);
     bool running = true;
     //CAMBIAR
