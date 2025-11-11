@@ -17,7 +17,8 @@ Client::Client(const char* host, const char* port) :
 void Client::run() {
     receiver.start();
     sender.start();
-    lobbyOptions();
+    goToLobby();
+    // lobbyOptions();
 
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         std::fprintf(stderr, "SDL_Init error: %s\n", SDL_GetError());
@@ -106,6 +107,141 @@ void Client::run() {
     SDL_DestroyWindow(win);
     IMG_Quit();
     SDL_Quit();
+}
+
+void Client::goToLobby() {
+
+    int argc = 0;
+    char **argv = nullptr;
+
+    QApplication app(argc, argv);
+
+    // se crea ventana de qt
+    QWidget window;
+    window.setWindowTitle("Need For Speed 2D");
+    window.resize(800, 600);
+
+    // fondo de pantalla
+    QPixmap background(":/assets/need-for-speed/lobbyImg/wall3.jpg");
+
+    if (!background.isNull()) {
+        background = background.scaled(window.size(), Qt::KeepAspectRatioByExpanding);
+        QPalette palette;
+        palette.setBrush(QPalette::Window, background);
+        window.setAutoFillBackground(true);
+        window.setPalette(palette);
+    }
+
+    auto *mainLayout = new QVBoxLayout(&window);
+    //se agregan espaciadores para centrar vertical
+    mainLayout->addSpacerItem(new QSpacerItem(20, 100, QSizePolicy::Minimum, QSizePolicy::Expanding));
+
+    // se agrega contenedor central para limitar ancho
+    QWidget *centerWidget = new QWidget(&window);
+    auto *centerLayout = new QVBoxLayout(centerWidget);
+    centerWidget->setFixedWidth(350);  // ancho limitado
+
+    auto *nameInput = new QLineEdit(centerWidget);
+    nameInput->setPlaceholderText("Enter your driver name");
+    nameInput->setStyleSheet(
+        "QLineEdit {"
+        " color: white;"   // texto ingresado
+        " font-size: 18px;"
+        " font-weight: bold;"
+        " padding: 10px 15px;"
+        " border: 2px solid rgba(255, 0, 0, 0.6);"
+        " border-radius: 10px;"
+        " background-color: rgba(0, 0, 0, 0.9);"  // fondo oscuro
+        " selection-background-color: rgba(255, 0, 0, 0.6);"
+        "}"
+        "QLineEdit:focus {"
+        " border: 2px solid rgba(255, 60, 60, 0.9);"
+        " background-color: rgba(0, 0, 0, 0.95);"
+        "}"
+        "QLineEdit::placeholderText {"
+        " color: rgba(200, 200, 200, 0.5);"
+        "}"
+    );
+
+
+    auto *continueButton = new QPushButton("START ENGINE", centerWidget);
+    continueButton->setEnabled(false); //deshabilitado al iniciar
+    continueButton->setCursor(Qt::PointingHandCursor);
+    continueButton->setStyleSheet(
+        "QPushButton {"
+        " color: white;"
+        " font-size: 18px;"
+        " font-weight: bold;"
+        " padding: 10px;"
+        " border-radius: 10px;"
+        " background-color: qlineargradient(x1:0, y1:0, x2:1, y2:1, "
+        " stop:0 rgba(255, 0, 0, 0.9), stop:1 rgba(120, 0, 0, 0.9));"
+        "}"
+        "QPushButton:hover:!disabled {"
+        " background-color: rgba(255, 0, 0, 1);"
+        " border: 2px solid white;"
+        "}"
+        "QPushButton:disabled {"
+        " background-color: rgba(60, 60, 60, 0.8);"
+        " color: rgba(180, 180, 180, 0.6);"
+        "}"
+    );
+
+    // efecto neón (DropShadow + animación)
+    auto *neonEffect = new QGraphicsDropShadowEffect(&window);
+    neonEffect->setBlurRadius(40);
+    neonEffect->setColor(QColor(255, 0, 0));
+    neonEffect->setOffset(0, 0);
+    continueButton->setGraphicsEffect(neonEffect);
+
+    auto *neonAnimation = new QPropertyAnimation(neonEffect, "blurRadius");
+    neonAnimation->setDuration(1500);
+    neonAnimation->setStartValue(20);
+    neonAnimation->setEndValue(60);
+    neonAnimation->setEasingCurve(QEasingCurve::InOutQuad);
+    neonAnimation->setLoopCount(-1);
+
+    // iniciar animación solo cuando esté habilitado
+    QObject::connect(nameInput, &QLineEdit::textChanged, [&] {
+        bool hasName = !nameInput->text().isEmpty();
+        continueButton->setEnabled(hasName);
+        if (hasName)
+            neonAnimation->start();
+        else
+            neonAnimation->stop();
+    });
+
+
+    centerLayout->addWidget(nameInput);
+    centerLayout->addSpacing(20);
+    centerLayout->addWidget(continueButton);
+    centerWidget->setLayout(centerLayout);
+
+    //se agrega al layout principal centrado
+    mainLayout->addWidget(centerWidget, 0, Qt::AlignHCenter);
+    mainLayout->addSpacerItem(new QSpacerItem(20, 100, QSizePolicy::Minimum, QSizePolicy::Expanding));
+
+    window.setLayout(mainLayout);
+    window.show();
+
+    // habilitar botón solo si hay texto
+    QObject::connect(nameInput, &QLineEdit::textChanged, [&] {
+        continueButton->setEnabled(!nameInput->text().isEmpty());
+    });
+
+    // cuando se presiona "Continue" se va a otra pantalla
+    QObject::connect(continueButton, &QPushButton::clicked, [&] {
+        playerName = nameInput->text().toStdString();
+        QString name = nameInput->text();
+
+        LobbyMenuWindow *lobbyMenu = new LobbyMenuWindow(name);
+        lobbyMenu->show();
+        window.close(); //por ahora cierra la ventana
+    });
+
+    // se inicia qt
+    app.exec();
+    // lobbyOptions();
 }
 
 void Client::lobbyOptions() {
