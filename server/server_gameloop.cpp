@@ -1,34 +1,13 @@
 #include "server_gameloop.h"
 
 GameLoop::GameLoop(Queue<std::shared_ptr<Message>>& commandQueue,
-                   std::vector<Queue<std::shared_ptr<Snapshot>>*> clientQueues)
+                   const std::vector<Queue<std::shared_ptr<Snapshot>>*> &clientQueues)
     : running(false),
       commandQueue(commandQueue),
       clientQueues(clientQueues) {}
 
 void GameLoop::run() {
-    std::cout << "Arranco gameloop" << std::endl;
     running = true;
-
-    // static constexpr uint32_t SPAWN_X = 90;
-    // static constexpr uint32_t SPAWN_Y= 90;
-    //
-    // uint32_t x = SPAWN_X;   // spawn coherente con el cliente (antes: 0)
-    // uint32_t y = SPAWN_Y;   // spawn coherente con el cliente (antes: 0)
-    //
-    // // Enviar un snapshot inicial a todos los clientes para alinear posiciones
-    // auto initial = std::make_shared<Snapshot>();
-    // initial->posX = x;
-    // initial->posY = y;
-    // initial->controlEvent = EventType::NONE;
-    // {
-    //     std::lock_guard<std::mutex> lock(qmtx);
-    //     for (auto qptr : clientQueues) {
-    //         if (qptr) {
-    //             try { qptr->push(initial); std::cout << "Mande init - gameloop" << std::endl;} catch (const ClosedQueue&) {}
-    //         }
-    //     }
-    // }
 
     static constexpr uint32_t SPAWN_X = 90;
     static constexpr uint32_t SPAWN_Y = 90;
@@ -72,16 +51,16 @@ void GameLoop::run() {
             if (qptr) {
                 try {
                     qptr->push(initial);
-                    std::cout << "[GameLoop] Mandé snapshot inicial a cliente" << std::endl;
                 } catch (const ClosedQueue&) {
-                    std::cout << "[GameLoop] Cola cerrada al mandar snapshot inicial" << std::endl;
                 }
             }
         }
     }
-
+    int testFinJuego = 100;
     while (running) {
         processCommandQueue();
+        validateGameEnd(testFinJuego);
+        testFinJuego--;
         std::this_thread::sleep_for(std::chrono::milliseconds(Constants::THREAD_SLEEP_MS));
     }
 }
@@ -102,13 +81,6 @@ void GameLoop::processCommandQueue() {
             case 'a': player.posX-=4; break;
             case 'd': player.posX+=4; break;
         }
-
-        // // Generar snapshot del estado actual del jugador
-        // auto snapshot = std::make_shared<Snapshot>();
-        // snapshot->posX = player.posX;
-        // snapshot->posY = player.posY;
-        // snapshot->playerId = id;
-        // snapshot->controlEvent = EventType::NONE;
 
         // Crear snapshot con el estado global de todos los jugadores
         auto snapshot = std::make_shared<Snapshot>();
@@ -151,4 +123,15 @@ void GameLoop::stop() {
 
 GameLoop::~GameLoop() {
     stop();
+    // std::lock_guard<std::mutex> lock(qmtx);
+    players.clear();
+    clientQueues.clear();
+}
+
+void GameLoop::validateGameEnd(int counter) {
+    if (counter == 0) {
+        std::cout << "FIN DE LA CARRERA" << std::endl;
+        stop();
+    }
+    std::cout << "TIME: " << counter << std::endl;
 }

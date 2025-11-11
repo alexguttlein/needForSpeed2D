@@ -50,11 +50,11 @@ void Client::run() {
 
     ClientDibujador dib(ren, W, H);
 
-    if (!dib.loadMap("assets/need-for-speed/cities/Liberty.png")) {
+    if (!dib.loadMap("/home/alex/Documents/TP-Final-Taller_2C2025/v2.1/TP-Taller-G7/assets/need-for-speed/cities/Liberty.png")) {
         std::fprintf(stderr, "No pude cargar assets/maps/iberty.png\n");
     }
 
-    if (!dib.loadCarAtlas("assets/need-for-speed/cars/auto-1.png", 8, 2, 0.0f, true)) {
+    if (!dib.loadCarAtlas("/home/alex/Documents/TP-Final-Taller_2C2025/v2.1/TP-Taller-G7/assets/need-for-speed/cars/auto-1.png", 8, 2, 0.0f, true)) {
         std::fprintf(stderr, "No pude cargar atlas del auto\n");
     }
 
@@ -85,12 +85,6 @@ void Client::run() {
             }
         }
 
-        // if (snapshotQueue.try_pop(snapshot)) {
-        //     // std::cout << "REcibo snapshot" << std::endl;
-        //     x = snapshot.posX;
-        //     y = snapshot.posY;
-        //     havePos = true;
-        // }
         Snapshot snapTmp;
         if (snapshotQueue.try_pop(snapTmp)) {
             snapshot = std::move(snapTmp);
@@ -98,9 +92,6 @@ void Client::run() {
             if (selfId == -1 && snapshot.playerId) selfId = snapshot.playerId; // solo la primera vez
         }
 
-        // if (havePos) {
-        //     dib.renderFrame(x, y);
-        // }
         if (havePos) {
             dib.renderAll(snapshot.players, selfId);
         }

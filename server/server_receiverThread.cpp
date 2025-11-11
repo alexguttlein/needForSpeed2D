@@ -33,10 +33,8 @@ void ReceiverThread::lobbyCommands(Message msg) {
 
     } else if (msg.code == Constants::LIST_GAMES) {
         // construir vector de pares (id, totalPlayers)
-        std::cout << "Debug: List games: se arma lista de partidas" << std::endl;
         std::vector<uint8_t> buffer;
         auto gamesSnapshot = gameMonitor.listGames();
-        std::cout << "Debug: List games: se armó la lista de partidas" << std::endl;
         for (auto& [id, total] : gamesSnapshot) {
             // id y totalPlayers en big endian
             uint32_t idBE = htonl(id);
@@ -88,14 +86,19 @@ void ReceiverThread::lobbyCommands(Message msg) {
 }
 
 void ReceiverThread::run() {
-    std::cout << "Debug: ReceiverThread::run()" << std::endl;
     while (keepRunning) {
         if (protocol.isConnectionClosed()) {
             keepRunning = false;
             return;
         }
 
-        Message msg = protocol.receiveMessage();
+        Message msg;
+        try {
+            msg = protocol.receiveMessage();
+        } catch (const std::exception&) {
+            keepRunning = false;
+            break;
+        }
 
         // Si todavía no tiene partida asignada
         if (gameQueue == nullptr) {
@@ -117,6 +120,16 @@ void ReceiverThread::run() {
 
         // agrega el mensaje a la cola compartida
         gameQueue->push(msgPtr);
-        // gameQueue->push(std::make_shared<Message>(msg));
     }
+    stop();
+}
+
+void ReceiverThread::stop() {
+    keepRunning = false;
+    protocol.closeSocket();
+}
+
+ReceiverThread::~ReceiverThread() {
+    if (keepRunning) ReceiverThread::stop();
+    protocol.closeSocket();
 }

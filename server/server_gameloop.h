@@ -34,7 +34,7 @@ public:
     * */
     // explicit GameLoop(Queue<std::string>& commandQueue);
     explicit GameLoop(Queue<std::shared_ptr<Message>>& commandQueue,
-                      std::vector<Queue<std::shared_ptr<Snapshot>>*> clientQueues);
+                      const std::vector<Queue<std::shared_ptr<Snapshot>>*> &clientQueues);
 
     /*
     * Envía snapshots a todos los clientes conectados
@@ -60,5 +60,6 @@ public:
     * */
     ~GameLoop();
     void addPlayer(int playerId);
+    void validateGameEnd(int counter);
 };
 #endif // SERVER_GAMELOOP_H

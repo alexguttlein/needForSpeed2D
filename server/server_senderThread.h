@@ -13,7 +13,7 @@ class SenderThread : public Thread {
 public:
     SenderThread(ServerProtocol& protocol, Queue<std::shared_ptr<Snapshot>>& clientQueue);
     virtual void run() override;
-
+    void stop() override;
 private:
     ServerProtocol& protocol;
     bool keepRunning;

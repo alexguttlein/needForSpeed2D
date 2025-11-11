@@ -14,6 +14,8 @@ public:
     ReceiverThread(ServerProtocol& protocol, GameMonitor& gameMonitor, ClientHandler& handler);
     void lobbyCommands(Message msg);
     virtual void run() override;
+    void stop() override;
+    ~ReceiverThread() override;
 
 private:
     ServerProtocol& protocol;

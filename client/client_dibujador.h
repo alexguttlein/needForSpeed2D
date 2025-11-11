@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include "common/player.h"
+#include <unordered_map>
 
 class ClientDibujador {
 public:
@@ -45,5 +46,6 @@ private:
 
     float facingDeg = 0.0f;
     int lastX = -1, lastY = -1;
+    std::unordered_map<int, std::pair<int,int>> lastPositions;
 };
 #endif //TP_TALLER_G7_CLIENT_DIBUJADOR_H

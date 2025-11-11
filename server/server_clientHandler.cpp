@@ -8,28 +8,28 @@ ClientHandler::ClientHandler(Socket socket, int id, GameMonitor& gameMonitor) :
         clientQueue(Constants::CLIENT_QUEUE_MAXSIZE),
         sharedQueue(nullptr),
         senderThread(protocol, clientQueue),
-        // receiverThread(protocol, gameMonitor, *this),
         receiverThread(std::make_unique<ReceiverThread>(protocol, gameMonitor, *this)),
         id(id), alive(true), snapshot(), currentGameId(0) {}
 
 void ClientHandler::startThreads() {
-    std::cout << "DEBUG: Client threads starting..." << std::endl;
     receiverThread->start();
     senderThread.start();
 }
 
 void ClientHandler::shutdown() {
     try {
+        alive = false;
         clientQueue.close();
-
+        senderThread.stop();
         senderThread.join();
+        receiverThread->stop();
         receiverThread->join();
 
         if (!protocol.isConnectionClosed()) {
             protocol.closeSocket();
         }
 
-        if (currentGameId == 0) gameMonitor.leaveGame(currentGameId);
+        if (currentGameId != 0) gameMonitor.leaveGame(currentGameId);
     } catch (const std::exception& e) {
         std::cerr << "ClientHandler::shutdown exception: " << e.what() << std::endl;
     }
@@ -45,6 +45,7 @@ bool ClientHandler::isAlive() const {
 
 void ClientHandler::killClient() {
     alive = false;
+    shutdown();
 }
 
 void ClientHandler::assignGameQueue(Queue<std::shared_ptr<Message>>& queue, int gameId) {
@@ -60,4 +61,6 @@ Queue<std::shared_ptr<Snapshot>>& ClientHandler::getClientQueue() {
     return clientQueue;
 }
 
-ClientHandler::~ClientHandler() = default;
+ClientHandler::~ClientHandler() {
+    shutdown();
+};

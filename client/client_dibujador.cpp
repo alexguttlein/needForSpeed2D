@@ -144,6 +144,22 @@ void ClientDibujador::renderFrame(int playerX, int playerY) {
 }
 
 void ClientDibujador::renderAll(const std::vector<Player>& players, int selfId) {
+    if (players.empty()) return;
+
+    // Buscar posición del jugador propio para centrar la cámara
+    int selfX = 0, selfY = 0;
+    for (const auto& p : players) {
+        if (p.playerId == selfId) {
+            selfX = p.posX;
+            selfY = p.posY;
+            break;
+        }
+    }
+
+    // Actualizar cámara centrada en selfId
+    updateCamera_(selfX, selfY);
+
+    // Limpiar pantalla y dibujar mapa
     SDL_SetRenderDrawColor(ren, 20, 20, 20, 255);
     SDL_RenderClear(ren);
 
@@ -153,28 +169,38 @@ void ClientDibujador::renderAll(const std::vector<Player>& players, int selfId) 
         SDL_RenderCopy(ren, mapTex, &src, &dst);
     }
 
-    for (const auto& p : players) {
+    // Dibujar todos los autos
+    for (auto& p : players) {
         int px = p.posX;
         int py = p.posY;
 
-        // actualizar cámara centrada en tu propio jugador
-        if (p.playerId == selfId) {
-            updateCamera_(px, py);
+        // Calcular orientación solo si tenemos posiciones previas
+        float deg = 0.0f;
+        if (lastPositions.contains(p.playerId)) {
+            auto [lx, ly] = lastPositions[p.playerId];
+            int dx = px - lx;
+            int dy = py - ly;
+            if (dx != 0 || dy != 0) {
+                deg = std::atan2(float(dy), float(dx)) * 180.0f / float(M_PI);
+                if (deg < 0.f) deg += 360.f;
+            }
         }
 
-        if (carTex && cellW > 0 && cellH > 0) {
-            int frame = frameForAngle_(facingDeg);
-            int col = frame % atlasCols, row = frame / atlasCols;
-            SDL_Rect s{ col * cellW, row * cellH, cellW, cellH };
-            SDL_Rect d{
-                px - camX - cellW / 2,
-                py - camY - cellH / 2,
-                cellW, cellH
-            };
+        lastPositions[p.playerId] = {px, py}; // actualizar posición previa
 
-            SDL_RenderCopy(ren, carTex, &s, &d);
-        }
+        int frame = frameForAngle_(deg);
+        int col = frame % atlasCols;
+        int row = frame / atlasCols;
+        SDL_Rect s{ col * cellW, row * cellH, cellW, cellH };
+        SDL_Rect d{
+            px - camX - cellW / 2,
+            py - camY - cellH / 2,
+            cellW, cellH
+        };
+
+        if (carTex) SDL_RenderCopy(ren, carTex, &s, &d);
     }
 
     SDL_RenderPresent(ren);
 }
+
