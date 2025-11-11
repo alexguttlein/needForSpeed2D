@@ -5,6 +5,7 @@
 #include "vector2D.h"
 #include "mapEntities.h"
 #include <vector>
+#include "../server/car.h"
 
 /*
 * Estructura que representa un mapa con sus entidades y puntos clave
@@ -16,6 +17,7 @@ struct Map {
     int width;
     int height;
     std::vector<MapEntity> entities;
+    //std::vector<Car> cars;
     std::vector<Vector2D<float>> checkpoints;
     std::vector<Vector2D<float>> spawnsLines;
     std::vector<Vector2D<float>> finishLines;
