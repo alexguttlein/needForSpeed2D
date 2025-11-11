@@ -36,7 +36,7 @@ void GameLoop::run() {
             t1 += std::chrono::nanoseconds(lost); // Avanzar t1 para compensar el retraso
 
             it += lost / rate_ns; // para debug
-            std::cout << "Dropping " << it << " ticks" << std::endl;
+            //std::cout << "Dropping " << it << " ticks" << std::endl;
 
             std::this_thread::sleep_for(std::chrono::nanoseconds(sleep_to_sync)); // Dormir para sincronizarse
         } else {

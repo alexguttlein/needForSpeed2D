@@ -27,6 +27,7 @@ private:
     ReceiverThread receiver;
     SenderThread sender;
     bool playing;
+    std::atomic<int> selfId{-1};
     void lobbyOptions();
 };
 

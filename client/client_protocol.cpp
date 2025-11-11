@@ -114,7 +114,7 @@ std::optional<Snapshot> ClientProtocol::receiveMessageFromServer() {
         uint32_t playersSizeBE = 0;
         socket.recvall(&playersSizeBE, sizeof(playersSizeBE));
         snapshot.playersSize = static_cast<uint32_t>(ntohl(playersSizeBE));
-        std::cout << "debug: Player id: " << snapshot.playerId << std::endl;
+        //std::cout << "debug: Player id: " << snapshot.playerId << std::endl;
 
         for (uint32_t i = 0; i < snapshot.playersSize; i++) {
         CarStateDTO dto{};

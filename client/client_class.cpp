@@ -66,7 +66,6 @@ void Client::run() {
 
     // bool haveSnapshot = false;
     Snapshot snapshot;
-    int selfId = -1;
 
     while (running) {
         auto start = std::chrono::steady_clock::now();
@@ -104,12 +103,12 @@ void Client::run() {
         while (snapshotQueue.try_pop(snapTmp)) { 
             snapshot = std::move(snapTmp); // Siempre guardamos el más reciente
             havePos = true;
-            if (selfId == -1 && snapshot.playerId) selfId = snapshot.playerId;
         }
 
         if (havePos) {
-            dib.renderAll(snapshot.cars, selfId);
+            dib.renderAll(snapshot.cars, selfId.load());
         }
+
 
         auto end = std::chrono::steady_clock::now();
         auto elapsed = std::chrono::duration_cast<ms>(end - start);
@@ -131,7 +130,13 @@ void Client::lobbyOptions() {
 
         if (playing) {
             Event event = eventQueue.pop();
-            playing = (event.type == EventType::CREATE_JOIN_ACCEPTED);
+            if (event.type == EventType::CREATE_JOIN_ACCEPTED) {
+                if (!event.message.empty()) {
+                    selfId = std::stoi(event.message);
+                    std::cout<< "Cliente -> player id: " << selfId.load() << std::endl;
+                }
+                playing = true;
+            }
         }
     }
 }
