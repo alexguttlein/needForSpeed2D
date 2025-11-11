@@ -48,6 +48,8 @@ namespace  Constants {
 
     // constante tiempo sleep de loop
     static constexpr int THREAD_SLEEP_MS = 16; // aprox 60 FPS
+    static constexpr int TICKS_PER_SECOND = 60;
+    static constexpr int MAX_TICKS = 36000; // 10 minutos a 60 ticks por segundo
 
 
     //constantes del juego

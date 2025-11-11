@@ -31,12 +31,18 @@ void GameLogic::processCommand(int car_id, const std::string& command, bool isPr
 }
 
 
-void GameLogic::update() {
-    const float dt = 1.0f / 60.0f; // Suponiendo 60 FPS
+void GameLogic::update(int currentTick) {
+    const float dt = 1.0f / 60.0f;
     for (auto const& [id, car] : cars) {
         car->applyMovement();
         car->applyFriction(); 
     }
+
+    // agregar funcion de fin de juego por tiempo
+    if (currentTick >= Constants::MAX_TICKS) {
+        std::cout << "Tiempo máximo de la partida alcanzado. Finalizando juego..." << std::endl;
+    }
+
     b2World_Step(world, dt, 4);
     checkCollisions(); // Verificar colisiones después de actualizar la física
 }

@@ -97,7 +97,6 @@ float Car::getBoxSpeed() const {
 }
 
 
-
 float Car::getHealth() const {
     return health;
 }
@@ -181,7 +180,6 @@ b2Vec2 Car::getLateralVelocity() const {
     float lateralSpeed = currentVelocity.x * rightVec.x + currentVelocity.y * rightVec.y;
     return rightVec * lateralSpeed;
 }
-
 
 
 void Car::takeDamage(float damage) {

@@ -70,5 +70,11 @@ public:
     *
     * */
     void addPlayer(int playerId);
+    
+    /*
+    * Llama a las funciones que simulan el juego
+    *
+    * */
+    void simulateGame(int currentTick);
 };
 #endif // SERVER_GAMELOOP_H

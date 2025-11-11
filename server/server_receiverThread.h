@@ -22,5 +22,4 @@ private:
     Queue<std::shared_ptr<Message>>* gameQueue;
     bool keepRunning;
 };
-
 #endif //SERVER_RECEIVERTHREAD_H
