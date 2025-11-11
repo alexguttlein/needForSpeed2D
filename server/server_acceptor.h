@@ -16,6 +16,7 @@ class Acceptor : public Thread {
     Socket socket;
     bool keepAccepting;
     std::list<ClientHandler*> clients;
+    GameMonitor gameMonitor;
     void closeSocket();
     void killDeadClients();
     void killClient(ClientHandler* client);

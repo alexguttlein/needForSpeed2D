@@ -23,10 +23,10 @@ public:
 private:
     int gameId;
     Queue<std::shared_ptr<Message>> sharedQueue;
-    // lista de client queues para broadcast
-    std::vector<Queue<std::shared_ptr<Snapshot>>*> clientQueues;
-    std::vector<ClientHandler*> clientHandlers; // si querés referenciar handlers
+    std::vector<Queue<std::shared_ptr<Snapshot>>*> clientQueues; // lista de client queues para broadcast
+    std::vector<ClientHandler*> clientHandlers;
     std::mutex mtx;
     std::unique_ptr<GameLoop> gameloop;
+    void closeAllClientQueues();
 };
 #endif //SERVER_GAME_H

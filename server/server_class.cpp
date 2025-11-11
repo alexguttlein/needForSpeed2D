@@ -6,9 +6,9 @@ Server::Server(const char* port) : acceptor(port) {
 
 void Server::run() {
     std::string end;
+    std::cout << "ingrese fin: ";
     while (std::getline(std::cin, end)) {
         if (end == "q") {
-            closeAcceptor();
             break;
         }
     }

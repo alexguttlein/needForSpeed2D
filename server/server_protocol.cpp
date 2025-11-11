@@ -7,7 +7,7 @@ ServerProtocol::ServerProtocol(Socket socket) :
     socket(std::move(socket)) , isClosed(false) {}
 
 void ServerProtocol::closeSocket() {
-    if (isClosed) return;
+    if (isConnectionClosed()) return;
     socket.shutdown(SHUT_RDWR);
     socket.close();
 }
@@ -20,8 +20,13 @@ Message ServerProtocol::receiveMessage() {
     Message message;
     uint8_t msg(0);
 
+    if (isConnectionClosed()) return message;
+
     if (!isConnectionClosed()) {
-        socket.recvall(&msg, sizeof(msg));
+        int ret = socket.recvall(&msg, sizeof(msg));
+        if (ret <= 0) { // socket cerrado o error
+            throw std::runtime_error("Connection closed");
+        }
     }
 
     message.code = msg;
@@ -29,7 +34,10 @@ Message ServerProtocol::receiveMessage() {
 
     if (message.code == Constants::JOIN_GAME) {
         uint16_t matchIdBE;
-        socket.recvall(&matchIdBE, sizeof(matchIdBE));
+        int ret = socket.recvall(&matchIdBE, sizeof(matchIdBE));
+        if (ret <= 0) { // socket cerrado o error
+            throw std::runtime_error("Connection closed");
+        }
 
         uint16_t matchId = ntohs(matchIdBE);
         message.intValue = static_cast<int>(matchId);
