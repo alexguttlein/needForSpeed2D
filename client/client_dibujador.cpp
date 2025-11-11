@@ -168,11 +168,14 @@ void ClientDibujador::renderAll(const std::vector<CarStateDTO>& cars, int selfId
         int px = static_cast<int>(carState.position.x * Constants::SCALE_METER_TO_PIXEL);
         int py = static_cast<int>(carState.position.y * Constants::SCALE_METER_TO_PIXEL);
 
+
         float angleRad = std::atan2(carState.angle.y, carState.angle.x);
         float currentAngleDeg = angleRad * 180.0f / static_cast<float>(M_PI);
 
         if (carState.car_id == selfId) {
             updateCamera_(px, py);
+            hudHp_ = carState.health;
+            hudSpeedKph_ = carState.speed * 3.6f; // m/s a km/h
         }
 
         if (carTex && cellW > 0 && cellH > 0) {

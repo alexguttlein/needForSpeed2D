@@ -129,6 +129,12 @@ std::optional<Snapshot> ClientProtocol::receiveMessageFromServer() {
         uint32_t healthHost = ntohl(healthBE);
         dto.health = *reinterpret_cast<float*>(&healthHost);
 
+        uint32_t speedBE = 0;
+        socket.recvall(&speedBE, sizeof(speedBE));
+
+        uint32_t speedHost = ntohl(speedBE);
+        dto.speed = *reinterpret_cast<float*>(&speedHost);
+
       
         uint32_t posXBE = 0;
         socket.recvall(&posXBE, sizeof(posXBE));

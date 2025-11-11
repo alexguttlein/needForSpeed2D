@@ -74,7 +74,7 @@ private:
     // ---------- Estado del HUD ----------
     int   hudPos_       = 1;      // posición P
     int   hudPlayers_   = 1;      // N jugadores (se actualiza desde cars.size())
-    int   hudHp_        = 82;     // vida actual
+    int   hudHp_        = 100;     // vida actual
     int   hudMaxHp_     = 100;    // vida máxima
     float hudSpeedKph_  = 128.f;  // velocidad simulada (km/h)
     int   hudCP_        = 3;      // checkpoints actuales
