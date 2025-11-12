@@ -4,6 +4,7 @@
 #include "common/eventType.h"
 #include "common/player.h"
 #include <vector>
+#include "gameInfo.h"
 
 #pragma pack(push, 1)  // para evitar padding
 struct Snapshot {
@@ -11,8 +12,7 @@ struct Snapshot {
     int playerId;
     uint32_t playersSize;
     std::vector<Player> players;
-    // uint32_t posX;
-    // uint32_t posY;
+    std::vector<GameInfo> gameList;
     Snapshot () = default;
 };
 #pragma pack(pop)

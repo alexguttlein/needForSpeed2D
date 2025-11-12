@@ -21,4 +21,5 @@ target_sources(taller_common
     commandConstants.h
     snapshot.h
     eventType.h
+    gameInfo.h
     )

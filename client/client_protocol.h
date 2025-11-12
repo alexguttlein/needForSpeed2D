@@ -16,6 +16,7 @@
 #include "../common/commandConstants.h"
 #include "../common/socket.h"
 #include "../common/snapshot.h"
+#include "../common/gameInfo.h"
 
 class ClientProtocol {
 public:

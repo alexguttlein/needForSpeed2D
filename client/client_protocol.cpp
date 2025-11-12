@@ -41,18 +41,6 @@ uint32_t ClientProtocol::readUInt32(const std::vector<uint8_t>& buffer, size_t& 
     return value;
 }
 
-// uint32_t ClientProtocol::readBigEndianUInt32(const std::vector<uint8_t>& buffer,
-//         size_t& offset) {
-//
-//     uint32_t value = 0;
-//     value |= static_cast<uint32_t>(buffer[offset])     << 24;
-//     value |= static_cast<uint32_t>(buffer[offset + 1]) << 16;
-//     value |= static_cast<uint32_t>(buffer[offset + 2]) << 8;
-//     value |= static_cast<uint32_t>(buffer[offset + 3]);
-//     offset += 4;
-//     return value;
-// }
-
 bool ClientProtocol::sendLobbyOption(const std::string& input) {
     if (socket.is_stream_send_closed()) return false;
     std::istringstream iss(input);
@@ -89,7 +77,7 @@ bool ClientProtocol::sendLobbyOption(const std::string& input) {
 
 std::optional<Snapshot> ClientProtocol::receiveMessageFromServer() {
     if (socket.is_stream_recv_closed()) return std::nullopt;
-
+    std::cout << "debug: llego un opt snap del server" << std::endl;
     uint8_t type;
     ssize_t bytes = socket.recvall(&type, sizeof(type));
     if (bytes <= 0) return std::nullopt;
@@ -163,22 +151,23 @@ std::optional<Snapshot> ClientProtocol::receiveMessageFromServer() {
         uint32_t sizeBE = 0;
         if (socket.recvall(&sizeBE, sizeof(sizeBE)) <= 0) return std::nullopt;
         uint32_t listSize = ntohl(sizeBE);
-
         // Leer la lista completa
         std::vector<uint8_t> data(listSize);
         if (socket.recvall(data.data(), listSize) <= 0) return std::nullopt;
 
-        // se arma la lista
-        std::cout << "Partidas activas:\n";
+        Snapshot snapshot{};
         size_t offset = 0;
-        while (offset + 8 <= data.size()) { // 4 bytes id + 4 bytes jugadores
-            uint32_t id = readUInt32(data, offset);
-            uint32_t players = readUInt32(data, offset);
-            std::cout << "ID: " << id <<
-                ", Jugadores: " << players << " / " <<
-                    Constants::MAX_PLAYERS_IN_GAME << std::endl;
+        while (offset + 8 <= data.size()) {
+            // 4 bytes id + 4 bytes cant. jugadores
+            GameInfo game{};
+            game.id = readUInt32(data, offset);
+            game.players = readUInt32(data, offset);
+            snapshot.gameList.push_back(game);
+            std::cout << "Debug: ID: " << game.id
+                  << ", Jugadores: " << game.players << " / "
+                  << Constants::MAX_PLAYERS_IN_GAME << std::endl;
         }
-        return std::nullopt; // sigue en lobby
+        return snapshot;
     }
 
     std::cerr << "Mensaje desconocido recibido del servidor. Tipo = " << std::hex << (int)type << std::endl;

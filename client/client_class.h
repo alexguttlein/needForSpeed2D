@@ -35,6 +35,9 @@ public:
     void startGame();
     void setPlayerName(const std::string& name);
     void run();
+    Queue<Event>& getEventQueue();
+    ClientProtocol& getProtocol();
+    Queue<Snapshot>& getSnapshotQueue();
 private:
     ClientProtocol protocol;
     Queue<Snapshot> snapshotQueue;

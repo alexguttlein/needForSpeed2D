@@ -109,6 +109,18 @@ void Client::run() {
     SDL_Quit();
 }
 
+Queue<Event>& Client::getEventQueue() {
+    return eventQueue;
+}
+
+ClientProtocol& Client::getProtocol() {
+    return protocol;
+}
+
+Queue<Snapshot> & Client::getSnapshotQueue() {
+    return snapshotQueue;
+}
+
 void Client::goToLobby() {
 
     int argc = 0;
@@ -122,7 +134,7 @@ void Client::goToLobby() {
     window.resize(800, 600);
 
     // fondo de pantalla
-    QPixmap background(":/assets/need-for-speed/lobbyImg/wall3.jpg");
+   QPixmap background(":/assets/need-for-speed/lobbyImg/wall3.jpg");
 
     if (!background.isNull()) {
         background = background.scaled(window.size(), Qt::KeepAspectRatioByExpanding);
@@ -145,13 +157,13 @@ void Client::goToLobby() {
     nameInput->setPlaceholderText("Enter your driver name");
     nameInput->setStyleSheet(
         "QLineEdit {"
-        " color: white;"   // texto ingresado
+        " color: white;"   //texto ingresado
         " font-size: 18px;"
         " font-weight: bold;"
         " padding: 10px 15px;"
         " border: 2px solid rgba(255, 0, 0, 0.6);"
         " border-radius: 10px;"
-        " background-color: rgba(0, 0, 0, 0.9);"  // fondo oscuro
+        " background-color: rgba(0, 0, 0, 0.9);"  //fondo oscuro
         " selection-background-color: rgba(255, 0, 0, 0.6);"
         "}"
         "QLineEdit:focus {"
@@ -162,7 +174,6 @@ void Client::goToLobby() {
         " color: rgba(200, 200, 200, 0.5);"
         "}"
     );
-
 
     auto *continueButton = new QPushButton("START ENGINE", centerWidget);
     continueButton->setEnabled(false); //deshabilitado al iniciar
@@ -187,7 +198,7 @@ void Client::goToLobby() {
         "}"
     );
 
-    // efecto neón (DropShadow + animación)
+    //efecto neón
     auto *neonEffect = new QGraphicsDropShadowEffect(&window);
     neonEffect->setBlurRadius(40);
     neonEffect->setColor(QColor(255, 0, 0));
@@ -211,7 +222,6 @@ void Client::goToLobby() {
             neonAnimation->stop();
     });
 
-
     centerLayout->addWidget(nameInput);
     centerLayout->addSpacing(20);
     centerLayout->addWidget(continueButton);
@@ -229,30 +239,25 @@ void Client::goToLobby() {
         continueButton->setEnabled(!nameInput->text().isEmpty());
     });
 
-    // cuando se presiona "Continue" se va a otra pantalla
+    // cuando se presiona "START ENGINE" se va a otra pantalla
     QObject::connect(continueButton, &QPushButton::clicked, [&] {
         playerName = nameInput->text().toStdString();
         QString name = nameInput->text();
 
-        LobbyMenuWindow *lobbyMenu = new LobbyMenuWindow(name);
+        LobbyMenuWindow *lobbyMenu = new LobbyMenuWindow(this, name);
         lobbyMenu->show();
-        window.close(); //por ahora cierra la ventana
+
+    // conectar la señal del botón "Crear partida"
+    QObject::connect(lobbyMenu->getCreateButton(), &QPushButton::clicked, [this, lobbyMenu]() {
+        // Se envía la orden "crear" al servidor
+        bool sent = this->protocol.sendLobbyOption("crear");
+
+        if (sent)
+            lobbyMenu->close();
+    });
+        window.close(); //cierra la ventana
     });
 
     // se inicia qt
     app.exec();
-    // lobbyOptions();
-}
-
-void Client::lobbyOptions() {
-    std::string input;
-    while (!playing) {
-        std::getline(std::cin, input);
-        playing = protocol.sendLobbyOption(input);
-
-        if (playing) {
-            Event event = eventQueue.pop();
-            playing = (event.type == EventType::CREATE_JOIN_ACCEPTED);
-        }
-    }
 }

@@ -8,6 +8,8 @@ target_sources(taller_client
     client_dibujador.cpp
     client_senderThread.cpp
     lobbyMenuWindow.cpp
+    waitingWindow.cpp
+    gameListWindow.cpp
     PUBLIC
     # .h files
     client_class.h
@@ -16,4 +18,6 @@ target_sources(taller_client
     client_dibujador.h
     client_senderThread.h
     lobbyMenuWindow.h
+    waitingWindow.h
+    gameListWindow.h
     )
