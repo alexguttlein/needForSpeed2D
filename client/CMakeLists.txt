@@ -10,6 +10,7 @@ target_sources(taller_client
     lobbyMenuWindow.cpp
     waitingWindow.cpp
     gameListWindow.cpp
+    client_qtManager.cpp
     PUBLIC
     # .h files
     client_class.h
@@ -20,4 +21,5 @@ target_sources(taller_client
     lobbyMenuWindow.h
     waitingWindow.h
     gameListWindow.h
+    client_qtManager.h
     )

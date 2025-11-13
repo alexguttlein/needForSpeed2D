@@ -45,12 +45,23 @@ void GameListWindow::loadGameList(const std::vector<GameInfo>& games) {
 }
 
 void GameListWindow::onRefreshClicked() {
-    auto snapshotOpt = client->getSnapshotQueue().pop();
-    if (!snapshotOpt.gameList.data()) {
-        QMessageBox::warning(this, "Error", "No se pudo obtener la lista de juegos.");
+    // solicitar lista al servidor y esperar en background
+    if (!client->getProtocol().sendLobbyOption("listar")) {
+        QMessageBox::warning(this, "Error", "No se pudo solicitar la lista de partidas.");
         return;
     }
-    loadGameList(snapshotOpt.gameList);
+
+    // esperar snapshot (fuera del hilo UI)
+    (void)QtConcurrent::run([this]() {
+        Snapshot snapshot = client->getSnapshotQueue().pop();
+        QMetaObject::invokeMethod(this, [this, snapshot]() {
+            if (snapshot.gameList.empty()) {
+                QMessageBox::information(this, "Info", "No hay partidas activas.");
+                return;
+            }
+            loadGameList(snapshot.gameList);
+        }, Qt::QueuedConnection);
+    });
 }
 
 void GameListWindow::onCancelClicked() {

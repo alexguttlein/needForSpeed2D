@@ -22,8 +22,8 @@ public:
     QPushButton* getJoinButton();
     QPushButton* getSelectCarButton();
     QString getPlayerName() const;
-    void onCreateGameClicked();
-    void onJoinGameClicked();
+    // void onCreateGameClicked();
+    // void onJoinGameClicked();
 
 private:
     Client* client;

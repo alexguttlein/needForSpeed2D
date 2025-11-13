@@ -26,11 +26,13 @@ public:
     CommandConstants::Key sdlToKey(const SDL_KeyCode input);
     bool sendLobbyOption(const std::string& input);
     std::optional<Snapshot> receiveMessageFromServer();
+    std::optional<Snapshot> receiveGameListFromServer();
+    std::optional<Snapshot> receiveSnapshotFromServer();
+    std::optional<Snapshot> receiveControlFromServer();
 
 private:
     Socket socket;
     bool isClosed;
-    // uint32_t readBigEndianUInt32(const std::vector<uint8_t>& buffer, size_t& offset);
     uint32_t readUInt32(const std::vector<uint8_t>& buffer, size_t& offset);
 };
 

@@ -1,7 +1,6 @@
 #ifndef GAMELISTWINDOW_H
 #define GAMELISTWINDOW_H
 
-#pragma once
 #include <QWidget>
 #include <QTableWidget>
 #include <QPushButton>

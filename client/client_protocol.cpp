@@ -75,99 +75,110 @@ bool ClientProtocol::sendLobbyOption(const std::string& input) {
     return false;
 }
 
+std::optional<Snapshot> ClientProtocol::receiveGameListFromServer() {
+    // Leer tamaño de la lista (4 bytes)
+    uint32_t sizeBE = 0;
+    if (socket.recvall(&sizeBE, sizeof(sizeBE)) <= 0) return std::nullopt;
+    uint32_t listSize = ntohl(sizeBE);
+    // Leer la lista completa
+    std::vector<uint8_t> data(listSize);
+    if (socket.recvall(data.data(), listSize) <= 0) return std::nullopt;
+
+    Snapshot snapshot{};
+    size_t offset = 0;
+    while (offset + 8 <= data.size()) {
+        // 4 bytes id + 4 bytes cant. jugadores
+        GameInfo game{};
+        game.id = readUInt32(data, offset);
+        game.players = readUInt32(data, offset);
+        snapshot.gameList.push_back(game);
+        std::cout << "Debug: ID: " << game.id
+                << ", Jugadores: " << game.players << " / "
+                << Constants::MAX_PLAYERS_IN_GAME << std::endl;
+    }
+    return snapshot;
+}
+
+std::optional<Snapshot> ClientProtocol::receiveSnapshotFromServer() {
+    // se recibio un Snapshot
+    Snapshot snapshot{};
+    // leer controlEvent
+    uint8_t controlEventByte = 0;
+    socket.recvall(&controlEventByte, sizeof(controlEventByte));
+    snapshot.controlEvent = static_cast<EventType>(controlEventByte);
+
+    //se lee el id del jugador/cliente
+    uint32_t playerIdBE = 0;
+    socket.recvall(&playerIdBE, sizeof(playerIdBE));
+    snapshot.playerId = ntohl(playerIdBE);
+
+    //se lee la cantidad de jugadoores a recibir
+    uint32_t playersSizeBE = 0;
+    socket.recvall(&playersSizeBE, sizeof(playersSizeBE));
+    snapshot.playersSize = static_cast<uint32_t>(ntohl(playersSizeBE));
+    std::cout << "debug: Player id: " << snapshot.playerId << std::endl;
+
+    for (uint32_t i = 0; i < snapshot.playersSize; i++) {
+        Player p{};
+        uint32_t idBE = 0;
+        socket.recvall(&idBE, sizeof(idBE));
+        p.playerId = ntohl(idBE);
+
+        uint32_t posXBE = 0;
+        socket.recvall(&posXBE, sizeof(posXBE));
+        p.posX = ntohl(posXBE);
+
+        uint32_t posYBE = 0;
+        socket.recvall(&posYBE, sizeof(posYBE));
+        p.posY = ntohl(posYBE);
+
+        snapshot.players.push_back(p);
+    }
+
+    return snapshot;
+}
+
+std::optional<Snapshot> ClientProtocol::receiveControlFromServer() {
+    // se recibio un codigo de control
+    uint8_t code;
+    socket.recvall(&code, sizeof(code));
+
+    if (code == Constants::CREATE_JOIN_ACCEPTED) {
+        //se recibe playerId
+        uint32_t playerIdBE = 0;
+        socket.recvall(&playerIdBE, sizeof(playerIdBE));
+        int selfId = ntohl(playerIdBE);
+
+        Snapshot snapshot{};
+        snapshot.controlEvent = EventType::CREATE_JOIN_ACCEPTED;
+        snapshot.playerId = selfId;
+        return snapshot;
+    } else if (code == Constants::JOIN_REJECTED) {
+        Snapshot snapshot{};
+        snapshot.controlEvent = EventType::JOIN_REJECTED;
+        return snapshot;
+    } else {
+        std::cerr << "Código de control recibido: " << std::hex << (int)code << std::endl;
+    }
+    return std::nullopt;
+}
+
 std::optional<Snapshot> ClientProtocol::receiveMessageFromServer() {
     if (socket.is_stream_recv_closed()) return std::nullopt;
-    std::cout << "debug: llego un opt snap del server" << std::endl;
     uint8_t type;
     ssize_t bytes = socket.recvall(&type, sizeof(type));
     if (bytes <= 0) return std::nullopt;
 
     if (type == Constants::TYPE_SNAPSHOT) {
-        // se recibio un Snapshot
-        Snapshot snapshot{};
-        // leer controlEvent
-        uint8_t controlEventByte = 0;
-        socket.recvall(&controlEventByte, sizeof(controlEventByte));
-        snapshot.controlEvent = static_cast<EventType>(controlEventByte);
-
-        //se lee el id del jugador/cliente
-        uint32_t playerIdBE = 0;
-        socket.recvall(&playerIdBE, sizeof(playerIdBE));
-        snapshot.playerId = ntohl(playerIdBE);
-
-        //se lee la cantidad de jugadoores a recibir
-        uint32_t playersSizeBE = 0;
-        socket.recvall(&playersSizeBE, sizeof(playersSizeBE));
-        snapshot.playersSize = static_cast<uint32_t>(ntohl(playersSizeBE));
-        std::cout << "debug: Player id: " << snapshot.playerId << std::endl;
-
-        for (uint32_t i = 0; i < snapshot.playersSize; i++) {
-            Player p{};
-            uint32_t idBE = 0;
-            socket.recvall(&idBE, sizeof(idBE));
-            p.playerId = ntohl(idBE);
-
-            uint32_t posXBE = 0;
-            socket.recvall(&posXBE, sizeof(posXBE));
-            p.posX = ntohl(posXBE);
-
-            uint32_t posYBE = 0;
-            socket.recvall(&posYBE, sizeof(posYBE));
-            p.posY = ntohl(posYBE);
-
-            snapshot.players.push_back(p);
-        }
-
-        return snapshot;
+        return receiveSnapshotFromServer();
     }
 
     if (type == Constants::TYPE_CONTROL) {
-        // se recibio un codigo de control
-        uint8_t code;
-        socket.recvall(&code, sizeof(code));
-
-        if (code == Constants::CREATE_JOIN_ACCEPTED) {
-            //se recibe playerId
-            uint32_t playerIdBE = 0;
-            socket.recvall(&playerIdBE, sizeof(playerIdBE));
-            int selfId = ntohl(playerIdBE);
-
-            Snapshot snapshot{};
-            snapshot.controlEvent = EventType::CREATE_JOIN_ACCEPTED;
-            snapshot.playerId = selfId;
-            return snapshot;
-        } else if (code == Constants::JOIN_REJECTED) {
-            Snapshot snapshot{};
-            snapshot.controlEvent = EventType::JOIN_REJECTED;
-            return snapshot;
-        } else {
-            std::cerr << "Código de control recibido: " << std::hex << (int)code << std::endl;
-        }
-        return std::nullopt;
+        return receiveControlFromServer();
     }
 
     if (type == Constants::TYPE_GAME_LIST) {
-        // Leer tamaño de la lista (4 bytes)
-        uint32_t sizeBE = 0;
-        if (socket.recvall(&sizeBE, sizeof(sizeBE)) <= 0) return std::nullopt;
-        uint32_t listSize = ntohl(sizeBE);
-        // Leer la lista completa
-        std::vector<uint8_t> data(listSize);
-        if (socket.recvall(data.data(), listSize) <= 0) return std::nullopt;
-
-        Snapshot snapshot{};
-        size_t offset = 0;
-        while (offset + 8 <= data.size()) {
-            // 4 bytes id + 4 bytes cant. jugadores
-            GameInfo game{};
-            game.id = readUInt32(data, offset);
-            game.players = readUInt32(data, offset);
-            snapshot.gameList.push_back(game);
-            std::cout << "Debug: ID: " << game.id
-                  << ", Jugadores: " << game.players << " / "
-                  << Constants::MAX_PLAYERS_IN_GAME << std::endl;
-        }
-        return snapshot;
+        return receiveGameListFromServer();
     }
 
     std::cerr << "Mensaje desconocido recibido del servidor. Tipo = " << std::hex << (int)type << std::endl;
