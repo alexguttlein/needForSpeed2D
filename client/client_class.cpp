@@ -7,7 +7,7 @@
 #include <chrono>
 
 using ms = std::chrono::milliseconds;
-constexpr int FPS = 30;
+constexpr int FPS = 60;
 const ms FRAME_MS {1000 / FPS };
 
 Client::Client(const char* host, const char* port) :
@@ -58,37 +58,58 @@ void Client::run() {
         std::fprintf(stderr, "No pude cargar atlas del auto\n");
     }
 
+    dib.setUIFont("assets/ui/FreeSans.ttf", 16);
     dib.setFacingDeg(0.0f);
     bool running = true;
     //CAMBIAR
-    int x = 90, y = 90 ;
-    bool havePos = true;
+    // int x = 90, y = 90 ;
+    bool havePos = false;
+
+    // bool haveSnapshot = false;
+    Snapshot snapshot;
+
     while (running) {
         auto start = std::chrono::steady_clock::now();
-        Snapshot snapshot{};
+
         SDL_Event e;
         while (SDL_PollEvent(&e)) {
             if (e.type == SDL_QUIT) running = false;
             if (e.type == SDL_KEYDOWN) {
                 switch (e.key.keysym.sym) {
                     case SDLK_ESCAPE: running = false; break;
-                    case SDLK_w: commandQueue.push(SDLK_w); break;
-                    case SDLK_s: commandQueue.push(SDLK_s); break;
-                    case SDLK_a: commandQueue.push(SDLK_a); break;
-                    case SDLK_d: commandQueue.push(SDLK_d); break;
+                    case SDLK_w: commandQueue.push({ SDLK_w, true }); break;
+                    case SDLK_s: commandQueue.push({ SDLK_s, true }); break;
+                    case SDLK_a: commandQueue.push({ SDLK_a, true }); break;
+                    case SDLK_d: commandQueue.push({ SDLK_d, true }); break;
                 }
             }
+            else if (e.type == SDL_KEYUP) {
+            switch (e.key.keysym.sym) {
+
+                case SDLK_w: commandQueue.push({ SDLK_w, false }); break;
+                case SDLK_s: commandQueue.push({ SDLK_s, false }); break;
+                case SDLK_a: commandQueue.push({ SDLK_a, false }); break;
+                case SDLK_d: commandQueue.push({ SDLK_d, false }); break;
+            }
+        }
         }
 
-        if (snapshotQueue.try_pop(snapshot)) {
-            std::cout << "REcibo snapshot" << std::endl;
-            x = snapshot.posX;
-            y = snapshot.posY;
+       
+        Snapshot snapTmp;
+        // if (snapshotQueue.try_pop(snapTmp)) {
+        //     snapshot = std::move(snapTmp);
+        //     havePos = true;
+        //     if (selfId == -1 && snapshot.playerId) selfId = snapshot.playerId; // solo la primera vez
+        // }
+        while (snapshotQueue.try_pop(snapTmp)) { 
+            snapshot = std::move(snapTmp); // Siempre guardamos el más reciente
             havePos = true;
         }
+
         if (havePos) {
-            dib.renderFrame(x, y);
+            dib.renderAll(snapshot.cars, selfId.load());
         }
+
 
         auto end = std::chrono::steady_clock::now();
         auto elapsed = std::chrono::duration_cast<ms>(end - start);
@@ -110,7 +131,13 @@ void Client::lobbyOptions() {
 
         if (playing) {
             Event event = eventQueue.pop();
-            playing = (event.type == EventType::CREATE_JOIN_ACCEPTED);
+            if (event.type == EventType::CREATE_JOIN_ACCEPTED) {
+                if (!event.message.empty()) {
+                    selfId = std::stoi(event.message);
+                    std::cout<< "Cliente -> player id: " << selfId.load() << std::endl;
+                }
+                playing = true;
+            }
         }
     }
 }

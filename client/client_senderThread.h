@@ -4,16 +4,17 @@
 #include "../common/thread.h"
 #include "../common/queue.h"
 #include "client_protocol.h"
+#include "commandMessage.h"
 #include <SDL.h>
 
 
 class SenderThread : public Thread{
 private:
     ClientProtocol& protocol;
-    Queue<SDL_KeyCode>& commandQueue;
+    Queue<commandMessage>& commandQueue;
 
 public:
-    SenderThread(ClientProtocol& pro, Queue<SDL_KeyCode>& cmd_q);
+    SenderThread(ClientProtocol& pro, Queue<commandMessage>& cmd_q);
     void run() override;
 };
 

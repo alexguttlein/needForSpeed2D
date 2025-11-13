@@ -1,38 +1,77 @@
 #ifndef SERVER_GAMELOGIC_H
 #define SERVER_GAMELOGIC_H
 
-
-
 #pragma once
 
 #include "car.h"
-#include "../common/gameSnapshot.h"
-#include <map> // Para manejar los autos por ID
+#include "../common/snapshot.h"
+#include "../common/eventType.h"
+#include "server_raceBuilder.h"
+#include "box2d/box2d.h"
+#include <map> 
 #include <memory>
 
 class GameLogic {
 private:
-    std::map<uint8_t, std::shared_ptr<Car>> cars;
+    RaceBuilder raceBuilder;
+    b2WorldId world;
+    std::map<int, std::shared_ptr<Car>> cars;
+    int lastCommandPlayerId = 0;
     
 public:
+
+    /*
+    * Constructor de GameLogic. (por ahora vacío)
+    *
+    * */
     GameLogic();
     
     /*
     * Procesa un comando recibido para un auto específico
     *
     * */
-   // void processCommand(uint8_t car_id, const std::string& command);
+   void processCommand(int car_id, const std::string& command, bool isPressed);
 
     /*
     * Actualiza la lógica del juego (física, estado de autos, etc.)
-    *
+    * 
     * */
-   // void update(float dt);
+   void update(int currentTick);
 
     /*
     * Crea y devuelve un snapshot del estado actual del juego
     *
     * */    
-    GameSnapshot getSnapshot() const;
+    std::shared_ptr<Snapshot> getSnapshot(EventType controlEvent)const;
+
+    /*
+    * Agrega un auto al juego para un jugador específico
+    *
+    * */
+    void addCar(int playerId, int carType);
+
+    /*
+    * Verifica y maneja las colisiones entre autos
+    *
+    * */
+    void checkCollisions();
+
+    /*
+    * Aplica daño a los autos involucrados en una colisión
+    *
+    * */
+    void applyCollisionDamage(Car* carA, Car* carB, b2Vec2 normal, float hitSpeed);
+
+    /*
+    * Obtiene la velocidad de aproximación entre dos cuerpos en colisión
+    *
+    * */
+    float getCollisionSpeed(b2BodyId bodyA, b2BodyId bodyB);
+
+    /*
+    * Obtiene la normal de colisión entre dos cuerpos
+    *
+    * */
+    b2Vec2 getCollisionNormal(b2BodyId bodyA, b2BodyId bodyB);
 };
 #endif // SERVER_GAMELOGIC_H

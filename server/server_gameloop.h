@@ -13,15 +13,17 @@
 #include "../common/constants.h"
 #include "common/queue.h"
 #include "common/message.h"
+#include "server_gamelogic.h"
+#include <unordered_map>
 
 class GameLoop : public Thread {
 
 private:
+    GameLogic gameLogic;
     std::atomic<bool> running;
     Queue<std::shared_ptr<Message>>& commandQueue; //queue compartida
     std::vector<Queue<std::shared_ptr<Snapshot>>*> clientQueues; //queues privadas de los jugadores
     std::mutex qmtx;
-    void run() override;
 
 public:
 
@@ -34,11 +36,11 @@ public:
                       std::vector<Queue<std::shared_ptr<Snapshot>>*> clientQueues);
 
     /*
-    * Envía snapshots a todos los clientes conectados
+    * Agrega las snapshots a la queue de snapshots
     *
     * */
-    // void broadcastSnapshots();
-    
+    void saveSnapshots();
+
     /*
     * Procesa la cola de comandos recibidos
     *
@@ -50,11 +52,29 @@ public:
     *
     * */
     void stop() override;
+
+    /*
+    * Ejecuta el GameLoop
+    *
+    * */
+    void run() override;
     
     /*
     * Destructor de GameLoop
     *
     * */
     ~GameLoop();
+
+    /*
+    * Agrega un nuevo jugador al GameLoop
+    *
+    * */
+    void addPlayer(int playerId);
+    
+    /*
+    * Llama a las funciones que simulan el juego
+    *
+    * */
+    void simulateGame(int currentTick);
 };
 #endif // SERVER_GAMELOOP_H

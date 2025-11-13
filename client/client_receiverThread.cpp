@@ -10,11 +10,11 @@ void ReceiverThread::run() {
             if (!optSnapshot.has_value()) continue;
 
             Snapshot snapshot = optSnapshot.value();
-            EventType eventType = snapshot.controlEvent;
-            switch (eventType) {
+            // EventType eventType = snapshot.controlEvent;
+            switch (snapshot.controlEvent) {
                 case EventType::CREATE_JOIN_ACCEPTED: {
                     eventQueue.push(Event(EventType::CREATE_JOIN_ACCEPTED,
-                    "Creación o unión a partida satisfactoria."));
+                    std::to_string(snapshot.playerId)));
                     continue;
                 }
                 case EventType::JOIN_REJECTED: {

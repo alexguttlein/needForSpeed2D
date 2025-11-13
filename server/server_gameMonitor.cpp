@@ -25,8 +25,6 @@ bool GameMonitor::tryJoinGame(int id, Queue<std::shared_ptr<Message>>*& outQueue
         return false; // partida completa, no se puede unir
     }
 
-    //si hay lugar: incrementar y devolver queue
-    game->totalPlayers++;
     outQueue = &game->getSharedQueue();
     return true;
 }

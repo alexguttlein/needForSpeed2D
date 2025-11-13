@@ -6,32 +6,44 @@ GameLoop::GameLoop(Queue<std::shared_ptr<Message>>& commandQueue,
       commandQueue(commandQueue),
       clientQueues(clientQueues) {}
 
-static constexpr uint32_t SPAWN_X = 90;
-static constexpr uint32_t SPAWN_Y= 90;
-
-uint32_t x = SPAWN_X;   // spawn coherente con el cliente (antes: 0)
-uint32_t y = SPAWN_Y;   // spawn coherente con el cliente (antes: 0)
-
 void GameLoop::run() {
+
     std::cout << "Arranco gameloop" << std::endl;
     running = true;
 
-    // Enviar un snapshot inicial a todos los clientes para alinear posiciones
-    auto initial = std::make_shared<Snapshot>();
-    initial->posX = x;
-    initial->posY = y;
-    initial->controlEvent = EventType::NONE;
-    {
-        std::lock_guard<std::mutex> lock(qmtx);
-        for (auto qptr : clientQueues) {
-            if (qptr) {
-                try { qptr->push(initial); std::cout << "Mande init - gameloop" << std::endl;} catch (const ClosedQueue&) {}
-            }
-        }
-    }
+    const std::chrono::milliseconds rate = std::chrono::milliseconds(1000 / Constants::TICKS_PER_SECOND);
+    auto t1 = std::chrono::steady_clock::now(); // Tiempo inicial t1
+    int it = 0;
+
     while (running) {
-        processCommandQueue();
-        std::this_thread::sleep_for(std::chrono::milliseconds(Constants::THREAD_SLEEP_MS));
+
+        simulateGame(it);
+
+        auto t2 = std::chrono::steady_clock::now(); // Tiempo después de procesar el frame
+
+        auto rest_duration = t1 + rate - t2;
+        long long rest = std::chrono::duration_cast<std::chrono::nanoseconds>(rest_duration).count();
+
+        if (rest < 0) {
+            long long behind = -rest; // Tiempo que estamos atrasados (positivo)
+            
+            long long rate_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(rate).count();
+
+            long long sleep_to_sync = rate_ns - (behind % rate_ns); // Tiempo para sincronizarse
+
+            long long lost = behind + sleep_to_sync;  // Tiempo total perdido
+
+            t1 += std::chrono::nanoseconds(lost); // Avanzar t1 para compensar el retraso
+
+            it += lost / rate_ns; // para debug
+            //std::cout << "Dropping " << it << " ticks" << std::endl;
+
+            std::this_thread::sleep_for(std::chrono::nanoseconds(sleep_to_sync)); // Dormir para sincronizarse
+        } else {
+            std::this_thread::sleep_for(std::chrono::nanoseconds(rest)); // camino feliz
+        }
+        t1 += rate;
+        it++;
     }
 }
 
@@ -39,31 +51,38 @@ void GameLoop::processCommandQueue() {
     std::shared_ptr<Message> msg;
     while (commandQueue.try_pop(msg)) {
         if (!msg) continue;
+        bool is_pressed = (msg->code & 0x80) != 0;  
+        char key_char = msg->key; 
+        gameLogic.processCommand(msg->senderId, std::string(1, key_char), is_pressed);
+    }
+}
 
-        switch (msg->key) {
-            case 'w': y--; break;
-            case 's': y++; break;
-            case 'a': x--; break;
-            case 'd': x++; break;
-        }
 
-        auto snapshot = std::make_shared<Snapshot>();
-        snapshot->posX = x;
-        snapshot->posY = y;
-        snapshot->controlEvent = EventType::NONE;
+void GameLoop::addPlayer(int playerId) {
+    static constexpr int DEFAULT_CAR_TYPE = 1;
+    gameLogic.addCar(playerId, DEFAULT_CAR_TYPE);
+}
 
+
+void GameLoop::simulateGame(int currentTick) {
+    processCommandQueue();
+    gameLogic.update(currentTick); 
+
+    std::shared_ptr<Snapshot> snapshotToSend = gameLogic.getSnapshot( EventType::NONE);
+    {
         std::lock_guard<std::mutex> lock(qmtx);
         for (auto qptr : clientQueues) {
             if (qptr) {
                 try {
-                    qptr->push(snapshot);
+                    qptr->push(snapshotToSend);
                 } catch (const ClosedQueue&) {
-                    std::cout << "[GameLoop] cola cerrada al hacer push" << std::endl;
+                    std::cout << "[GameLoop] Cola cerrada al enviar snapshot" << std::endl;
                 }
             }
         }
     }
 }
+
 
 void GameLoop::stop() {
     running = false;

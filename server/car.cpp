@@ -22,15 +22,27 @@ void Car::setCarBox2DBody(Vector2D<float> position) {
     b2BodyDef bodyDef = b2DefaultBodyDef();
     bodyDef.type = b2_dynamicBody;
     bodyDef.position = {position.x, position.y};
+    bodyDef.enableSleep = false; 
     bodyDef.linearDamping = 0.5f; // aplica fricción lineal
     bodyDef.angularDamping = 8.0f; // aplica fricción angular
     body = b2CreateBody(world, &bodyDef);
+    b2Body_SetAwake(body, true);
 
     // Forma del auto: rectángulo simple
-    b2Polygon shape = b2MakeBox(1.0f, 0.5f);
+    
+    b2Polygon shape = b2MakeBox(1.20f / 2.0f, 1.28f / 2.0f);
     b2ShapeDef shapeDef = b2DefaultShapeDef();
-    shapeDef.density = weight;
-    b2CreatePolygonShape(body, &shapeDef, &shape);
+    shapeDef.density = weight;    
+    shapeDef.enableContactEvents = true; 
+
+    // Collision filtering
+    shapeDef.filter.categoryBits = 0x0001;
+    shapeDef.filter.maskBits = 0x0001;
+    shapeDef.userData = this;          
+
+    b2ShapeId shapeId = b2CreatePolygonShape(body, &shapeDef, &shape);
+    b2Shape_SetFriction(shapeId, 0.0f);
+    b2Shape_SetRestitution(shapeId, 0.4f);
 }
 
 
@@ -51,6 +63,26 @@ Vector2D<float> Car::getDirection() const {
 }
 
 
+void Car::setIsAccelerating(bool value) {
+    isAccelerating = value;
+}
+
+
+void Car::setIsBraking(bool value) {
+    isBraking = value;
+}
+
+
+void Car::setIsTurningLeft(bool value) {
+    isTurningLeft = value;
+}
+
+
+void Car::setIsTurningRight(bool value) {
+    isTurningRight = value;
+}
+
+
 float Car::getSpeed() const {
    b2Vec2 velocity = b2Body_GetLinearVelocity(body);
    return std::sqrt(velocity.x * velocity.x + velocity.y * velocity.y);
@@ -63,7 +95,6 @@ float Car::getBoxSpeed() const {
     b2Vec2 forward{rotation.c, rotation.s};
     return velocity.x * forward.x + velocity.y * forward.y;
 }
-
 
 
 float Car::getHealth() const {
@@ -123,6 +154,24 @@ void Car::applyFriction() {
 }
 
 
+void Car::applyMovement() {
+    if(isDestroyed()) return;
+    
+    if (isAccelerating) {
+        accelerate();
+    }
+    if (isBraking) {
+        breakReverse();
+    }
+    if (isTurningLeft) {
+        turnLeft();
+    }
+    if (isTurningRight) {
+        turnRight();
+    }
+}
+
+
 b2Vec2 Car::getLateralVelocity() const {
     b2Vec2 currentVelocity = b2Body_GetLinearVelocity(body);
     b2Rot rotation = b2Body_GetRotation(body);
@@ -131,7 +180,6 @@ b2Vec2 Car::getLateralVelocity() const {
     float lateralSpeed = currentVelocity.x * rightVec.x + currentVelocity.y * rightVec.y;
     return rightVec * lateralSpeed;
 }
-
 
 
 void Car::takeDamage(float damage) {
@@ -163,4 +211,9 @@ void Car::upgradeHealth(){
 
 void Car::repair() {
     health = std::min(maxHealth, health + Constants::HEALTH_UPGRADE);
+}
+
+
+Car::~Car() {
+    b2DestroyBody(body);
 }

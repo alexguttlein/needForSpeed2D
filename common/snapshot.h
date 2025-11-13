@@ -2,12 +2,15 @@
 #define SNAPSHOT_H
 
 #include "common/eventType.h"
+#include "carStateDTO.h"
+#include <vector>
 
 #pragma pack(push, 1)  // para evitar padding
 struct Snapshot {
     EventType controlEvent;
-    uint32_t posX;
-    uint32_t posY;
+    int playerId;
+    uint32_t playersSize;
+    std::vector<CarStateDTO> cars;
     Snapshot () = default;
 };
 #pragma pack(pop)
