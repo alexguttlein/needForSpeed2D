@@ -4,6 +4,7 @@
 #include "common/eventType.h"
 #include "carStateDTO.h"
 #include <vector>
+#include "gameInfo.h"
 
 #pragma pack(push, 1)  // para evitar padding
 struct Snapshot {
@@ -11,6 +12,7 @@ struct Snapshot {
     int playerId;
     uint32_t playersSize;
     std::vector<CarStateDTO> cars;
+    std::vector<GameInfo> gameList;
     Snapshot () = default;
 };
 #pragma pack(pop)

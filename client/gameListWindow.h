@@ -5,6 +5,7 @@
 #include <QTableWidget>
 #include <QPushButton>
 #include <QVBoxLayout>
+#include <QtConcurrent/QtConcurrent>
 #include "client_class.h"
 
 class Client;

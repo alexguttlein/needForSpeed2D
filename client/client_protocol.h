@@ -25,10 +25,11 @@ public:
     void sendKey(const SDL_KeyCode msg, bool isPressed);
     CommandConstants::Key sdlToKey(const SDL_KeyCode input);
     bool sendLobbyOption(const std::string& input);
-    std::optional<Snapshot> receiveMessageFromServer();
-    std::optional<Snapshot> receiveGameListFromServer();
+
     std::optional<Snapshot> receiveSnapshotFromServer();
     std::optional<Snapshot> receiveControlFromServer();
+    std::optional<Snapshot> receiveGameListFromServer();
+    std::optional<Snapshot> receiveMessageFromServer();
 
 private:
     Socket socket;

@@ -19,6 +19,11 @@ class Client {
 public:
     Client(const char* host, const char* port);
     void run();
+    Queue<Event>& getEventQueue();
+    ClientProtocol& getProtocol();
+    Queue<Snapshot>& getSnapshotQueue();
+    void setSelfId(int id);
+    int getSelfId() const;
 private:
     ClientProtocol protocol;
     Queue<Snapshot> snapshotQueue;

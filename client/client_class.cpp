@@ -1,5 +1,6 @@
 #include "client_class.h"
 #include "client_dibujador.h"
+#include "client_qtManager.h"
 
 #include <SDL.h>
 #include <SDL_image.h>
@@ -17,7 +18,10 @@ Client::Client(const char* host, const char* port) :
 void Client::run() {
     receiver.start();
     sender.start();
-    lobbyOptions();
+
+    // menu inicial Qt
+    ClientQtManager qt(this);
+    qt.start();
 
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         std::fprintf(stderr, "SDL_Init error: %s\n", SDL_GetError());
@@ -123,21 +127,22 @@ void Client::run() {
     SDL_Quit();
 }
 
-void Client::lobbyOptions() {
-    std::string input;
-    while (!playing) {
-        std::getline(std::cin, input);
-        playing = protocol.sendLobbyOption(input);
+Queue<Event>& Client::getEventQueue() {
+    return eventQueue;
+}
 
-        if (playing) {
-            Event event = eventQueue.pop();
-            if (event.type == EventType::CREATE_JOIN_ACCEPTED) {
-                if (!event.message.empty()) {
-                    selfId = std::stoi(event.message);
-                    std::cout<< "Cliente -> player id: " << selfId.load() << std::endl;
-                }
-                playing = true;
-            }
-        }
-    }
+ClientProtocol& Client::getProtocol() {
+    return protocol;
+}
+
+Queue<Snapshot> & Client::getSnapshotQueue() {
+    return snapshotQueue;
+}
+
+void Client::setSelfId(int id) {
+    selfId = id;
+}
+
+int Client::getSelfId() const {
+    return selfId.load();
 }

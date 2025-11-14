@@ -153,9 +153,13 @@ void ClientQtManager::setupCreateButton(LobbyMenuWindow* lobby) {
         (void)QtConcurrent::run([this, lobby, waiting]() {
             Event event = client->getEventQueue().pop();
 
-            QMetaObject::invokeMethod(waiting, [lobby, waiting, event]() {
+            QMetaObject::invokeMethod(waiting, [lobby, waiting, event, this]() {
                 waiting->close();
                 if (event.type == EventType::CREATE_JOIN_ACCEPTED) {
+                    if (!event.message.empty()) {
+                        client->setSelfId(std::stoi(event.message));
+                        qDebug() << "Client selfId set to:" << std::stoi(event.message);
+                    }
                     lobby->close();
                 } else {
                     QMessageBox::information(lobby, "Error", "No se pudo crear la partida.");
@@ -206,9 +210,13 @@ void ClientQtManager::setupJoinButton(LobbyMenuWindow* lobby) {
 
                 (void)QtConcurrent::run([this, lobby, waiting]() {
                     Event event = client->getEventQueue().pop();
-                    QMetaObject::invokeMethod(waiting, [lobby, waiting, event]() {
+                    QMetaObject::invokeMethod(waiting, [lobby, waiting, event, this]() {
                         waiting->close();
                         if (event.type == EventType::CREATE_JOIN_ACCEPTED) {
+                            if (!event.message.empty()) {
+                                client->setSelfId(std::stoi(event.message));
+                                qDebug() << "Client selfId set to:" << std::stoi(event.message);
+                            }
                             lobby->close();
                         } else {
                             QMessageBox::warning(lobby, "Error", "No se pudo unirse a la partida.");
