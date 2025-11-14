@@ -17,6 +17,7 @@ private:
     int gameId = 0;
 public:
     GameMonitor();
+    ~GameMonitor();
     int createGame();
     Queue<std::shared_ptr<Message>>& getGameQueue(int gameId);
     bool tryJoinGame(int id, Queue<std::shared_ptr<Message>>*& outQueue);

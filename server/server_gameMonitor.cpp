@@ -59,3 +59,8 @@ bool GameMonitor::registerClientToGame(int id, ClientHandler* client) {
     game->totalPlayers++;
     return true;
 }
+
+GameMonitor::~GameMonitor() {
+    std::lock_guard<std::mutex> lock(mtx);
+    games.clear();
+}

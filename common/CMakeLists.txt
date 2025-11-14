@@ -20,4 +20,5 @@ target_sources(taller_common
     snapshot.h
     carStateDTO.h
     eventType.h
+    gameInfo.h
     )
