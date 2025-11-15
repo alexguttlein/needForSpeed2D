@@ -1,10 +1,11 @@
 #include "server_gamelogic.h"
-#include <iostream>
-#include <cmath>
 
 
-GameLogic::GameLogic() {
+GameLogic::GameLogic(){
     world = raceBuilder.getWorld();
+    //auto objects = mapLoader.loadCollidersFromYaml("server/Mapa1-nfs.yaml");
+    //mapSetObjects.createBodiesFromObjects(world, objects);
+
 }
 
 
@@ -45,6 +46,13 @@ void GameLogic::update(int currentTick) {
 
     b2World_Step(world, dt, 4);
     checkCollisions(); // Verificar colisiones después de actualizar la física
+    
+    for (auto const& [id, car] : cars) {
+        if (!raceLogic.hasPlayerFinished(id)) {
+            Vector2D<float> carPosition = car->getPosition();
+            raceLogic.checkCheckpoint(id, carPosition); // Verificar si cruzó un checkpoint
+        }
+    }
 }
 
 
@@ -53,6 +61,24 @@ std::shared_ptr<Snapshot> GameLogic::getSnapshot(EventType controlEvent) const {
     snapshot->playerId = lastCommandPlayerId;
     snapshot->controlEvent = controlEvent;
     snapshot->playersSize = static_cast<uint32_t>(cars.size());
+
+
+    RaceStateDTO raceState;
+
+    if(cars.count(lastCommandPlayerId)) {
+        raceState.nextCheckpoint = raceLogic.getNextCheckpointPosition(lastCommandPlayerId);
+        raceState.currentHints = raceLogic.getHintsForPlayer(lastCommandPlayerId, cars.at(lastCommandPlayerId)->getPosition());
+        raceState.hasFinished = raceLogic.hasPlayerFinished(lastCommandPlayerId);
+        if( raceState.hasFinished) {
+            const auto& finishedPlayers = raceLogic.getFinishedPlayers();
+            auto it = std::find(finishedPlayers.begin(), finishedPlayers.end(), lastCommandPlayerId);
+            if (it != finishedPlayers.end()) {
+            raceState.finishPosition = std::distance(finishedPlayers.begin(), it) + 1; // +1 para posición humana
+            } 
+        }
+    }
+
+    snapshot->raceState = raceState;
 
     for (auto const& [id, car] : cars) {
             CarStateDTO dto;
@@ -68,6 +94,7 @@ std::shared_ptr<Snapshot> GameLogic::getSnapshot(EventType controlEvent) const {
 
 
 void GameLogic::addCar(int playerId, int carType) {
+    raceLogic.addPlayer(playerId); // Agregar jugador a RaceLogic
     raceBuilder.addSelectCar(carType);
     std::shared_ptr<Car> newCar = raceBuilder.getCars().back();
     cars[playerId] = newCar;

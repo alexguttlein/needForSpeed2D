@@ -1,0 +1,26 @@
+# Configuración de mapa para el juego de carreras.
+# Las coordenadas (x, y) están en metros (unidades Box2D).
+
+mapa:
+  nombre: "Circuito Demo de Cuatro Puntos"
+  ancho: 800
+  alto: 600
+  
+  # La lista de checkpoints define la trayectoria de la carrera.
+  # El orden en que aparecen es el orden en que deben ser cruzados.
+  checkpoints:
+    # 0. Punto de inicio (centro-derecha)
+    - x: 25.0
+      y: 12.0
+    
+    # 1. Tramo Superior (ir arriba)
+    - x: 25.0
+      y: 2.0
+      
+    # 2. Tramo Izquierdo (ir a la izquierda)
+    - x: 5.0
+      y: 2.0
+      
+    # 3. Tramo Inferior (Meta, ir abajo)
+    - x: 5.0
+      y: 12.0

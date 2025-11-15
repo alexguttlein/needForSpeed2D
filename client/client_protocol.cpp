@@ -161,6 +161,44 @@ std::optional<Snapshot> ClientProtocol::receiveMessageFromServer() {
 
         snapshot.cars.push_back(dto);
     }
+
+        uint32_t nextCheckpointXBE = 0;
+        socket.recvall(&nextCheckpointXBE, sizeof(nextCheckpointXBE));
+        uint32_t nextCheckpointXHost = ntohl(nextCheckpointXBE);
+        snapshot.raceState.nextCheckpoint.x = *reinterpret_cast<float*>(&nextCheckpointXHost);
+
+        uint32_t nextCheckpointYBE = 0;
+        socket.recvall(&nextCheckpointYBE, sizeof(nextCheckpointYBE));
+        uint32_t nextCheckpointYHost = ntohl(nextCheckpointYBE);
+        snapshot.raceState.nextCheckpoint.y = *reinterpret_cast<float*>(&nextCheckpointYHost);
+
+        uint32_t hintsSizeBE = 0;
+        socket.recvall(&hintsSizeBE, sizeof(hintsSizeBE));
+        uint32_t hintsSize = ntohl(hintsSizeBE);
+
+        for (uint32_t i = 0; i < hintsSize; i++) {
+            Vector2D<float> hint;
+            uint32_t hintXBE = 0;
+            socket.recvall(&hintXBE, sizeof(hintXBE));
+            uint32_t hintXHost = ntohl(hintXBE);
+            hint.x = *reinterpret_cast<float*>(&hintXHost);
+
+            uint32_t hintYBE = 0;
+            socket.recvall(&hintYBE, sizeof(hintYBE));
+            uint32_t hintYHost = ntohl(hintYBE);
+            hint.y = *reinterpret_cast<float*>(&hintYHost);
+
+            snapshot.raceState.currentHints.push_back(hint);
+        }
+
+        uint8_t hasFinishedByte = 0;
+        socket.recvall(&hasFinishedByte, sizeof(hasFinishedByte));
+        snapshot.raceState.hasFinished = static_cast<bool>(hasFinishedByte);
+
+        uint32_t finishPositionBE = 0;
+        socket.recvall(&finishPositionBE, sizeof(finishPositionBE));
+        snapshot.raceState.finishPosition = static_cast<int>(ntohl(finishPositionBE));
+
         return snapshot;
     }
 

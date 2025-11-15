@@ -6,14 +6,26 @@
 #include "car.h"
 #include "../common/snapshot.h"
 #include "../common/eventType.h"
+
+//#include "mapLoader.h"
 #include "server_raceBuilder.h"
+#include "server_racelogic.h"
 #include "box2d/box2d.h"
+//#include "mapSetObjects.h"
+
+
 #include <map> 
 #include <memory>
+#include <iostream>
+#include <cmath>
 
 class GameLogic {
 private:
+    
+    //MapLoader mapLoader;
     RaceBuilder raceBuilder;
+    //MapSetObjects mapSetObjects;
+    RaceLogic raceLogic;
     b2WorldId world;
     std::map<int, std::shared_ptr<Car>> cars;
     int lastCommandPlayerId = 0;
