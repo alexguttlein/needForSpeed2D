@@ -24,6 +24,8 @@ public:
     Queue<Snapshot>& getSnapshotQueue();
     void setSelfId(int id);
     int getSelfId() const;
+    void setSelectedCar(int id) { selectedCarId = id; }
+    int getSelectedCar() const { return selectedCarId; }
 private:
     ClientProtocol protocol;
     Queue<Snapshot> snapshotQueue;
@@ -33,7 +35,7 @@ private:
     SenderThread sender;
     bool playing;
     std::atomic<int> selfId{-1};
-    void lobbyOptions();
+    int selectedCarId = -1;
 };
 
 #endif //CLIENT_H

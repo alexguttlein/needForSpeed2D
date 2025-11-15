@@ -11,6 +11,7 @@ target_sources(taller_client
     waitingWindow.cpp
     gameListWindow.cpp
     client_qtManager.cpp
+    carSelectWindow.cpp
     PUBLIC
     # .h files
     client_class.h
@@ -22,4 +23,5 @@ target_sources(taller_client
     waitingWindow.h
     gameListWindow.h
     client_qtManager.h
+    carSelectWindow.h
     )

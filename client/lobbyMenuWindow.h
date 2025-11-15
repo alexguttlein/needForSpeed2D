@@ -6,24 +6,26 @@
 #include <QString>
 #include <QVBoxLayout>
 #include <QMessageBox>
-#include "waitingWindow.h"
+#include <QSignalMapper>
 #include <QtConcurrent/QtConcurrent>
 #include "gameListWindow.h"
+#include "waitingWindow.h"
 
 class Client;
 
 class LobbyMenuWindow : public QWidget {
     Q_OBJECT
 public:
-    // explicit LobbyMenuWindow(const QString &playerName, QWidget *parent = nullptr);
     LobbyMenuWindow(Client* client, const QString& playerName, QWidget *parent = nullptr);
 
     QPushButton* getCreateButton();
     QPushButton* getJoinButton();
     QPushButton* getSelectCarButton();
     QString getPlayerName() const;
-    // void onCreateGameClicked();
-    // void onJoinGameClicked();
+    bool carChosen = false;
+
+    signals:
+        void carSelected(int carId); // señal para avisar que se eligió auto
 
 private:
     Client* client;

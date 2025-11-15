@@ -6,6 +6,7 @@
 #include <memory>
 #include "lobbyMenuWindow.h"
 #include "waitingWindow.h"
+#include "carSelectWindow.h"
 
 class Client;
 

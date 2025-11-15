@@ -230,7 +230,19 @@ void ClientQtManager::setupJoinButton(LobbyMenuWindow* lobby) {
 }
 
 void ClientQtManager::setupSelectCarButton(LobbyMenuWindow* lobby) {
-    QObject::connect(lobby->getSelectCarButton(), &QPushButton::clicked, [lobby]() {
-        QMessageBox::information(lobby, "Select Car", "Funcionalidad de seleccionar auto (pendiente).");
+    QObject::connect(lobby->getSelectCarButton(), &QPushButton::clicked, [this, lobby]() {
+        // Abrir ventana de selección de auto
+        auto* carWindow = new CarSelectionWindow(lobby);
+        QObject::connect(carWindow, &CarSelectionWindow::carChosen, [lobby](int carId) {
+            lobby->carChosen = true; // actualizar flag
+            lobby->getCreateButton()->setEnabled(true);
+            lobby->getJoinButton()->setEnabled(true);
+            std::cout << "el id elegido es " << carId << std::endl;
+        });
+        carWindow->show();
     });
+
+    // Inicialmente deshabilitar botones de juego
+    lobby->getCreateButton()->setEnabled(false);
+    lobby->getJoinButton()->setEnabled(false);
 }
