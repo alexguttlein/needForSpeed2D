@@ -213,7 +213,14 @@ void Car::repair() {
     health = std::min(maxHealth, health + Constants::HEALTH_UPGRADE);
 }
 
-
 Car::~Car() {
-    b2DestroyBody(body);
+    // b2DestroyBody(body);
+}
+
+// Destruir body de forma segura
+void Car::destroyBody() {
+    if (b2Body_IsValid(body)) {
+        b2DestroyBody(body);
+        body = b2BodyId{}; // set nulo seguro
+    }
 }

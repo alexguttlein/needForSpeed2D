@@ -11,7 +11,7 @@ RaceBuilder::RaceBuilder() : nextSpawnX(Constants::SPAWN_START_X), nextSpawnY(Co
 
 
 RaceBuilder::~RaceBuilder() {
-        b2DestroyWorld(world);
+    // b2DestroyWorld(world);
 }
 
 

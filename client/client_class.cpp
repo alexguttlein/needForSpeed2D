@@ -54,15 +54,15 @@ void Client::run() {
 
     ClientDibujador dib(ren, W, H);
 
-    if (!dib.loadMap("assets/need-for-speed/cities/Liberty.png")) {
+    if (!dib.loadMap("/home/alex/Documents/TP-Final-Taller_2C2025/v2.1/TP-Taller-G7/assets/need-for-speed/cities/Liberty.png")) {
         std::fprintf(stderr, "No pude cargar assets/maps/iberty.png\n");
     }
 
-    if (!dib.loadCarAtlas("assets/need-for-speed/cars/auto-1.png", 8, 2, 0.0f, true)) {
+    if (!dib.loadCarAtlas("/home/alex/Documents/TP-Final-Taller_2C2025/v2.1/TP-Taller-G7/assets/need-for-speed/cars/auto-1.png", 8, 2, 0.0f, true)) {
         std::fprintf(stderr, "No pude cargar atlas del auto\n");
     }
 
-    dib.setUIFont("assets/ui/FreeSans.ttf", 16);
+    dib.setUIFont("/home/alex/Documents/TP-Final-Taller_2C2025/v2.1/TP-Taller-G7/assets/ui/FreeSans.ttf", 16);
     dib.setFacingDeg(0.0f);
     bool running = true;
     //CAMBIAR
