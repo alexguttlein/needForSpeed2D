@@ -12,7 +12,7 @@ CarSelectionWindow::CarSelectionWindow(QWidget* parent)
     resize(800, 600);
 
     // background
-    QPixmap bg("/home/alex/Documents/TP-Final-Taller_2C2025/v2.1/TP-Taller-G7/assets/need-for-speed/lobbyImg/wall3.jpg");
+    QPixmap bg("assets/need-for-speed/lobbyImg/wall3.jpg");
     if (!bg.isNull()) {
         bg = bg.scaled(size(), Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
         QPalette pal;
@@ -28,14 +28,14 @@ CarSelectionWindow::CarSelectionWindow(QWidget* parent)
     QHBoxLayout* row2 = new QHBoxLayout();
 
     QVector<QString> carImages = {
-        "car1.jpg", "car2.jpg", "car3.jpg", "car4.jpg",
-        "car5.jpg", "car6.jpg", "car7.jpg"
+        "car1.png", "car2.png", "car3.png", "car4.png",
+        "car5.png", "car6.png", "car7.png"
     };
 
     int id = 0;
     for (const QString& imgName : carImages) {
         QString fullPath =
-            "/home/alex/Documents/TP-Final-Taller_2C2025/v2.1/TP-Taller-G7/assets/need-for-speed/lobbyImg/" + imgName;
+            "assets/need-for-speed/lobbyImg/" + imgName;
 
         // Marco
         QFrame* frame = new QFrame(this);
