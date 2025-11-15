@@ -152,18 +152,20 @@ void ClientDibujador::renderFrame(int playerX, int playerY) {
 }
 
 void ClientDibujador::renderAll(const std::vector<CarStateDTO>& cars, int selfId) {
-    // Fondo
+     if (!raceStarted_) {
+        raceStarted_ = true;
+        raceStartTicks_ = SDL_GetTicks();
+    }
+
     SDL_SetRenderDrawColor(ren, 20, 20, 20, 255);
     SDL_RenderClear(ren);
 
-    // Mapa
     if (mapTex) {
         SDL_Rect src{ camX, camY, winW, winH };
         SDL_Rect dst{ 0, 0, winW, winH };
         SDL_RenderCopy(ren, mapTex, &src, &dst);
     }
 
-    // Autos
     for (const auto& carState : cars) {
         int px = static_cast<int>(carState.position.x * Constants::SCALE_METER_TO_PIXEL);
         int py = static_cast<int>(carState.position.y * Constants::SCALE_METER_TO_PIXEL);
@@ -194,6 +196,7 @@ void ClientDibujador::renderAll(const std::vector<CarStateDTO>& cars, int selfId
 
     hudPlayers_ = std::max(1, (int)cars.size());
     drawHUD_();
+    drawMinimap_(cars, selfId);
 
     SDL_RenderPresent(ren);
 }
@@ -249,58 +252,186 @@ void ClientDibujador::drawHUD_() {
         return;
     }
 
-    const int pad = 12;
-    const int panelW = 600;
+    const int pad    = 12;
     const int panelH = 64;
-    const int px = (winW - panelW) / 2;
-    const int py = winH - panelH - pad;
 
-    drawPanel_(px, py, panelW, panelH);
+    // Panel izquierdo (velocidad + vida)
+    const int leftPanelW = 320;
+    const int leftPx     = pad;
+    const int leftPy     = pad;
+    drawPanel_(leftPx, leftPy, leftPanelW, panelH, 180);
+    drawHudSpeed_(leftPx, leftPy);
+    drawHudHealth_(leftPx, leftPy);
 
-    {
-        std::string label = "Speed: ";
-        char buf[64];
-        std::snprintf(buf, sizeof(buf), "%d km/h", (int)std::round(hudSpeedKph_));
-        drawBadge_(px + 12, py + 12, label, buf);
-    }
+    // Panel derecho (posición en la carrera + checkpoints)
+    const int rightPanelW = 300;
+    const int rightPx     = winW - rightPanelW - pad;
+    const int rightPy     = pad;
+    drawPanel_(rightPx, rightPy, rightPanelW, panelH, 180);
+    drawHudRace_(rightPx, rightPy);
+    drawHudTime_(rightPx, rightPy, rightPanelW);
+}
 
-    {
-        std::string label = "♥: ";
-        SDL_Color heartCol = { 240, 50, 60, 255 };
-        char buf[64];
-        std::snprintf(buf, sizeof(buf), "%d/%d", hudHp_, hudMaxHp_);
 
-        int lw=0, lh=0;
+void ClientDibujador::drawHudSpeed_(int panelX, int panelY) {
+    std::string label = "Speed: ";
+    char buf[64];
+    std::snprintf(buf, sizeof(buf), "%d km/h", (int)std::round(hudSpeedKph_));
+
+    int x = panelX + 12;
+    int y = panelY + 12;
+
+    drawBadge_(x, y, label, buf);
+}
+
+void ClientDibujador::drawHudHealth_(int panelX, int panelY) {
+    std::string label = "♥: ";
+    SDL_Color heartCol   = { 240,  50,  60, 255 };
+    SDL_Color valueColor = { 235, 235, 235, 255 };
+
+    char buf[64];
+    std::snprintf(buf, sizeof(buf), "%d/%d", hudHp_, hudMaxHp_);
+
+    int baseX = panelX + 12 + 170;
+    int baseY = panelY + 12;
+
+    int lw = 0, lh = 0;
+    int vw = 0, vh = 0;
+
+    if (uiFont) {
         TTF_SizeUTF8(uiFont, label.c_str(), &lw, &lh);
-        int badgeX = px + 12 + 170;
-        int badgeY = py + 12;
-
-        int vw=0, vh=0;
-        TTF_SizeUTF8(uiFont, buf, &vw, &vh);
-        int w = 12 + lw + 8 + vw + 12;
-        int h = std::max(lh, vh) + 16;
-        drawPanel_(badgeX, badgeY, w, h, 150);
-
-        int cy = badgeY + h / 2;
-        drawText_(label, badgeX + 12, cy, heartCol, true);
-        drawText_(buf,   badgeX + 12 + lw + 8, cy, SDL_Color{235,235,235,255}, true);
+        TTF_SizeUTF8(uiFont, buf,   &vw, &vh);
     }
 
-    {
-        char value[32];
-        std::snprintf(value, sizeof(value), "%d/%d", std::max(1, hudPos_), std::max(1, hudPlayers_));
-        drawBadge_(px + 12 + 170 + 120, py + 12, "Race: ", value);
+    const int padX = 12;
+    const int padY = 8;
+
+    int w = padX + lw + 8 + vw + padX;
+    int h = std::max(lh, vh) + padY * 2;
+
+    drawPanel_(baseX, baseY, w, h, 150);
+
+    int cy = baseY + h / 2;
+    drawText_(label, baseX + padX, cy, heartCol, true);
+    drawText_(buf,   baseX + padX + lw + 8, cy, valueColor, true);
+}
+
+void ClientDibujador::drawHudRace_(int panelX, int panelY) {
+    char value[32];
+    std::snprintf(
+        value,
+        sizeof(value),
+        "%d/%d",
+        std::max(1, hudPos_),
+        std::max(1, hudPlayers_)
+    );
+
+    int x = panelX + 12;
+    int y = panelY + 12;
+
+    drawBadge_(x, y, "Race: ", value);
+}
+
+void ClientDibujador::drawHudTime_(int panelX, int panelY, int panelW) {
+    // tiempo desde que arrancó la carrera
+    Uint32 now = SDL_GetTicks();
+    Uint32 elapsedMs = raceStarted_ ? (now - raceStartTicks_) : 0;
+
+    Uint32 totalSeconds = elapsedMs / 1000;
+    Uint32 minutes = totalSeconds / 60;
+    Uint32 seconds = totalSeconds % 60;
+
+    char value[32];
+    std::snprintf(value, sizeof(value), "%02u:%02u", minutes, seconds);
+
+    int lw = 0, lh = 0, vw = 0, vh = 0;
+    if (uiFont) {
+        TTF_SizeUTF8(uiFont, "Time: ", &lw, &lh);
+        TTF_SizeUTF8(uiFont, value,   &vw, &vh);
     }
 
-    {
-        char value[32];
-        std::snprintf(value, sizeof(value), "%d/%d", hudCP_, hudCPTotal_);
-        int lw=0, lh=0, vw=0, vh=0;
-        TTF_SizeUTF8(uiFont, "Checkpoints: ", &lw, &lh);
-        TTF_SizeUTF8(uiFont, value, &vw, &vh);
-        int bw = 12 + lw + 8 + vw + 12;
-        int bx = px + panelW - bw - 12;
-        int by = py + 12;
-        drawBadge_(bx, by, "Checkpoints: ", value);
+    int bw = 12 + lw + 8 + vw + 12;
+    int bx = panelX + panelW - bw - 12;
+    int by = panelY + 12;
+
+    drawBadge_(bx, by, "Time: ", value);
+}
+
+void ClientDibujador::drawMinimap_(const std::vector<CarStateDTO>& cars, int selfId) {
+    if (!mapTex || mapW <= 0 || mapH <= 0) {
+        return;
+    }
+
+    const CarStateDTO* selfCar = nullptr;
+    for (const auto& c : cars) {
+        if (c.car_id == selfId) {
+            selfCar = &c;
+            break;
+        }
+    }
+    if (!selfCar) return;
+
+    const int pad      = 10;
+    const int miniSize = 160;
+    const int miniX    = pad;
+    const int miniY    = winH - pad - miniSize;
+
+    const int viewWDesired = 1100;
+    const int viewHDesired = 1100;
+
+    float selfX = selfCar->position.x * Constants::SCALE_METER_TO_PIXEL;
+    float selfY = selfCar->position.y * Constants::SCALE_METER_TO_PIXEL;
+
+    int srcW = std::min(viewWDesired, mapW);
+    int srcH = std::min(viewHDesired, mapH);
+
+    int srcX = static_cast<int>(selfX) - srcW / 2;
+    int srcY = static_cast<int>(selfY) - srcH / 2;
+
+    srcX = std::clamp(srcX, 0, mapW - srcW);
+    srcY = std::clamp(srcY, 0, mapH - srcH);
+
+    SDL_Rect src{ srcX, srcY, srcW, srcH };
+    SDL_Rect dst{ miniX, miniY, miniSize, miniSize };
+
+    SDL_SetRenderDrawBlendMode(ren, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(ren, 10, 10, 10, 180);
+    SDL_RenderFillRect(ren, &dst);
+
+    Uint8 oldAlpha = 255;
+    SDL_GetTextureAlphaMod(mapTex, &oldAlpha);
+    SDL_SetTextureAlphaMod(mapTex, 255);
+
+    SDL_RenderCopy(ren, mapTex, &src, &dst);
+
+    SDL_SetTextureAlphaMod(mapTex, oldAlpha);
+
+
+    SDL_SetRenderDrawColor(ren, 255, 255, 255, 80);
+    SDL_RenderDrawRect(ren, &dst);
+
+    for (const auto& car : cars) {
+        int worldX = static_cast<int>(car.position.x * Constants::SCALE_METER_TO_PIXEL);
+        int worldY = static_cast<int>(car.position.y * Constants::SCALE_METER_TO_PIXEL);
+
+        float nx = (worldX - srcX) / static_cast<float>(srcW);
+        float ny = (worldY - srcY) / static_cast<float>(srcH);
+
+        if (nx < 0.0f || nx > 1.0f || ny < 0.0f || ny > 1.0f) {
+            continue;
+        }
+
+        int dotX = dst.x + static_cast<int>(nx * dst.w + 0.5f);
+        int dotY = dst.y + static_cast<int>(ny * dst.h + 0.5f);
+
+        if (car.car_id == selfId) {
+            SDL_SetRenderDrawColor(ren, 220, 40, 40, 255);
+        } else {
+            SDL_SetRenderDrawColor(ren, 0, 0, 0, 255);
+        }
+
+        SDL_Rect r{ dotX - 2, dotY - 2, 5, 5 };
+        SDL_RenderFillRect(ren, &r);
     }
 }
+
