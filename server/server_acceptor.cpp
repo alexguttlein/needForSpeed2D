@@ -11,8 +11,7 @@ void Acceptor::run() {
             Socket newSocket = socket.accept();
             int id = newSocket.get_fd();
 
-            ClientHandler* client = new ClientHandler(std::move(newSocket), id, this->gameMonitor);
-
+            auto client = std::make_shared<ClientHandler>(std::move(newSocket), id, this->gameMonitor);
             client->startThreads();
 
             clients.push_back(client);
@@ -42,9 +41,10 @@ void Acceptor::closeSocket() {
 }
 
 void Acceptor::killDeadClients() {
-    clients.remove_if([this](ClientHandler* client) {
+    clients.remove_if([](const std::shared_ptr<ClientHandler>& client) {
         if (!client->isAlive()) {
-            killClient(client);
+            try { client->shutdown(); } catch(...) {}
+            // no hacemos delete; el shared_ptr se liberará cuando salga de la lista
             return true;
         }
         return false;
@@ -58,11 +58,10 @@ void Acceptor::killClient(ClientHandler* client) {
 }
 
 Acceptor::~Acceptor() {
-    for (ClientHandler* client : clients) {
+    for (auto& client : clients) { // client es std::shared_ptr<ClientHandler>
         if (client) {
             try { client->shutdown(); } catch(...) {}
-            delete client;
-            client = nullptr;
+            // no hace falta delete, shared_ptr se encarga
         }
     }
     clients.clear();

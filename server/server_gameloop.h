@@ -22,8 +22,8 @@ private:
     GameLogic gameLogic;
     std::atomic<bool> running;
     Queue<std::shared_ptr<Message>>& commandQueue; //queue compartida
-    std::vector<Queue<std::shared_ptr<Snapshot>>*> clientQueues; //queues privadas de los jugadores
-    std::mutex qmtx;
+    std::vector<Queue<std::shared_ptr<Snapshot>>*>& clientQueues; //queues privadas de los jugadores
+    std::mutex& clientListMutex; //referencia al mutex de Game
 
 public:
 
@@ -31,9 +31,9 @@ public:
     * Constructor de GameLoop
     *
     * */
-    // explicit GameLoop(Queue<std::string>& commandQueue);
     explicit GameLoop(Queue<std::shared_ptr<Message>>& commandQueue,
-                      std::vector<Queue<std::shared_ptr<Snapshot>>*> clientQueues);
+                      std::vector<Queue<std::shared_ptr<Snapshot>>*>& clientQueues,
+                      std::mutex& clientListMutex);
 
     /*
     * Agrega las snapshots a la queue de snapshots
@@ -58,7 +58,7 @@ public:
     *
     * */
     void run() override;
-    
+
     /*
     * Destructor de GameLoop
     *
@@ -70,7 +70,7 @@ public:
     *
     * */
     void addPlayer(int playerId);
-    
+
     /*
     * Llama a las funciones que simulan el juego
     *

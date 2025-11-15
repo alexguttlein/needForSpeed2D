@@ -1,6 +1,5 @@
 #include "server_game.h"
 #include "server/server_gameloop.h"
-
 #include <iostream>
 
 Game::Game(int gameId) :
@@ -27,8 +26,9 @@ void Game::addClientHandler(ClientHandler* client) {
     // si alcanzamos el número de jugadores, arrancamos GameLoop si aún no arrancó
     if ((int)clientQueues.size() >= Constants::MAX_PLAYERS_IN_GAME && !gameloop) {
         // como se conectaron todos los usuarios,
-        // gameLoop ahora acepta la queue compartida y el vector de queues privadas
-        gameloop = std::make_unique<GameLoop>(sharedQueue, clientQueues);
+        // gameLoop acepta la queue compartida, el vector de queues privadas y el mutex de clientes
+        gameloop = std::make_unique<GameLoop>(sharedQueue, clientQueues, mtx);
+
         for (auto* handler : clientHandlers)
             gameloop->addPlayer(handler->getId());
         gameloop->start();
@@ -48,6 +48,10 @@ void Game::removeClientHandler(ClientHandler* client) {
         try { (*itQ)->close(); } catch(...) {}
         clientQueues.erase(itQ);
     }
+
+    if (clientQueues.empty() && gameloop) {
+        gameloop->stop();
+    }
 }
 
 // se cierran todas las queues
@@ -65,12 +69,6 @@ Game::~Game() {
         gameloop->join();
         gameloop.reset();
     }
-
-    // for (auto ch : clientHandlers) {
-    //     if (ch) {
-    //         try { ch->shutdown(); } catch(...) {}
-    //     }
-    // }
     closeAllClientQueues();
     clientHandlers.clear();
 }

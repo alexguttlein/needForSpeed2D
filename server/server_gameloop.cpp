@@ -1,10 +1,12 @@
 #include "server_gameloop.h"
 
 GameLoop::GameLoop(Queue<std::shared_ptr<Message>>& commandQueue,
-                   std::vector<Queue<std::shared_ptr<Snapshot>>*> clientQueues)
+                   std::vector<Queue<std::shared_ptr<Snapshot>>*>& clientQueues,
+                   std::mutex& clientListMutex)
     : running(false),
       commandQueue(commandQueue),
-      clientQueues(clientQueues) {}
+      clientQueues(clientQueues),
+      clientListMutex(clientListMutex) {}
 
 void GameLoop::run() {
 
@@ -26,7 +28,7 @@ void GameLoop::run() {
 
         if (rest < 0) {
             long long behind = -rest; // Tiempo que estamos atrasados (positivo)
-            
+
             long long rate_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(rate).count();
 
             long long sleep_to_sync = rate_ns - (behind % rate_ns); // Tiempo para sincronizarse
@@ -45,14 +47,15 @@ void GameLoop::run() {
         t1 += rate;
         it++;
     }
+    std::cout << "Finalizo el gameloop" << std::endl;
 }
 
 void GameLoop::processCommandQueue() {
     std::shared_ptr<Message> msg;
     while (commandQueue.try_pop(msg)) {
         if (!msg) continue;
-        bool is_pressed = (msg->code & 0x80) != 0;  
-        char key_char = msg->key; 
+        bool is_pressed = (msg->code & 0x80) != 0;
+        char key_char = msg->key;
         gameLogic.processCommand(msg->senderId, std::string(1, key_char), is_pressed);
     }
 }
@@ -66,18 +69,15 @@ void GameLoop::addPlayer(int playerId) {
 
 void GameLoop::simulateGame(int currentTick) {
     processCommandQueue();
-    gameLogic.update(currentTick); 
+    gameLogic.update(currentTick);
 
     std::shared_ptr<Snapshot> snapshotToSend = gameLogic.getSnapshot( EventType::NONE);
     {
-        std::lock_guard<std::mutex> lock(qmtx);
+        std::lock_guard<std::mutex> lock(clientListMutex);
         for (auto qptr : clientQueues) {
-            if (qptr) {
-                try {
-                    qptr->push(snapshotToSend);
-                } catch (const ClosedQueue&) {
-                    std::cout << "[GameLoop] Cola cerrada al enviar snapshot" << std::endl;
-                }
+            if (!qptr) continue;
+            if (!qptr->try_push(snapshotToSend)) {
+                std::cout << "[GameLoop] No se pudo enviar snapshot, cola cerrada o llena: " << qptr << std::endl;
             }
         }
     }
