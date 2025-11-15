@@ -19,5 +19,6 @@ target_sources(taller_common
     commandConstants.h
     snapshot.h
     carStateDTO.h
+    raceStateDTO.h
     eventType.h
     )

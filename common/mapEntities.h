@@ -3,28 +3,19 @@
 
 #include "vector2D.h"
 #include <vector>
-
-
-/*
-* Enumeración de tipos de entidades del mapa.
-*
-* */
-enum class MapEntityType {
-    GRASS,
-    WALL,
-    HUMAN_NPC,
-    WATER,
-    ROAD
-};
+#include <box2d/box2d.h>
 
 /*
 * Estructura que representa una entidad del mapa
 * con sus posiciónes, tipo y si es colisionable o no.
 *
 * */
-struct MapEntity {
-    std::vector<Vector2D<float>> positions; // una entidad puede tener múltiples posiciones
-    MapEntityType type;
-    bool collidable;
+struct MapObject {
+    float x;
+    float y;
+    float width;
+    float height;
+    bool isPolygon;
+    std::vector<b2Vec2> polygonPoints;
 };
 #endif // MAP_ENTITIES_H

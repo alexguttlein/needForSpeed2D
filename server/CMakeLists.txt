@@ -15,6 +15,9 @@ target_sources(taller_server
     car.cpp
     server_gamelogic.cpp
     server_raceBuilder.cpp
+    server_racelogic.cpp
+    mapSetObjects.cpp
+    mapLoader.cpp
     #gameloop_test.cpp
     PUBLIC
     # .h files
@@ -31,4 +34,7 @@ target_sources(taller_server
     server_gamelogic.h
     server_raceBuilder.h
     car.h
+    server_racelogic.h
+    mapSetObjects.h
+    mapLoader.h
     )
