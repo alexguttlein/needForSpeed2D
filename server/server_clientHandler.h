@@ -23,7 +23,7 @@
         SenderThread senderThread;
         std::unique_ptr<ReceiverThread> receiverThread;
         int id;
-        bool alive;
+        std::atomic<bool> alive{true};
         Snapshot snapshot;
         int currentGameId;
         std::atomic<bool> shuttingDown{false};

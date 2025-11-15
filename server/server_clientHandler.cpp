@@ -18,6 +18,7 @@ void ClientHandler::startThreads() {
 
 void ClientHandler::shutdown() {
     std::cout << "debug: ClientHandler::shutdown()" << std::endl;
+
     // se evita que shutdown ejecute más de una vez
     bool expected = false;
     if (!shuttingDown.compare_exchange_strong(expected, true)) {
@@ -28,10 +29,6 @@ void ClientHandler::shutdown() {
 
     // se cierra la queue del cliente
     try { clientQueue.close(); } catch(...) {}
-
-    // if (currentGameId != 0) {
-    //     gameMonitor.leaveGame(currentGameId);
-    // }
 
     // se termina el sender y receiver
     try { senderThread.stop(); } catch(...) {}
@@ -50,7 +47,7 @@ void ClientHandler::shutdown() {
 
     if (currentGameId != 0) {
         // notifica y remueve este ClientHandler de la Game correspondiente,
-        // para que Game elimine su puntero a la queue *antes* de que este object sea destruido.
+        // para que Game elimine su puntero a la queue antes de que este objecto sea destruido.
         gameMonitor.unregisterClientFromGame(currentGameId, this);
         currentGameId = 0;
     }
@@ -65,8 +62,9 @@ bool ClientHandler::isAlive() const {
 }
 
 void ClientHandler::killClient() {
-    alive = false;
-    // shutdown();
+    try {
+        shutdown();
+    } catch(...) {}
 }
 
 void ClientHandler::assignGameQueue(Queue<std::shared_ptr<Message>>& queue, int gameId) {
@@ -84,5 +82,4 @@ Queue<std::shared_ptr<Snapshot>>& ClientHandler::getClientQueue() {
 
 ClientHandler::~ClientHandler() {
     std::cout << "debug: destruyendo clientHandler" << std::endl;
-    // try { shutdown(); } catch(...) {}
 };
