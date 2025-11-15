@@ -24,6 +24,7 @@ public:
     bool registerClientToGame(int id, ClientHandler* client);
     void leaveGame(int id);
     std::vector<std::pair<int,int>> listGames();
+    void unregisterClientFromGame(int id, ClientHandler* client);
 };
 
 #endif //SERVER_GAMEMONITOR_H

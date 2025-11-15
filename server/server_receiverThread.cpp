@@ -130,6 +130,8 @@ void ReceiverThread::stop() {
 }
 
 ReceiverThread::~ReceiverThread() {
-    if (keepRunning) ReceiverThread::stop();
-    protocol.closeSocket();
+    // if (keepRunning) ReceiverThread::stop();
+    // protocol.closeSocket();
+    keepRunning = false;
+    try { protocol.closeSocket(); } catch(...) {}
 }

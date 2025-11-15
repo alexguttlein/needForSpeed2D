@@ -10,8 +10,8 @@ class Car {
 private:
 
     // Box2D body
-    b2BodyId body; 
-    b2WorldId world;
+    b2BodyId body{};
+    b2WorldId world{};
 
     // posiciones
     Vector2D<float> position;  
@@ -196,5 +196,10 @@ public:
     *
     * */
     ~Car();
+
+    void destroyBody(); // destrucción segura, llamada desde GameLogic
+
+    b2BodyId getBodyId() const { return body; }
+
 };
 #endif // CAR_H

@@ -36,28 +36,17 @@ void Game::addClientHandler(ClientHandler* client) {
 }
 
 void Game::removeClientHandler(ClientHandler* client) {
+
     std::lock_guard<std::mutex> lock(mtx);
-    // remove de clientHandlers y clientQueues (se busca por puntero)
     auto itH = std::find(clientHandlers.begin(), clientHandlers.end(), client);
     if (itH != clientHandlers.end()) clientHandlers.erase(itH);
-
-    // remover la queue correspondiente
-    for (auto it = clientQueues.begin(); it != clientQueues.end(); ++it) {
-        if (*it == &client->getClientQueue()) {
-            try { (*it)->close(); } catch(...) {} //se cierra la queue antes de borrarla
-            clientQueues.erase(it);
-            break;
-        }
-    }
-
     totalPlayers = std::max(0, totalPlayers - 1);
-    // si quedan 0 jugadores podemos detener el loop y limpiar
-    if (clientQueues.empty() && gameloop) {
-        closeAllClientQueues();
-        try { sharedQueue.close(); } catch(...) {}
-        gameloop->stop();
-        gameloop->join();
-        gameloop.reset();
+
+    auto itQ = std::find_if(clientQueues.begin(), clientQueues.end(),
+                            [&](auto q){ return q == &client->getClientQueue(); });
+    if (itQ != clientQueues.end()) {
+        try { (*itQ)->close(); } catch(...) {}
+        clientQueues.erase(itQ);
     }
 }
 
@@ -65,27 +54,23 @@ void Game::removeClientHandler(ClientHandler* client) {
 void Game::closeAllClientQueues() {
     std::lock_guard<std::mutex> lock(mtx);
     for (auto qptr : clientQueues) {
-        if (qptr) {
-            try { qptr->close(); } catch(...) {}
-        }
+        if (qptr) try { qptr->close(); } catch(...) {}
     }
     try { sharedQueue.close(); } catch (...) {}
 }
 
 Game::~Game() {
-
     if (gameloop) {
         gameloop->stop();
         gameloop->join();
         gameloop.reset();
     }
 
-    for (auto ch : clientHandlers) {
-        if (ch) {
-            try { ch->shutdown(); } catch(...) {}
-            delete ch;
-        }
-    }
-
+    // for (auto ch : clientHandlers) {
+    //     if (ch) {
+    //         try { ch->shutdown(); } catch(...) {}
+    //     }
+    // }
+    closeAllClientQueues();
     clientHandlers.clear();
 }

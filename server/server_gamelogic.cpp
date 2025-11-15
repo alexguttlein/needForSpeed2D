@@ -156,3 +156,18 @@ float GameLogic::getCollisionSpeed(b2BodyId bodyA, b2BodyId bodyB) {
     b2Vec2 relativeVel = b2Sub(velA, velB); 
     return b2Length(relativeVel);
 }
+
+GameLogic::~GameLogic() {
+
+    // 1. Destruir bodies ANTES del world
+    for (auto& [id, car] : cars) {
+        if (car) car->destroyBody();
+    }
+    cars.clear();
+
+    // 2. Ahora destruir el world
+    if (b2World_IsValid(world)) {
+        b2DestroyWorld(world);
+        world = b2WorldId{};
+    }
+}

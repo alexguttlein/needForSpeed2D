@@ -60,6 +60,28 @@ bool GameMonitor::registerClientToGame(int id, ClientHandler* client) {
     return true;
 }
 
+void GameMonitor::unregisterClientFromGame(int id, ClientHandler* client) {
+    std::lock_guard<std::mutex> lock(mtx);
+    auto it = games.find(id);
+    if (it == games.end()) return;
+
+    Game* game = it->second.get();
+
+    // pedir a Game que remueva el client handler y su queue
+    game->removeClientHandler(client);
+
+    // decrementar contador de jugadores
+    if (game->totalPlayers > 0) {
+        game->totalPlayers--;
+    }
+
+    // si ya no quedan jugadores, borrar la partida
+    if (game->totalPlayers == 0) {
+        games.erase(it);
+    }
+}
+
+
 GameMonitor::~GameMonitor() {
     std::lock_guard<std::mutex> lock(mtx);
     games.clear();

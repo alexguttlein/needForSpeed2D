@@ -8,7 +8,7 @@
 #include "../common/eventType.h"
 #include "server_raceBuilder.h"
 #include "box2d/box2d.h"
-#include <map> 
+#include <map>
 #include <memory>
 
 class GameLogic {
@@ -17,7 +17,7 @@ private:
     b2WorldId world;
     std::map<int, std::shared_ptr<Car>> cars;
     int lastCommandPlayerId = 0;
-    
+
 public:
 
     /*
@@ -25,7 +25,7 @@ public:
     *
     * */
     GameLogic();
-    
+
     /*
     * Procesa un comando recibido para un auto específico
     *
@@ -34,14 +34,14 @@ public:
 
     /*
     * Actualiza la lógica del juego (física, estado de autos, etc.)
-    * 
+    *
     * */
    void update(int currentTick);
 
     /*
     * Crea y devuelve un snapshot del estado actual del juego
     *
-    * */    
+    * */
     std::shared_ptr<Snapshot> getSnapshot(EventType controlEvent)const;
 
     /*
@@ -73,5 +73,7 @@ public:
     *
     * */
     b2Vec2 getCollisionNormal(b2BodyId bodyA, b2BodyId bodyB);
+
+    ~GameLogic();
 };
 #endif // SERVER_GAMELOGIC_H

@@ -53,15 +53,16 @@ void Acceptor::killDeadClients() {
 
 void Acceptor::killClient(ClientHandler* client) {
     if (!client) return;
-    client->killClient();
+    try { client->shutdown(); } catch(...) {}  // asegura que Game ya no apunte a su queue
     delete client;
 }
 
 Acceptor::~Acceptor() {
     for (ClientHandler* client : clients) {
         if (client) {
-            client->shutdown();
+            try { client->shutdown(); } catch(...) {}
             delete client;
+            client = nullptr;
         }
     }
     clients.clear();

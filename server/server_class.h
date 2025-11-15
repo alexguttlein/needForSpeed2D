@@ -4,8 +4,6 @@
 #include "../common/socket.h"
 #include "../common/queue.h"
 #include "server_acceptor.h"
-#include "server_gameloop.h"
-#include "server_monitorClients.h"
 
 #include <iostream>
 #include <ostream>

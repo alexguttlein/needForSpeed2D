@@ -17,21 +17,42 @@ void ClientHandler::startThreads() {
 }
 
 void ClientHandler::shutdown() {
-    try {
-        alive = false;
-        clientQueue.close();
-        senderThread.stop();
-        senderThread.join();
-        receiverThread->stop();
-        receiverThread->join();
+    std::cout << "debug: ClientHandler::shutdown()" << std::endl;
+    // se evita que shutdown ejecute más de una vez
+    bool expected = false;
+    if (!shuttingDown.compare_exchange_strong(expected, true)) {
+        return;
+    }
 
+    alive = false;
+
+    // se cierra la queue del cliente
+    try { clientQueue.close(); } catch(...) {}
+
+    // if (currentGameId != 0) {
+    //     gameMonitor.leaveGame(currentGameId);
+    // }
+
+    // se termina el sender y receiver
+    try { senderThread.stop(); } catch(...) {}
+    try { senderThread.join(); } catch(...) {}
+    if (receiverThread) {
+        try { receiverThread->stop(); } catch(...) {}
+        try { receiverThread->join(); } catch(...) {}
+    }
+
+    // se cierra el socket si sigue abierto
+    try {
         if (!protocol.isConnectionClosed()) {
             protocol.closeSocket();
         }
+    } catch (...) {}
 
-        if (currentGameId != 0) gameMonitor.leaveGame(currentGameId);
-    } catch (const std::exception& e) {
-        std::cerr << "ClientHandler::shutdown exception: " << e.what() << std::endl;
+    if (currentGameId != 0) {
+        // notifica y remueve este ClientHandler de la Game correspondiente,
+        // para que Game elimine su puntero a la queue *antes* de que este object sea destruido.
+        gameMonitor.unregisterClientFromGame(currentGameId, this);
+        currentGameId = 0;
     }
 }
 
@@ -45,7 +66,7 @@ bool ClientHandler::isAlive() const {
 
 void ClientHandler::killClient() {
     alive = false;
-    shutdown();
+    // shutdown();
 }
 
 void ClientHandler::assignGameQueue(Queue<std::shared_ptr<Message>>& queue, int gameId) {
@@ -62,5 +83,6 @@ Queue<std::shared_ptr<Snapshot>>& ClientHandler::getClientQueue() {
 }
 
 ClientHandler::~ClientHandler() {
-    shutdown();
+    std::cout << "debug: destruyendo clientHandler" << std::endl;
+    // try { shutdown(); } catch(...) {}
 };
