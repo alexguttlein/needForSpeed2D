@@ -30,7 +30,7 @@ void ClientQtManager::showLoginWindow() {
     window->resize(800, 600);
 
     // Fondo de pantalla
-    QPixmap background("/home/alex/Documents/TP-Final-Taller_2C2025/v2.1/TP-Taller-G7/assets/need-for-speed/lobbyImg/wall3.jpg");
+    QPixmap background("assets/need-for-speed/lobbyImg/wall3.jpg");
     if (!background.isNull()) {
         background = background.scaled(window->size(), Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
         QPalette palette;
@@ -230,7 +230,19 @@ void ClientQtManager::setupJoinButton(LobbyMenuWindow* lobby) {
 }
 
 void ClientQtManager::setupSelectCarButton(LobbyMenuWindow* lobby) {
-    QObject::connect(lobby->getSelectCarButton(), &QPushButton::clicked, [lobby]() {
-        QMessageBox::information(lobby, "Select Car", "Funcionalidad de seleccionar auto (pendiente).");
+    QObject::connect(lobby->getSelectCarButton(), &QPushButton::clicked, [this, lobby]() {
+        // Abrir ventana de selección de auto
+        auto* carWindow = new CarSelectionWindow(lobby);
+        QObject::connect(carWindow, &CarSelectionWindow::carChosen, [lobby](int carId) {
+            lobby->carChosen = true; // actualizar flag
+            lobby->getCreateButton()->setEnabled(true);
+            lobby->getJoinButton()->setEnabled(true);
+            std::cout << "el id elegido es " << carId << std::endl;
+        });
+        carWindow->show();
     });
+
+    // Inicialmente deshabilitar botones de juego
+    lobby->getCreateButton()->setEnabled(false);
+    lobby->getJoinButton()->setEnabled(false);
 }

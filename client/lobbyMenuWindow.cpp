@@ -42,8 +42,13 @@ LobbyMenuWindow::LobbyMenuWindow(Client* client, const QString& playerName, QWid
             " background-color: rgba(255,0,0,0.8);"
             " color: white;"
             "}"
-            "QPushButton:hover {"
-            " background-color: rgba(255,60,60,0.9);"
+            "QPushButton:hover:enabled {"
+            " background-color: rgba(255,60,60,1);"
+            "}"
+            "QPushButton:disabled {"
+            " background-color: rgba(120,120,120,0.7);"
+            " color: rgba(230,230,230,0.6);"
+            " border: 1px solid rgba(80,80,80,0.9);"
             "}"
         );
         layout->addWidget(btn, 0, Qt::AlignCenter);
