@@ -26,7 +26,7 @@ void ClientQtManager::start() {
 
 void ClientQtManager::showLoginWindow() {
     QWidget* window = new QWidget();
-    window->setWindowTitle("Need For Speed 2D");
+    window->setWindowTitle(Constants::NFS_TITLE.data());
     window->resize(800, 600);
 
     // Fondo de pantalla
@@ -45,7 +45,7 @@ void ClientQtManager::showLoginWindow() {
     QVBoxLayout* centerLayout = new QVBoxLayout(center);
 
     // título
-    QLabel* title = new QLabel("NEED FOR SPEED 2D", window);
+    QLabel* title = new QLabel(Constants::NFS_TITLE.data(), window);
     title->setAlignment(Qt::AlignCenter);
     title->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     title->setStyleSheet(
@@ -65,7 +65,7 @@ void ClientQtManager::showLoginWindow() {
 
     // Input de nombre
     QLineEdit* nameInput = new QLineEdit(center);
-    nameInput->setPlaceholderText("Enter your driver name");
+    nameInput->setPlaceholderText(Constants::ENTER_DRIVER_NAME.data());
     nameInput->setMinimumWidth(400);
     nameInput->setStyleSheet(
         "QLineEdit {"
@@ -85,7 +85,7 @@ void ClientQtManager::showLoginWindow() {
     );
 
     // Botón start
-    QPushButton* startButton = new QPushButton("START ENGINE", center);
+    QPushButton* startButton = new QPushButton(Constants::START_BUTTON.data(), center);
     startButton->setEnabled(false);
     startButton->setCursor(Qt::PointingHandCursor);
     startButton->setStyleSheet(
@@ -148,10 +148,6 @@ void ClientQtManager::showLoginWindow() {
     centerLayout->addWidget(startButton);
     center->setLayout(centerLayout);
 
-    // layout->addStretch();
-    // layout->addWidget(center, 0, Qt::AlignCenter);
-    // layout->addStretch();
-
     window->setLayout(layout);
     window->show();
 }
@@ -168,8 +164,10 @@ void ClientQtManager::showLobbyWindow(const QString& playerName) {
 void ClientQtManager::setupCreateButton(LobbyMenuWindow* lobby) {
     QObject::connect(lobby->getCreateButton(), &QPushButton::clicked, [this, lobby]() {
 
-        if (!client->sendLobbyOption("crear", client->getPlayerName())) {
-            QMessageBox::warning(lobby, "Error", "No se pudo enviar la solicitud al servidor.");
+        if (!client->sendLobbyOption(Constants::INPUT_CREAR,
+            client->getPlayerName(), client->getSelectedCar())) {
+            QMessageBox::warning(lobby, Constants::ERROR_TXT.data(),
+                Constants::NO_ENVIO_SOLICITUD.data());
             return;
         }
 
@@ -189,7 +187,8 @@ void ClientQtManager::setupCreateButton(LobbyMenuWindow* lobby) {
                     }
                     lobby->close();
                 } else {
-                    QMessageBox::information(lobby, "Error", "No se pudo crear la partida.");
+                    QMessageBox::information(lobby, Constants::ERROR_TXT.data(),
+                        Constants::NO_PUDO_CREAR_PARTIDA.data());
                     lobby->show();
                 }
             }, Qt::QueuedConnection);
@@ -204,7 +203,7 @@ void ClientQtManager::setupJoinButton(LobbyMenuWindow* lobby) {
         lobby->getJoinButton()->setEnabled(false);
         lobby->getSelectCarButton()->setEnabled(false);
 
-        client->sendLobbyOption("listar","");
+        client->sendLobbyOption(Constants::INPUT_LISTAR,"",0);
 
         QTimer::singleShot(500, [this, lobby]() {
             Snapshot snapshot{};
@@ -216,7 +215,8 @@ void ClientQtManager::setupJoinButton(LobbyMenuWindow* lobby) {
             lobby->getSelectCarButton()->setEnabled(true);
 
             if (!received || snapshot.gameList.empty()) {
-                QMessageBox::information(lobby, "Info", "No hay partidas activas.");
+                QMessageBox::information(lobby, Constants::INFO_TXT.data(),
+                    Constants::NO_HAY_PARTIDAS.data());
                 return;
             }
 
@@ -225,8 +225,10 @@ void ClientQtManager::setupJoinButton(LobbyMenuWindow* lobby) {
             listWindow->show();
 
             QObject::connect(listWindow, &GameListWindow::gameSelected, [this, lobby, listWindow](uint32_t gameId) {
-                if (!client->sendLobbyOption("unirse " + std::to_string(gameId), client->getPlayerName())) {
-                    QMessageBox::warning(lobby, "Error", "No se pudo enviar la solicitud de unirse.");
+                if (!client->sendLobbyOption(Constants::INPUT_UNIRSE + " " + std::to_string(gameId),
+                        client->getPlayerName(), client->getSelectedCar())) {
+                    QMessageBox::warning(lobby, Constants::ERROR_TXT.data(),
+                        Constants::NO_ENVIO_SOLICITUD_UNIRSE.data());
                     return;
                 }
 
@@ -246,7 +248,8 @@ void ClientQtManager::setupJoinButton(LobbyMenuWindow* lobby) {
                             }
                             lobby->close();
                         } else {
-                            QMessageBox::warning(lobby, "Error", "No se pudo unirse a la partida.");
+                            QMessageBox::warning(lobby, Constants::ERROR_TXT.data(),
+                                Constants::NO_PUDO_UNIR_PARTIDA.data());
                             lobby->show();
                         }
                     }, Qt::QueuedConnection);

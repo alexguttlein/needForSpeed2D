@@ -11,6 +11,7 @@ struct Message {
     int intValue   = 0;
     std::string stringValue = std::string();
     int senderId = -1;
+    int carId = -1;
 
     // constructor por defecto
     Message() = default;

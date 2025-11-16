@@ -28,7 +28,7 @@ public:
     int getSelectedCar() const { return selectedCarId; }
     void setPlayerName(const std::string& name) { playerName = name; }
     const std::string& getPlayerName() const { return playerName; }
-    bool sendLobbyOption(const std::string& option, const std::string& playerName);
+    bool sendLobbyOption(const std::string& option, const std::string& playerName, const int& carId);
 private:
     ClientProtocol protocol;
     Queue<Snapshot> snapshotQueue;

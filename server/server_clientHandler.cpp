@@ -84,6 +84,10 @@ void ClientHandler::setPlayerName(const std::string& name) {
     playerName = name;
 }
 
+void ClientHandler::setCarId(int carSelected) {
+    carId = carSelected;
+}
+
 ClientHandler::~ClientHandler() {
     std::cout << "debug: destruyendo clientHandler" << std::endl;
 };

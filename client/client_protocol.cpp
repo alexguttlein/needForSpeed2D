@@ -44,18 +44,21 @@ uint32_t ClientProtocol::readUInt32(const std::vector<uint8_t>& buffer, size_t& 
     return value;
 }
 
-bool ClientProtocol::sendLobbyOption(const std::string& input, const std::string& playerName) {
+bool ClientProtocol::sendLobbyOption(const std::string& input, const std::string& playerName, const int& carId) {
     if (socket.is_stream_send_closed()) return false;
     std::istringstream iss(input);
     std::string command;
     iss >> command;
 
-    if (command == "crear") {
+    uint32_t carIdBE = htonl(static_cast<uint32_t>(carId));
+
+    if (command == Constants::INPUT_CREAR) {
         uint8_t msg = Constants::CREATE_GAME;
         socket.sendall(&msg, sizeof(msg));
-        sendString(playerName);
+        sendString(playerName); //se envia nombre de usuario
+        socket.sendall(&carIdBE, sizeof(carIdBE)); //se envia id de auto elegido
         return true;
-    } else if (command == "unirse") {
+    } else if (command == Constants::INPUT_UNIRSE) {
         uint8_t msg = Constants::JOIN_GAME;
         socket.sendall(&msg, sizeof(msg));
 
@@ -68,10 +71,11 @@ bool ClientProtocol::sendLobbyOption(const std::string& input, const std::string
         // se convierte a big endian (2 bytes)
         uint16_t matchIdBE = htons(matchId);
         socket.sendall(reinterpret_cast<uint8_t*>(&matchIdBE), sizeof(matchIdBE));
-        sendString(playerName);
+        sendString(playerName); //se envia nombre de usuario
+        socket.sendall(&carIdBE, sizeof(carIdBE)); //se envia id de auto elegido
         return true;
 
-    } else if (command == "listar") {
+    } else if (command == Constants::INPUT_LISTAR) {
         uint8_t msg = Constants::LIST_GAMES;
         socket.sendall(&msg, sizeof(msg));
         return false; // sigue en el lobby

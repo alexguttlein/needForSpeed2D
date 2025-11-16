@@ -11,6 +11,7 @@ ReceiverThread::ReceiverThread(ServerProtocol& protocol,
 void ReceiverThread::lobbyCommands(Message msg) {
     if (msg.code == Constants::CREATE_GAME) {
         clientHandler.setPlayerName(msg.stringValue); //se asigna el nombre de jugador
+        clientHandler.setCarId(msg.carId); //se asigna id de auto elegido
         int newId = gameMonitor.createGame(msg.stringValue);
 
         std::cout << "Debug: se crea partida con id " << newId << std::endl;
@@ -74,6 +75,7 @@ void ReceiverThread::lobbyCommands(Message msg) {
             return;
         } else {
             clientHandler.setPlayerName(msg.stringValue); //se asigna el nombre de jugador
+            clientHandler.setCarId(msg.carId); //se asigna id de auto elegido
             std::vector<uint8_t> buffer;
             buffer.push_back(Constants::TYPE_CONTROL);
             buffer.push_back(Constants::CREATE_JOIN_ACCEPTED);

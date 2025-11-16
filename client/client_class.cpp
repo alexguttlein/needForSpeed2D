@@ -149,6 +149,6 @@ int Client::getSelfId() const {
     return selfId.load();
 }
 
-bool Client::sendLobbyOption(const std::string& option, const std::string& name) {
-    return protocol.sendLobbyOption(option, name);
+bool Client::sendLobbyOption(const std::string& option, const std::string& name, const int& carId) {
+    return protocol.sendLobbyOption(option, name, carId);
 }

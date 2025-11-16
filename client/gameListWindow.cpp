@@ -57,7 +57,7 @@ void GameListWindow::loadGameList(const std::vector<GameInfo>& games) {
 
 void GameListWindow::onRefreshClicked() {
     // solicitar lista al servidor y esperar en background
-    if (!client->sendLobbyOption("listar","")) {
+    if (!client->sendLobbyOption(Constants::INPUT_LISTAR,"",0)) {
         QMessageBox::warning(this, "Error", "No se pudo solicitar la lista de partidas.");
         return;
     }

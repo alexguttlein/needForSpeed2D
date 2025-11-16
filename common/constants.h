@@ -33,6 +33,9 @@ namespace  Constants {
 
     // constantes de ingresos del cliente
     static const std::string INPUT_EXIT = "exit";
+    static const std::string INPUT_LISTAR = "listar";
+    static const std::string INPUT_CREAR = "crear";
+    static const std::string INPUT_UNIRSE = "unirse";
 
     // constantes de errores
     static const std::string ERROR_PARAMETERS_QUANTITY =
@@ -45,12 +48,18 @@ namespace  Constants {
         "Error: Excepción desconocida en client_main: ";
     static const std::string ERROR_EXC_DESCONOCIDA_SERVER_MAIN =
         "Error: Excepción desconocida en server_main: ";
+    static const std::string ERROR_TXT = "Error";
+    static const std::string INFO_TXT = "Info";
+    static const std::string NO_HAY_PARTIDAS = "No hay partidas activas.";
+    static const std::string NO_PUDO_CREAR_PARTIDA = "No se pudo crear la partida.";
+    static const std::string NO_ENVIO_SOLICITUD = "No se pudo enviar la solicitud al servidor.";
+    static const std::string NO_ENVIO_SOLICITUD_UNIRSE = "No se pudo enviar la solicitud de unirse.";
+    static const std::string NO_PUDO_UNIR_PARTIDA = "No se pudo unir a la partida.";
 
     // constante tiempo sleep de loop
     static constexpr int THREAD_SLEEP_MS = 16; // aprox 60 FPS
     static constexpr int TICKS_PER_SECOND = 60;
     static constexpr int MAX_TICKS = 36000; // 10 minutos a 60 ticks por segundo
-
 
     //constantes del juego
     static constexpr float HEALTH_UPGRADE = 20.0f;
@@ -59,16 +68,19 @@ namespace  Constants {
     static constexpr float NO_HEALTH = 0.0f;
     static constexpr float FRICTION_BASE = 0.1f;
     static constexpr float INITIAL_SPEED = 0.0f;
-
     static constexpr float SPAWN_START_X = 90.0f;
     static constexpr float SPAWN_START_Y = 90.0f;
     static constexpr float SPAWN_OFFSET_X = 50.0f; 
     static constexpr float MAX_ROW_X = 600.0f;
-
     static constexpr float CHECKPOINT_RADIUS = 5.0f; 
 
     // renderizado con fisica en metros
     static constexpr float SCALE_METER_TO_PIXEL = 25.0f;
+
+    //constantes menu Qt
+    static const std::string ENTER_DRIVER_NAME = "Enter your driver name";
+    static const std::string NFS_TITLE = "Need For Speed 2D";
+    static const std::string START_BUTTON = "START ENGINE";
 
 }
 #endif //CONSTANTS_H

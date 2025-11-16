@@ -24,7 +24,7 @@ public:
     ~ClientProtocol();
     void sendKey(const SDL_KeyCode msg, bool isPressed);
     CommandConstants::Key sdlToKey(const SDL_KeyCode input);
-    bool sendLobbyOption(const std::string& input, const std::string& playerName);
+    bool sendLobbyOption(const std::string& input, const std::string& playerName, const int& carId);
 
     std::optional<Snapshot> receiveSnapshotFromServer();
     std::optional<Snapshot> receiveControlFromServer();
