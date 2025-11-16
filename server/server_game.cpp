@@ -27,7 +27,8 @@ void Game::addClientHandler(ClientHandler* client) {
     if ((int)clientQueues.size() >= Constants::MAX_PLAYERS_IN_GAME && !gameloop) {
         // como se conectaron todos los usuarios,
         // gameLoop acepta la queue compartida, el vector de queues privadas y el mutex de clientes
-        gameloop = std::make_unique<GameLoop>(sharedQueue, clientQueues, mtx);
+        gameloop = std::make_unique<GameLoop>(sharedQueue, clientQueues, clientHandlers, mtx, this);
+
         for (auto* handler : clientHandlers)
             gameloop->addPlayer(handler->getId());
         gameloop->start();
@@ -36,7 +37,7 @@ void Game::addClientHandler(ClientHandler* client) {
 
 void Game::removeClientHandler(ClientHandler* client) {
 
-    std::lock_guard<std::mutex> lock(mtx);
+    // std::lock_guard<std::mutex> lock(mtx);
     auto itH = std::find(clientHandlers.begin(), clientHandlers.end(), client);
     if (itH != clientHandlers.end()) clientHandlers.erase(itH);
     totalPlayers = std::max(0, totalPlayers - 1);
@@ -49,6 +50,7 @@ void Game::removeClientHandler(ClientHandler* client) {
     }
 
     if (clientQueues.empty() && gameloop) {
+        std::cout << "debug: no hay mas jugadores en la partida" << std::endl;
         gameloop->stop();
     }
 }

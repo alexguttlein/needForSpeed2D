@@ -2,11 +2,14 @@
 
 GameLoop::GameLoop(Queue<std::shared_ptr<Message>>& commandQueue,
                    std::vector<Queue<std::shared_ptr<Snapshot>>*>& clientQueues,
-                   std::mutex& clientListMutex)
+                   std::vector<ClientHandler*>& clientHandlers,
+                   std::mutex& clientListMutex, Game* parentGame)
     : running(false),
       commandQueue(commandQueue),
       clientQueues(clientQueues),
-      clientListMutex(clientListMutex) {}
+      clientHandlers(clientHandlers),
+      clientListMutex(clientListMutex),
+      parentGame(parentGame) {}
 
 void GameLoop::run() {
 
@@ -74,10 +77,33 @@ void GameLoop::simulateGame(int currentTick) {
     std::shared_ptr<Snapshot> snapshotToSend = gameLogic.getSnapshot( EventType::NONE);
     {
         std::lock_guard<std::mutex> lock(clientListMutex);
-        for (auto qptr : clientQueues) {
+        std::vector<size_t> disconnectedPlayers{};
+
+        for (size_t i = 0; i < clientQueues.size(); i++) {
+            auto* qptr = clientQueues[i];
+            auto* handler = clientHandlers[i];
+
             if (!qptr) continue;
+
             if (!qptr->try_push(snapshotToSend)) {
-                std::cout << "[GameLoop] No se pudo enviar snapshot, cola cerrada o llena: " << qptr << std::endl;
+                std::cout << "Debug: Cliente " << handler->getId()
+                          << " no recibe snapshot. Posible desconexión." << std::endl;
+
+                // se verifica si el cliente está desconectado
+                if (!handler->isConnected() || !handler->isAlive()) {
+
+                    std::cout << "[GameLoop] Cliente " << handler->getId()
+                              << "  desconectado. Eliminando del juego.\n";
+
+                    disconnectedPlayers.push_back(i); //se agregan los desconectado a la lista
+                }
+            }
+        }
+
+        //se eliminan los clientes desconectados
+        if (!disconnectedPlayers.empty()) {
+            for (int idx : disconnectedPlayers) {
+                parentGame->removeClientHandler(clientHandlers[idx]);
             }
         }
     }
