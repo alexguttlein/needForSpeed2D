@@ -27,6 +27,7 @@
         Snapshot snapshot;
         int currentGameId;
         std::atomic<bool> shuttingDown{false};
+        std::string playerName;
 
     public:
         /*
@@ -59,5 +60,6 @@
         int getId() const;
         int getCurrentGameId() const;
         Queue<std::shared_ptr<Snapshot>>& getClientQueue();
+        void setPlayerName(const std::string& string);
     };
     #endif //CLIENTHANDLER_H

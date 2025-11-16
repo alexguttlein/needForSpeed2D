@@ -42,9 +42,24 @@ Message ServerProtocol::receiveMessage() {
         uint16_t matchId = ntohs(matchIdBE);
         message.intValue = static_cast<int>(matchId);
         std::cout << "Debug: Cliente quiere unirse a la partida con ID: " << matchId << std::endl;
+        message.stringValue = receiveString(); //se recibe el nombre del player
+    } else if (message.code == Constants::CREATE_GAME) {
+        message.stringValue = receiveString(); //se recibe el nombre del player
     }
-
     return message;
+}
+
+std::string ServerProtocol::receiveString() {
+    Message message{};
+
+    uint16_t nameSize_net;
+    socket.recvall(&nameSize_net, sizeof(nameSize_net));
+    uint16_t nameSize = ntohs(nameSize_net);
+
+    if (nameSize == 0) {message.stringValue = std::string();}
+    std::string result(nameSize, '\0');
+    socket.recvall(result.data(), nameSize);
+    return result;
 }
 
 void ServerProtocol::appendUInt32(std::vector<uint8_t>& buffer, uint32_t value) {
@@ -150,8 +165,8 @@ void ServerProtocol::sendGamesList(uint8_t& type, const std::vector<unsigned cha
 
     uint32_t vecSizeBE = htonl(static_cast<uint32_t>(vector.size()));
     uint8_t* sizeBytes = reinterpret_cast<uint8_t*>(&vecSizeBE);
-    buffer.insert(buffer.end(), sizeBytes, sizeBytes + sizeof(vecSizeBE));
 
+    buffer.insert(buffer.end(), sizeBytes, sizeBytes + sizeof(vecSizeBE));
     buffer.insert(buffer.end(), vector.begin(), vector.end());
 
     socket.sendall(buffer.data(), buffer.size());

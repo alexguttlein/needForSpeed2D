@@ -3,10 +3,10 @@
 
 GameMonitor::GameMonitor() : games() {}
 
-int GameMonitor::createGame() {
+int GameMonitor::createGame(std::string& gameCreator) {
     std::lock_guard<std::mutex> lock(mtx);
     gameId++;
-    games[gameId] = std::make_unique<Game>(gameId);
+    games[gameId] = std::make_unique<Game>(gameId, gameCreator);
     return gameId;
 }
 
@@ -81,6 +81,14 @@ void GameMonitor::unregisterClientFromGame(int id, ClientHandler* client) {
     }
 }
 
+std::string GameMonitor::getGameCreator(int matchId) {
+    auto it = games.find(matchId);
+    if (it == games.end()) return "";
+
+    Game* game = it->second.get();
+
+    return game->getCreatorsName();
+}
 
 GameMonitor::~GameMonitor() {
     std::lock_guard<std::mutex> lock(mtx);

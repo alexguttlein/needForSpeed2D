@@ -5,12 +5,14 @@
 ReceiverThread::ReceiverThread(ServerProtocol& protocol,
     GameMonitor& gameMonitor, ClientHandler& clientHandler) :
     protocol(protocol), gameMonitor(gameMonitor),
-    clientHandler(clientHandler), gameQueue(nullptr), keepRunning(true) {
+    clientHandler(clientHandler), gameQueue(nullptr) {
 }
 
 void ReceiverThread::lobbyCommands(Message msg) {
     if (msg.code == Constants::CREATE_GAME) {
-        int newId = gameMonitor.createGame();
+        clientHandler.setPlayerName(msg.stringValue); //se asigna el nombre de jugador
+        int newId = gameMonitor.createGame(msg.stringValue);
+
         std::cout << "Debug: se crea partida con id " << newId << std::endl;
         gameQueue = &gameMonitor.getGameQueue(newId);
         clientHandler.assignGameQueue(*gameQueue, newId);
@@ -24,7 +26,7 @@ void ReceiverThread::lobbyCommands(Message msg) {
             protocol.sendControl(Constants::JOIN_REJECTED);
             return;
         }
-        // protocol.sendControl(Constants::CREATE_JOIN_ACCEPTED);
+
         std::vector<uint8_t> buffer;
         buffer.push_back(Constants::TYPE_CONTROL);
         buffer.push_back(Constants::CREATE_JOIN_ACCEPTED);
@@ -41,6 +43,18 @@ void ReceiverThread::lobbyCommands(Message msg) {
             uint32_t totalBE = htonl(total);
             buffer.insert(buffer.end(), reinterpret_cast<uint8_t*>(&idBE), reinterpret_cast<uint8_t*>(&idBE)+4);
             buffer.insert(buffer.end(), reinterpret_cast<uint8_t*>(&totalBE), reinterpret_cast<uint8_t*>(&totalBE)+4);
+
+            //recupero el nombre del creador de cada partida
+            std::string gameCreator = gameMonitor.getGameCreator(id);
+
+            //se agrega el tamanio del nombre
+            uint16_t lenBE = htons(gameCreator.size());
+            buffer.insert(buffer.end(), reinterpret_cast<uint8_t*>(&lenBE), reinterpret_cast<uint8_t*>(&lenBE)+2);
+
+            //se agrerga el nombre del creador
+            if (!gameCreator.empty()) {
+                buffer.insert(buffer.end(), gameCreator.begin(), gameCreator.end());
+            }
         }
 
         // se envia lista de partidas
@@ -59,7 +73,7 @@ void ReceiverThread::lobbyCommands(Message msg) {
             protocol.sendControl(Constants::JOIN_REJECTED);
             return;
         } else {
-            // protocol.sendControl(Constants::CREATE_JOIN_ACCEPTED);
+            clientHandler.setPlayerName(msg.stringValue); //se asigna el nombre de jugador
             std::vector<uint8_t> buffer;
             buffer.push_back(Constants::TYPE_CONTROL);
             buffer.push_back(Constants::CREATE_JOIN_ACCEPTED);

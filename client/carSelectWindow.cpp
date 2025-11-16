@@ -79,30 +79,18 @@ CarSelectionWindow::CarSelectionWindow(QWidget* parent)
 
         // ID del auto
         int carId = id++;
-        connect(btn, &QPushButton::clicked, this, [this, carId]() {
-            emit carChosen(carId);
-            QMessageBox::information(this, "Car Selected",
-                                     QString("You selected car %1").arg(carId + 1));
-            close();
+        connect(btn, &QPushButton::clicked, this, [this, carId, pix]() {
+            CarConfirmDialog dialog(pix, this);
+
+            int result = dialog.exec();
+            if (result == 1) {  // Confirmó
+                    emit carChosen(carId);
+                    close();
+                }
         });
 
         if (carId < 4) row1->addWidget(frame);
         else row2->addWidget(frame);
-
-        // efecto brillante en el marco
-        // auto* glow = new QGraphicsDropShadowEffect(frame);
-        // glow->setBlurRadius(20);
-        // glow->setOffset(0, 0);
-        // glow->setColor(QColor(255, 0, 0));
-        // frame->setGraphicsEffect(glow);
-        //
-        // auto* pulse = new QPropertyAnimation(glow, "blurRadius");
-        // pulse->setDuration(1500);
-        // pulse->setStartValue(10);
-        // pulse->setEndValue(35);
-        // pulse->setLoopCount(-1);
-        // pulse->setEasingCurve(QEasingCurve::InOutQuad);
-        // pulse->start();
     }
 
     mainLayout->addSpacing(50);

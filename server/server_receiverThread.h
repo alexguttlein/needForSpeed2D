@@ -22,6 +22,8 @@ private:
     GameMonitor& gameMonitor;
     ClientHandler& clientHandler;
     Queue<std::shared_ptr<Message>>* gameQueue;
-    bool keepRunning;
+    std::atomic<bool> keepRunning{true};
+    // void handleLobbyMessage(const Message& msg); TODO: separar en dos metodos la recepcion de mensaje
+    // void handleGameMessage(const Message& msg);
 };
 #endif //SERVER_RECEIVERTHREAD_H

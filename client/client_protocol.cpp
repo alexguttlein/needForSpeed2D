@@ -44,19 +44,7 @@ uint32_t ClientProtocol::readUInt32(const std::vector<uint8_t>& buffer, size_t& 
     return value;
 }
 
-// uint32_t ClientProtocol::readBigEndianUInt32(const std::vector<uint8_t>& buffer,
-//         size_t& offset) {
-//
-//     uint32_t value = 0;
-//     value |= static_cast<uint32_t>(buffer[offset])     << 24;
-//     value |= static_cast<uint32_t>(buffer[offset + 1]) << 16;
-//     value |= static_cast<uint32_t>(buffer[offset + 2]) << 8;
-//     value |= static_cast<uint32_t>(buffer[offset + 3]);
-//     offset += 4;
-//     return value;
-// }
-
-bool ClientProtocol::sendLobbyOption(const std::string& input) {
+bool ClientProtocol::sendLobbyOption(const std::string& input, const std::string& playerName) {
     if (socket.is_stream_send_closed()) return false;
     std::istringstream iss(input);
     std::string command;
@@ -65,6 +53,7 @@ bool ClientProtocol::sendLobbyOption(const std::string& input) {
     if (command == "crear") {
         uint8_t msg = Constants::CREATE_GAME;
         socket.sendall(&msg, sizeof(msg));
+        sendString(playerName);
         return true;
     } else if (command == "unirse") {
         uint8_t msg = Constants::JOIN_GAME;
@@ -79,6 +68,7 @@ bool ClientProtocol::sendLobbyOption(const std::string& input) {
         // se convierte a big endian (2 bytes)
         uint16_t matchIdBE = htons(matchId);
         socket.sendall(reinterpret_cast<uint8_t*>(&matchIdBE), sizeof(matchIdBE));
+        sendString(playerName);
         return true;
 
     } else if (command == "listar") {
@@ -187,22 +177,40 @@ std::optional<Snapshot> ClientProtocol::receiveGameListFromServer() {
     uint32_t sizeBE = 0;
     if (socket.recvall(&sizeBE, sizeof(sizeBE)) <= 0) return std::nullopt;
     uint32_t listSize = ntohl(sizeBE);
+
     // Leer la lista completa
     std::vector<uint8_t> data(listSize);
     if (socket.recvall(data.data(), listSize) <= 0) return std::nullopt;
 
     Snapshot snapshot{};
     size_t offset = 0;
-    while (offset + 8 <= data.size()) {
-        // 4 bytes id + 4 bytes cant. jugadores
+
+    while (offset + 10 <= data.size()) {
+        // Mínimo 10 bytes para gameId(4) + players(4) + nameLen(2)
         GameInfo game{};
         game.id = readUInt32(data, offset);
         game.players = readUInt32(data, offset);
+
+        // leer tamaño del nombre (2 bytes)
+        if (offset + 2 > data.size()) break; // seguridad
+        uint16_t nameLenBE;
+        std::memcpy(&nameLenBE, &data[offset], sizeof(nameLenBE));
+        offset += 2;
+        uint16_t nameLen = ntohs(nameLenBE);
+
+        // leer el nombre
+        if (offset + nameLen > data.size()) break; // seguridad
+        game.name = std::string(reinterpret_cast<char*>(&data[offset]), nameLen);
+        offset += nameLen;
+
         snapshot.gameList.push_back(game);
+
         std::cout << "Debug: ID: " << game.id
-                << ", Jugadores: " << game.players << " / "
-                << Constants::MAX_PLAYERS_IN_GAME << std::endl;
+                  << ", Jugadores: " << game.players
+                  << " / " << Constants::MAX_PLAYERS_IN_GAME
+                  << ", Creador: " << game.name << std::endl;
     }
+
     return snapshot;
 }
 
@@ -227,4 +235,12 @@ std::optional<Snapshot> ClientProtocol::receiveMessageFromServer() {
 
     std::cerr << "Mensaje desconocido recibido del servidor. Tipo = " << std::hex << (int)type << std::endl;
     return std::nullopt;
+}
+
+void ClientProtocol::sendString(const std::string& str) {
+    uint16_t len = htons(str.size());
+    socket.sendall(&len, sizeof(len));
+    if (!str.empty()) {
+        socket.sendall(str.data(), str.size());
+    }
 }
