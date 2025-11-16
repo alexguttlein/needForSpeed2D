@@ -43,8 +43,17 @@ Message ServerProtocol::receiveMessage() {
         message.intValue = static_cast<int>(matchId);
         std::cout << "Debug: Cliente quiere unirse a la partida con ID: " << matchId << std::endl;
         message.stringValue = receiveString(); //se recibe el nombre del player
+
+        // se recibe id del auto elegido
+        uint32_t carIdBE;
+        socket.recvall(&carIdBE, sizeof(carIdBE));
+        message.carId = static_cast<int>(ntohl(carIdBE));
     } else if (message.code == Constants::CREATE_GAME) {
         message.stringValue = receiveString(); //se recibe el nombre del player
+        // se recibe id del auto elegido
+        uint32_t carIdBE;
+        socket.recvall(&carIdBE, sizeof(carIdBE));
+        message.carId = static_cast<int>(ntohl(carIdBE));
     }
     return message;
 }
@@ -110,7 +119,6 @@ void ServerProtocol::sendSnapshot(std::shared_ptr<Snapshot>& snapshot) {
 
     //players size
     appendUInt32(buffer, snapshot->playersSize);
-
 
     for (const auto& carState : snapshot->cars) {
         

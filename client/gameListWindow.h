@@ -7,6 +7,7 @@
 #include <QVBoxLayout>
 #include <QtConcurrent/QtConcurrent>
 #include "client_class.h"
+#include "common/constants.h"
 
 class Client;
 
