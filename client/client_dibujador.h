@@ -7,6 +7,7 @@
 #include <vector>
 #include "../common/carStateDTO.h"
 #include "../common/constants.h"
+#include "../common/raceStateDTO.h"
 
 class ClientDibujador {
 public:
@@ -23,11 +24,18 @@ public:
     void setFacingDeg(float deg) { facingDeg = deg; }
 
     void renderAll(const std::vector<CarStateDTO>& cars, int selfId);
+    void updateRaceState(const RaceStateDTO& raceState);
 
     void setHUDPosition(int pos)            { hudPos_ = pos; }
     void setHUDSpeedKph(float kph)          { hudSpeedKph_ = kph; }
     void setHUDHp(int hp, int maxHp)        { hudHp_ = hp; hudMaxHp_ = maxHp; }
-    
+
+    bool loadCheckpoint(const std::string& pathPng);
+    bool loadHint(const std::string& pathPng);
+
+    Vector2D<float> hudNextCheckpoint_{};               
+    std::vector<Vector2D<float>> hudHints_{};
+
 private:
     SDL_Texture* loadTexture_(const std::string& path);
     int frameForAngle_(float angleDeg) const;
@@ -38,7 +46,6 @@ private:
     void drawHudHealth_(int panelX, int panelY);
     void drawHudRace_(int panelX, int panelY);
     void drawHudTime_(int panelX, int panelY, int panelW);
-
     void drawMinimap_(const std::vector<CarStateDTO>& cars, int selfId);
 
     void drawPanel_(int x, int y, int w, int h, Uint8 a = 160);
@@ -47,6 +54,8 @@ private:
                     SDL_Color labelCol = {180, 180, 190, 255},
                     SDL_Color valueCol = {235, 235, 235, 255});
     void drawText_(const std::string& s, int x, int y, SDL_Color col, bool centerY = true);
+    void drawCheckpoint_();
+    void drawHints_();
 
     SDL_Renderer* ren;
     int winW, winH;
@@ -73,6 +82,16 @@ private:
 
     Uint32 raceStartTicks_ = 0;
     bool   raceStarted_    = false;
+
+    SDL_Texture* checkpointTex = nullptr;
+    SDL_Texture* hintTex       = nullptr;
+
+    // dentro de ClientDibujador (zona privada)
+    int selfScreenX_ = 0;
+    int selfScreenY_ = 0;
+    // Tamaños máximos en pantalla para las texturas de checkpoint y hint
+    int checkpointSizePx = 32; // lado aproximado del icono de checkpoint
+    int hintSizePx       = 16; // lado aproximado del icono de hint
 
     TTF_Font* uiFont = nullptr;
     int uiFontSize = 16;

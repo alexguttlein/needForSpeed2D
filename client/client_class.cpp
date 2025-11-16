@@ -59,6 +59,8 @@ void Client::run() {
     }
 
     dib.setUIFont("assets/ui/FreeSans.ttf", 16);
+    dib.loadCheckpoint("assets/ui/checkpoint.png");
+    dib.loadHint("assets/ui/hint.png");
     dib.setFacingDeg(0.0f);
     bool running = true;
     //CAMBIAR
@@ -107,6 +109,19 @@ void Client::run() {
         }
 
         if (havePos) {
+            int myId = selfId.load();
+            const RaceStateDTO* myRace = nullptr;
+            for (const auto& rs : snapshot.raceStates) {
+                if (rs.playerId == myId) {
+                    myRace = &rs;
+                    break;
+                }
+            }
+
+            if (myRace) {
+                dib.updateRaceState(*myRace);
+            }
+
             dib.renderAll(snapshot.cars, selfId.load());
         }
 

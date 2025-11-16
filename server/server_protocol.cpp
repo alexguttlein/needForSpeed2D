@@ -119,25 +119,32 @@ void ServerProtocol::sendSnapshot(std::shared_ptr<Snapshot>& snapshot) {
         appendUInt32(buffer, *reinterpret_cast<const uint32_t*>(&carState.angle.y)); // sin(angle)
     }
 
-    // raceState
+    // raceStates: uno por jugador, alineado con cars
+    uint32_t raceCount = static_cast<uint32_t>(snapshot->raceStates.size());
+    appendUInt32(buffer, raceCount);
 
-    // nextCheckpoint (Vector2D<float>, 8 bytes total)
-    appendUInt32(buffer, *reinterpret_cast<const uint32_t*>(&snapshot->raceState.nextCheckpoint.x));
-    appendUInt32(buffer, *reinterpret_cast<const uint32_t*>(&snapshot->raceState.nextCheckpoint.y));
+    for (const auto& rs : snapshot->raceStates) {
+        // playerId
+        addIntToUint8tVector(buffer, rs.playerId);
 
-    // currentHints (uint32_t size + Vector2D<float> * size)
-    uint32_t hintsSize = static_cast<uint32_t>(snapshot->raceState.currentHints.size());
-    appendUInt32(buffer, hintsSize);
-    for (const auto& hint : snapshot->raceState.currentHints) {
-        appendUInt32(buffer, *reinterpret_cast<const uint32_t*>(&hint.x));
-        appendUInt32(buffer, *reinterpret_cast<const uint32_t*>(&hint.y));
+        // nextCheckpoint (Vector2D<float>, 8 bytes total)
+        appendUInt32(buffer, *reinterpret_cast<const uint32_t*>(&rs.nextCheckpoint.x));
+        appendUInt32(buffer, *reinterpret_cast<const uint32_t*>(&rs.nextCheckpoint.y));
+
+        // currentHints (uint32_t size + Vector2D<float> * size)
+        uint32_t hintsSize = static_cast<uint32_t>(rs.currentHints.size());
+        appendUInt32(buffer, hintsSize);
+        for (const auto& hint : rs.currentHints) {
+            appendUInt32(buffer, *reinterpret_cast<const uint32_t*>(&hint.x));
+            appendUInt32(buffer, *reinterpret_cast<const uint32_t*>(&hint.y));
+        }
+
+        // hasFinished (1 byte)
+        buffer.push_back(static_cast<uint8_t>(rs.hasFinished));
+
+        // finishPosition (int, típicamente 4 bytes)
+        addIntToUint8tVector(buffer, rs.finishPosition);
     }
-
-    // hasFinished (1 byte)
-    buffer.push_back(static_cast<uint8_t>(snapshot->raceState.hasFinished));
-
-    // finishPosition (int, típicamente 4 bytes)
-    addIntToUint8tVector(buffer, snapshot->raceState.finishPosition);
 
     socket.sendall(buffer.data(), buffer.size());
 }

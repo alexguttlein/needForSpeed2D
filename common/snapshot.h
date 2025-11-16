@@ -12,7 +12,7 @@ struct Snapshot {
     int playerId;
     uint32_t playersSize;
     std::vector<CarStateDTO> cars;
-    RaceStateDTO raceState;
+    std::vector<RaceStateDTO> raceStates;
     Snapshot () = default;
 };
 #pragma pack(pop)

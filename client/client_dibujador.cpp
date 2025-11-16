@@ -17,6 +17,8 @@ ClientDibujador::~ClientDibujador() {
     if (uiFont) { TTF_CloseFont(uiFont); uiFont = nullptr; }
     if (carTex) SDL_DestroyTexture(carTex);
     if (mapTex) SDL_DestroyTexture(mapTex);
+    if (checkpointTex) SDL_DestroyTexture(checkpointTex);
+    if (hintTex) SDL_DestroyTexture(hintTex);
 }
 
 SDL_Texture* ClientDibujador::loadTexture_(const std::string& path) {
@@ -47,6 +49,16 @@ bool ClientDibujador::loadCarAtlas(const std::string& pathPng, int cols, int row
     cellW = w / atlasCols;
     cellH = h / atlasRows;
     return true;
+}
+
+bool ClientDibujador::loadCheckpoint(const std::string& pathPng) {
+    checkpointTex = loadTexture_(pathPng);
+    return checkpointTex != nullptr;
+}
+
+bool ClientDibujador::loadHint(const std::string& pathPng) {
+    hintTex = loadTexture_(pathPng);
+    return hintTex != nullptr;
 }
 
 bool ClientDibujador::setUIFont(const std::string& ttfPath, int size) {
@@ -152,7 +164,7 @@ void ClientDibujador::renderFrame(int playerX, int playerY) {
 }
 
 void ClientDibujador::renderAll(const std::vector<CarStateDTO>& cars, int selfId) {
-     if (!raceStarted_) {
+    if (!raceStarted_) {
         raceStarted_ = true;
         raceStartTicks_ = SDL_GetTicks();
     }
@@ -160,29 +172,38 @@ void ClientDibujador::renderAll(const std::vector<CarStateDTO>& cars, int selfId
     SDL_SetRenderDrawColor(ren, 20, 20, 20, 255);
     SDL_RenderClear(ren);
 
+    // Primero: encontrar mi auto y mover la cámara antes de dibujar nada
+    for (const auto& carState : cars) {
+        if (carState.car_id == selfId) {
+            int px = static_cast<int>(carState.position.x * Constants::SCALE_METER_TO_PIXEL);
+            int py = static_cast<int>(carState.position.y * Constants::SCALE_METER_TO_PIXEL);
+            updateCamera_(px, py);
+            hudHp_       = carState.health;
+            hudSpeedKph_ = carState.speed * 3.6f; // m/s a km/h
+            selfScreenX_ = px - camX;
+            selfScreenY_ = py - camY;
+            break;
+        }
+    }
+
+    // Mapa con cámara actualizada
     if (mapTex) {
         SDL_Rect src{ camX, camY, winW, winH };
         SDL_Rect dst{ 0, 0, winW, winH };
         SDL_RenderCopy(ren, mapTex, &src, &dst);
     }
 
+    // Autos
     for (const auto& carState : cars) {
         int px = static_cast<int>(carState.position.x * Constants::SCALE_METER_TO_PIXEL);
         int py = static_cast<int>(carState.position.y * Constants::SCALE_METER_TO_PIXEL);
-
-
         float angleRad = std::atan2(carState.angle.y, carState.angle.x);
         float currentAngleDeg = angleRad * 180.0f / static_cast<float>(M_PI);
 
-        if (carState.car_id == selfId) {
-            updateCamera_(px, py);
-            hudHp_ = carState.health;
-            hudSpeedKph_ = carState.speed * 3.6f; // m/s a km/h
-        }
-
         if (carTex && cellW > 0 && cellH > 0) {
             int frame = frameForAngle_(currentAngleDeg);
-            int col = frame % atlasCols, row = frame / atlasCols;
+            int col   = frame % atlasCols;
+            int row   = frame / atlasCols;
 
             SDL_Rect s{ col * cellW, row * cellH, cellW, cellH };
             SDL_Rect d{
@@ -193,6 +214,9 @@ void ClientDibujador::renderAll(const std::vector<CarStateDTO>& cars, int selfId
             SDL_RenderCopy(ren, carTex, &s, &d);
         }
     }
+
+    drawCheckpoint_();
+    drawHints_();
 
     hudPlayers_ = std::max(1, (int)cars.size());
     drawHUD_();
@@ -332,6 +356,20 @@ void ClientDibujador::drawHudRace_(int panelX, int panelY) {
     drawBadge_(x, y, "Race: ", value);
 }
 
+void ClientDibujador::updateRaceState(const RaceStateDTO& raceState) {
+    hudNextCheckpoint_.x = raceState.nextCheckpoint.x * Constants::SCALE_METER_TO_PIXEL;
+    hudNextCheckpoint_.y = raceState.nextCheckpoint.y * Constants::SCALE_METER_TO_PIXEL;
+
+    hudHints_.clear();
+    hudHints_.reserve(raceState.currentHints.size());
+    for (const auto& h : raceState.currentHints) {
+        Vector2D<float> p;
+        p.x = h.x * Constants::SCALE_METER_TO_PIXEL;
+        p.y = h.y * Constants::SCALE_METER_TO_PIXEL;
+        hudHints_.push_back(p);
+    }
+}
+
 void ClientDibujador::drawHudTime_(int panelX, int panelY, int panelW) {
     // tiempo desde que arrancó la carrera
     Uint32 now = SDL_GetTicks();
@@ -355,6 +393,82 @@ void ClientDibujador::drawHudTime_(int panelX, int panelY, int panelW) {
     int by = panelY + 12;
 
     drawBadge_(bx, by, "Time: ", value);
+}
+
+void ClientDibujador::drawCheckpoint_() {
+    int screenX = static_cast<int>(hudNextCheckpoint_.x) - camX;
+    int screenY = static_cast<int>(hudNextCheckpoint_.y) - camY;
+
+    if (screenX < -20 || screenX > winW + 20 ||
+        screenY < -20 || screenY > winH + 20) {
+        return;
+    }
+
+    SDL_SetRenderDrawBlendMode(ren, SDL_BLENDMODE_BLEND);
+
+    if (checkpointTex) {
+        int texW = 0, texH = 0;
+        SDL_QueryTexture(checkpointTex, nullptr, nullptr, &texW, &texH);
+        float scale = 1.0f;
+        if (texW > checkpointSizePx || texH > checkpointSizePx) {
+            float sx = checkpointSizePx / static_cast<float>(texW);
+            float sy = checkpointSizePx / static_cast<float>(texH);
+            scale = std::min(sx, sy);
+        }
+
+        int dstW = static_cast<int>(texW * scale);
+        int dstH = static_cast<int>(texH * scale);
+        SDL_Rect dst{ screenX - dstW / 2, screenY - dstH / 2, dstW, dstH };
+        SDL_RenderCopy(ren, checkpointTex, nullptr, &dst);
+    } else {
+        SDL_SetRenderDrawColor(ren, 250, 215, 70, 220);
+        SDL_Rect r{ screenX - 12, screenY - 12, 24, 24 };
+        SDL_RenderFillRect(ren, &r);
+        SDL_SetRenderDrawColor(ren, 0, 0, 0, 255);
+        SDL_RenderDrawRect(ren, &r);
+    }
+}
+
+void ClientDibujador::drawHints_() {
+    SDL_SetRenderDrawBlendMode(ren, SDL_BLENDMODE_BLEND);
+    for (const auto& h : hudHints_) {
+        int screenX = static_cast<int>(h.x) - camX;
+        int screenY = static_cast<int>(h.y) - camY;
+
+        if (screenX < -10 || screenX > winW + 10 ||
+            screenY < -10 || screenY > winH + 10) {
+            continue;
+        }
+
+        if (hintTex) {
+            int texW = 0, texH = 0;
+            SDL_QueryTexture(hintTex, nullptr, nullptr, &texW, &texH);
+
+            float scale = 1.0f;
+            if (texW > hintSizePx || texH > hintSizePx) {
+                float sx = hintSizePx / static_cast<float>(texW);
+                float sy = hintSizePx / static_cast<float>(texH);
+                scale = std::min(sx, sy);
+            }
+
+            int dstW = static_cast<int>(texW * scale);
+            int dstH = static_cast<int>(texH * scale);
+            SDL_Rect dst{ screenX - dstW / 2, screenY - dstH / 2, dstW, dstH };
+
+            float dx = hudNextCheckpoint_.x - h.x;
+            float dy = hudNextCheckpoint_.y - h.y;
+            float angleRad = std::atan2(dy, dx);
+            float angleDeg = angleRad * 180.0f / static_cast<float>(M_PI);
+
+            float renderAngle = angleDeg + 270.0f;
+
+            SDL_RenderCopyEx(ren, hintTex, nullptr, &dst, renderAngle, nullptr, SDL_FLIP_NONE);
+        } else {
+            SDL_SetRenderDrawColor(ren, 80, 200, 250, 230);
+            SDL_Rect r{ screenX - 4, screenY - 4, 8, 8 };
+            SDL_RenderFillRect(ren, &r);
+        }
+    }
 }
 
 void ClientDibujador::drawMinimap_(const std::vector<CarStateDTO>& cars, int selfId) {

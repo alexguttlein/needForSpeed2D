@@ -9,6 +9,7 @@
 *
 * */
 struct RaceStateDTO {
+    int playerId;
     Vector2D<float> nextCheckpoint;
     std::vector<Vector2D<float>> currentHints;
     bool hasFinished;

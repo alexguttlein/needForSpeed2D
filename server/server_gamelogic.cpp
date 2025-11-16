@@ -58,37 +58,45 @@ void GameLogic::update(int currentTick) {
 
 std::shared_ptr<Snapshot> GameLogic::getSnapshot(EventType controlEvent) const {
     auto snapshot = std::make_shared<Snapshot>();
-    snapshot->playerId = lastCommandPlayerId;
+    snapshot->playerId     = lastCommandPlayerId;
     snapshot->controlEvent = controlEvent;
-    snapshot->playersSize = static_cast<uint32_t>(cars.size());
+    snapshot->playersSize  = static_cast<uint32_t>(cars.size());
 
+    snapshot->raceStates.clear();
+    snapshot->raceStates.reserve(cars.size());
 
-    RaceStateDTO raceState;
+    const auto& finishedPlayers = raceLogic.getFinishedPlayers();
 
-    if(cars.count(lastCommandPlayerId)) {
-        raceState.nextCheckpoint = raceLogic.getNextCheckpointPosition(lastCommandPlayerId);
-        raceState.currentHints = raceLogic.getHintsForPlayer(lastCommandPlayerId, cars.at(lastCommandPlayerId)->getPosition());
-        raceState.hasFinished = raceLogic.hasPlayerFinished(lastCommandPlayerId);
-        if( raceState.hasFinished) {
-            const auto& finishedPlayers = raceLogic.getFinishedPlayers();
-            auto it = std::find(finishedPlayers.begin(), finishedPlayers.end(), lastCommandPlayerId);
+    for (const auto& [id, car] : cars) {
+        RaceStateDTO raceState{};
+        raceState.playerId      = id;
+        raceState.nextCheckpoint = raceLogic.getNextCheckpointPosition(id);
+        raceState.currentHints   = raceLogic.getHintsForPlayer(id, car->getPosition());
+        raceState.hasFinished    = raceLogic.hasPlayerFinished(id);
+
+        raceState.finishPosition = 0;
+        if (raceState.hasFinished) {
+            auto it = std::find(finishedPlayers.begin(), finishedPlayers.end(), id);
             if (it != finishedPlayers.end()) {
-            raceState.finishPosition = std::distance(finishedPlayers.begin(), it) + 1; // +1 para posición humana
-            } 
+                raceState.finishPosition = static_cast<int>(std::distance(finishedPlayers.begin(), it)) + 1;
+            }
         }
+
+        snapshot->raceStates.push_back(raceState);
     }
 
-    snapshot->raceState = raceState;
-
+    snapshot->cars.clear();
+    snapshot->cars.reserve(cars.size());
     for (auto const& [id, car] : cars) {
-            CarStateDTO dto;
-            dto.car_id = id;
-            dto.health = car->getHealth();
-            dto.position = car->getPosition();
-            dto.angle = car->getDirection();
-            dto.speed = car->getSpeed();
-            snapshot->cars.push_back(dto);
+        CarStateDTO dto;
+        dto.car_id   = id;
+        dto.health   = car->getHealth();
+        dto.position = car->getPosition();
+        dto.angle    = car->getDirection();
+        dto.speed    = car->getSpeed();
+        snapshot->cars.push_back(dto);
     }
+
     return snapshot;
 }
 
