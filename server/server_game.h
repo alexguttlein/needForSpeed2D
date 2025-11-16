@@ -14,12 +14,14 @@ class GameLoop;
 
 class Game {
 public:
-    explicit Game(int gameId);
+    explicit Game(int gameId, std::string& gameCreator);
     Queue<std::shared_ptr<Message>>& getSharedQueue();
+
     int totalPlayers;
     void addClientHandler(ClientHandler* client);
     void removeClientHandler(ClientHandler* client);
     ~Game();
+    std::string getCreatorsName();
 private:
     int gameId;
     Queue<std::shared_ptr<Message>> sharedQueue;
@@ -28,5 +30,6 @@ private:
     std::mutex mtx;
     std::unique_ptr<GameLoop> gameloop;
     void closeAllClientQueues();
+    std::string gameCreator;
 };
 #endif //SERVER_GAME_H

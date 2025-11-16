@@ -6,6 +6,7 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QSignalMapper>
+#include "carConfirmDialog.h"
 
 class CarSelectionWindow : public QWidget {
     Q_OBJECT

@@ -24,7 +24,7 @@ public:
     ~ClientProtocol();
     void sendKey(const SDL_KeyCode msg, bool isPressed);
     CommandConstants::Key sdlToKey(const SDL_KeyCode input);
-    bool sendLobbyOption(const std::string& input);
+    bool sendLobbyOption(const std::string& input, const std::string& playerName);
 
     std::optional<Snapshot> receiveSnapshotFromServer();
     std::optional<Snapshot> receiveControlFromServer();
@@ -35,6 +35,7 @@ private:
     Socket socket;
     bool isClosed;
     uint32_t readUInt32(const std::vector<uint8_t>& buffer, size_t& offset);
+    void sendString(const std::string& str);
 };
 
 #endif //CLIENT_PROTOCOL_H

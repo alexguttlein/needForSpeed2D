@@ -26,6 +26,9 @@ public:
     int getSelfId() const;
     void setSelectedCar(int id) { selectedCarId = id; }
     int getSelectedCar() const { return selectedCarId; }
+    void setPlayerName(const std::string& name) { playerName = name; }
+    const std::string& getPlayerName() const { return playerName; }
+    bool sendLobbyOption(const std::string& option, const std::string& playerName);
 private:
     ClientProtocol protocol;
     Queue<Snapshot> snapshotQueue;
@@ -36,6 +39,7 @@ private:
     bool playing;
     std::atomic<int> selfId{-1};
     int selectedCarId = -1;
+    std::string playerName;
 };
 
 #endif //CLIENT_H

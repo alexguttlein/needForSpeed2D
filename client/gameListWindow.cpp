@@ -36,17 +36,28 @@ GameListWindow::GameListWindow(Client* client, QWidget* parent)
 
 void GameListWindow::loadGameList(const std::vector<GameInfo>& games) {
     table->setRowCount(static_cast<int>(games.size()));
+    table->setColumnCount(3);
+    table->setHorizontalHeaderLabels({"ID", "Creator", "Players"});
     for (int i = 0; i < static_cast<int>(games.size()); ++i) {
+        // Columna 0: ID
         table->setItem(i, 0, new QTableWidgetItem(QString::number(games[i].id)));
-        table->setItem(i, 1, new QTableWidgetItem(QString("%1 / %2")
-                         .arg(games[i].players)
-                         .arg(Constants::MAX_PLAYERS_IN_GAME)));
+
+        // Columna 1: Creador
+        table->setItem(i, 1, new QTableWidgetItem(QString::fromStdString(games[i].name)));
+
+        // Columna 2: players / MAX_PLAYERS_IN_GAME
+        table->setItem(i, 2, new QTableWidgetItem(
+            QString("%1 / %2")
+            .arg(games[i].players)
+            .arg(Constants::MAX_PLAYERS_IN_GAME)
+        ));
     }
+    table->resizeColumnsToContents();
 }
 
 void GameListWindow::onRefreshClicked() {
     // solicitar lista al servidor y esperar en background
-    if (!client->getProtocol().sendLobbyOption("listar")) {
+    if (!client->sendLobbyOption("listar","")) {
         QMessageBox::warning(this, "Error", "No se pudo solicitar la lista de partidas.");
         return;
     }

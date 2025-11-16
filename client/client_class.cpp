@@ -23,6 +23,8 @@ void Client::run() {
     ClientQtManager qt(this);
     qt.start();
 
+    std::cout << "debug: auto elegido = " << selectedCarId << std::endl;
+
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         std::fprintf(stderr, "SDL_Init error: %s\n", SDL_GetError());
         return;
@@ -145,4 +147,8 @@ void Client::setSelfId(int id) {
 
 int Client::getSelfId() const {
     return selfId.load();
+}
+
+bool Client::sendLobbyOption(const std::string& option, const std::string& name) {
+    return protocol.sendLobbyOption(option, name);
 }

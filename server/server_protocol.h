@@ -36,6 +36,7 @@ private:
     Socket socket;
     bool isClosed;
     char commandToKey(const uint8_t& command);
+    std::string receiveString();
 };
 
 #endif //SERVER_PROTOCOL_H

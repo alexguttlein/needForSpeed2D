@@ -44,6 +44,25 @@ void ClientQtManager::showLoginWindow() {
     QWidget* center = new QWidget(window);
     QVBoxLayout* centerLayout = new QVBoxLayout(center);
 
+    // título
+    QLabel* title = new QLabel("NEED FOR SPEED 2D", window);
+    title->setAlignment(Qt::AlignCenter);
+    title->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    title->setStyleSheet(
+        "QLabel {"
+        " color: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 red, stop:1 white);"
+        " font-size: 65px;"
+        " font-weight: bold;"
+        " font-family: 'Verdana';"
+        "}"
+    );
+
+    auto* glow = new QGraphicsDropShadowEffect(title);
+    glow->setBlurRadius(80);
+    glow->setColor(QColor(255, 0, 0));
+    glow->setOffset(0);
+    title->setGraphicsEffect(glow);
+
     // Input de nombre
     QLineEdit* nameInput = new QLineEdit(center);
     nameInput->setPlaceholderText("Enter your driver name");
@@ -112,18 +131,26 @@ void ClientQtManager::showLoginWindow() {
     // Cuando se presiona START ENGINE
     QObject::connect(startButton, &QPushButton::clicked, [this, window, nameInput]() {
         QString playerName = nameInput->text();
+        client->setPlayerName(playerName.toStdString()); //paso el nombre al client
         window->close();
         showLobbyWindow(playerName);
     });
+
+    layout->setContentsMargins(0, 20, 0, 50); // margen general
+    layout->addStretch();
+    layout->addWidget(title);
+    layout->addSpacing(100);
+    layout->addWidget(center, 0, Qt::AlignHCenter);
+    layout->addStretch();
 
     centerLayout->addWidget(nameInput);
     centerLayout->addSpacing(20);
     centerLayout->addWidget(startButton);
     center->setLayout(centerLayout);
 
-    layout->addStretch();
-    layout->addWidget(center, 0, Qt::AlignCenter);
-    layout->addStretch();
+    // layout->addStretch();
+    // layout->addWidget(center, 0, Qt::AlignCenter);
+    // layout->addStretch();
 
     window->setLayout(layout);
     window->show();
@@ -141,7 +168,7 @@ void ClientQtManager::showLobbyWindow(const QString& playerName) {
 void ClientQtManager::setupCreateButton(LobbyMenuWindow* lobby) {
     QObject::connect(lobby->getCreateButton(), &QPushButton::clicked, [this, lobby]() {
 
-        if (!client->getProtocol().sendLobbyOption("crear")) {
+        if (!client->sendLobbyOption("crear", client->getPlayerName())) {
             QMessageBox::warning(lobby, "Error", "No se pudo enviar la solicitud al servidor.");
             return;
         }
@@ -177,7 +204,7 @@ void ClientQtManager::setupJoinButton(LobbyMenuWindow* lobby) {
         lobby->getJoinButton()->setEnabled(false);
         lobby->getSelectCarButton()->setEnabled(false);
 
-        client->getProtocol().sendLobbyOption("listar");
+        client->sendLobbyOption("listar","");
 
         QTimer::singleShot(500, [this, lobby]() {
             Snapshot snapshot{};
@@ -198,7 +225,7 @@ void ClientQtManager::setupJoinButton(LobbyMenuWindow* lobby) {
             listWindow->show();
 
             QObject::connect(listWindow, &GameListWindow::gameSelected, [this, lobby, listWindow](uint32_t gameId) {
-                if (!client->getProtocol().sendLobbyOption("unirse " + std::to_string(gameId))) {
+                if (!client->sendLobbyOption("unirse " + std::to_string(gameId), client->getPlayerName())) {
                     QMessageBox::warning(lobby, "Error", "No se pudo enviar la solicitud de unirse.");
                     return;
                 }
@@ -233,11 +260,12 @@ void ClientQtManager::setupSelectCarButton(LobbyMenuWindow* lobby) {
     QObject::connect(lobby->getSelectCarButton(), &QPushButton::clicked, [this, lobby]() {
         // Abrir ventana de selección de auto
         auto* carWindow = new CarSelectionWindow(lobby);
-        QObject::connect(carWindow, &CarSelectionWindow::carChosen, [lobby](int carId) {
+        QObject::connect(carWindow, &CarSelectionWindow::carChosen, [this, lobby](int carId) {
+            client->setSelectedCar(carId); //se informa al cliente el auto elegido
+
             lobby->carChosen = true; // actualizar flag
             lobby->getCreateButton()->setEnabled(true);
             lobby->getJoinButton()->setEnabled(true);
-            std::cout << "el id elegido es " << carId << std::endl;
         });
         carWindow->show();
     });

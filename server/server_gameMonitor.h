@@ -18,13 +18,14 @@ private:
 public:
     GameMonitor();
     ~GameMonitor();
-    int createGame();
+    int createGame(std::string& gameCreator);
     Queue<std::shared_ptr<Message>>& getGameQueue(int gameId);
     bool tryJoinGame(int id, Queue<std::shared_ptr<Message>>*& outQueue);
     bool registerClientToGame(int id, ClientHandler* client);
     void leaveGame(int id);
     std::vector<std::pair<int,int>> listGames();
     void unregisterClientFromGame(int id, ClientHandler* client);
+    std::string getGameCreator(int gameId);
 };
 
 #endif //SERVER_GAMEMONITOR_H

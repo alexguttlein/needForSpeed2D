@@ -80,6 +80,10 @@ Queue<std::shared_ptr<Snapshot>>& ClientHandler::getClientQueue() {
     return clientQueue;
 }
 
+void ClientHandler::setPlayerName(const std::string& name) {
+    playerName = name;
+}
+
 ClientHandler::~ClientHandler() {
     std::cout << "debug: destruyendo clientHandler" << std::endl;
 };

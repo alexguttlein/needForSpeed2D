@@ -24,4 +24,5 @@ target_sources(taller_client
     gameListWindow.h
     client_qtManager.h
     carSelectWindow.h
+    carConfirmDialog.h
     )

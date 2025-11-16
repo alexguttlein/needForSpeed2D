@@ -2,13 +2,13 @@
 #include "server/server_gameloop.h"
 #include <iostream>
 
-Game::Game(int gameId) :
+Game::Game(int gameId, std::string& gameCreator) :
     totalPlayers(0),
     gameId(gameId),
     sharedQueue(Constants::GAME_QUEUE_MAXSIZE),
     clientQueues(),
     clientHandlers(),
-    gameloop(nullptr) {}
+    gameloop(nullptr), gameCreator(gameCreator) {}
 
 Queue<std::shared_ptr<Message>>& Game::getSharedQueue() {
     return sharedQueue;
@@ -28,7 +28,6 @@ void Game::addClientHandler(ClientHandler* client) {
         // como se conectaron todos los usuarios,
         // gameLoop acepta la queue compartida, el vector de queues privadas y el mutex de clientes
         gameloop = std::make_unique<GameLoop>(sharedQueue, clientQueues, mtx);
-
         for (auto* handler : clientHandlers)
             gameloop->addPlayer(handler->getId());
         gameloop->start();
@@ -71,4 +70,8 @@ Game::~Game() {
     }
     closeAllClientQueues();
     clientHandlers.clear();
+}
+
+std::string Game::getCreatorsName() {
+    return gameCreator;
 }
