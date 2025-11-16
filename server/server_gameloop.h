@@ -15,6 +15,8 @@
 #include "common/message.h"
 #include "server_gamelogic.h"
 #include <unordered_map>
+#include "server/server_clientHandler.h"
+#include "server/server_game.h"
 
 class GameLoop : public Thread {
 
@@ -23,7 +25,9 @@ private:
     std::atomic<bool> running;
     Queue<std::shared_ptr<Message>>& commandQueue; //queue compartida
     std::vector<Queue<std::shared_ptr<Snapshot>>*>& clientQueues; //queues privadas de los jugadores
+    std::vector<ClientHandler*>& clientHandlers;
     std::mutex& clientListMutex; //referencia al mutex de Game
+    Game* parentGame;
 
 public:
 
@@ -33,7 +37,8 @@ public:
     * */
     explicit GameLoop(Queue<std::shared_ptr<Message>>& commandQueue,
                       std::vector<Queue<std::shared_ptr<Snapshot>>*>& clientQueues,
-                      std::mutex& clientListMutex);
+                      std::vector<ClientHandler*>& clientHandlers,
+                      std::mutex& clientListMutex, Game* parentGame);
 
     /*
     * Agrega las snapshots a la queue de snapshots
