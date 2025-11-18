@@ -85,6 +85,7 @@ void Client::run() {
             if (e.type == SDL_KEYDOWN) {
                 switch (e.key.keysym.sym) {
                     case SDLK_ESCAPE: running = false; break;
+                    case SDLK_q: running = false; break;
                     case SDLK_w: commandQueue.push({ SDLK_w, true }); break;
                     case SDLK_s: commandQueue.push({ SDLK_s, true }); break;
                     case SDLK_a: commandQueue.push({ SDLK_a, true }); break;
