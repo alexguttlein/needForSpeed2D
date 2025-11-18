@@ -3,6 +3,7 @@
 
 #include "common/eventType.h"
 #include "carStateDTO.h"
+#include "raceStateDTO.h"
 #include <vector>
 #include "gameInfo.h"
 
@@ -13,6 +14,8 @@ struct Snapshot {
     uint32_t playersSize;
     std::vector<CarStateDTO> cars;
     std::vector<GameInfo> gameList;
+    std::vector<RaceStateDTO> raceStates;
+    bool raceFinished = false;      // true cuando todos los jugadores terminaron
     Snapshot () = default;
 };
 #pragma pack(pop)

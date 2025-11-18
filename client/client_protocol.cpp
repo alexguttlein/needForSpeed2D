@@ -148,8 +148,82 @@ std::optional<Snapshot> ClientProtocol::receiveSnapshotFromServer() {
 
         snapshot.cars.push_back(dto);
     }
-    return snapshot;
-}
+
+        // raceStates
+        uint32_t raceCountBE = 0;
+        socket.recvall(&raceCountBE, sizeof(raceCountBE));
+        uint32_t raceCount = ntohl(raceCountBE);
+
+        snapshot.raceStates.clear();
+        snapshot.raceStates.reserve(raceCount);
+
+        for (uint32_t r = 0; r < raceCount; ++r) {
+            RaceStateDTO rs{};
+
+            // playerId
+            uint32_t playerIdBE = 0;
+            socket.recvall(&playerIdBE, sizeof(playerIdBE));
+            rs.playerId = static_cast<int>(ntohl(playerIdBE));
+
+            // nextCheckpoint
+            uint32_t nextCheckpointXBE = 0;
+            socket.recvall(&nextCheckpointXBE, sizeof(nextCheckpointXBE));
+            uint32_t nextCheckpointXHost = ntohl(nextCheckpointXBE);
+            rs.nextCheckpoint.x = *reinterpret_cast<float*>(&nextCheckpointXHost);
+
+            uint32_t nextCheckpointYBE = 0;
+            socket.recvall(&nextCheckpointYBE, sizeof(nextCheckpointYBE));
+            uint32_t nextCheckpointYHost = ntohl(nextCheckpointYBE);
+            rs.nextCheckpoint.y = *reinterpret_cast<float*>(&nextCheckpointYHost);
+
+            // hints
+            uint32_t hintsSizeBE = 0;
+            socket.recvall(&hintsSizeBE, sizeof(hintsSizeBE));
+            uint32_t hintsSize = ntohl(hintsSizeBE);
+
+            for (uint32_t i = 0; i < hintsSize; i++) {
+                Vector2D<float> hint;
+                uint32_t hintXBE = 0;
+                socket.recvall(&hintXBE, sizeof(hintXBE));
+                uint32_t hintXHost = ntohl(hintXBE);
+                hint.x = *reinterpret_cast<float*>(&hintXHost);
+
+                uint32_t hintYBE = 0;
+                socket.recvall(&hintYBE, sizeof(hintYBE));
+                uint32_t hintYHost = ntohl(hintYBE);
+                hint.y = *reinterpret_cast<float*>(&hintYHost);
+
+                rs.currentHints.push_back(hint);
+            }
+
+            // hasFinished
+            uint8_t hasFinishedByte = 0;
+            socket.recvall(&hasFinishedByte, sizeof(hasFinishedByte));
+            rs.hasFinished = static_cast<bool>(hasFinishedByte);
+
+            // finishPosition
+            uint32_t finishPositionBE = 0;
+            socket.recvall(&finishPositionBE, sizeof(finishPositionBE));
+            rs.finishPosition = static_cast<int>(ntohl(finishPositionBE));
+
+            snapshot.raceStates.push_back(std::move(rs));
+        }
+        // Flag de fin de carrera
+        uint8_t raceFinishedByte = 0;
+        socket.recvall(&raceFinishedByte, sizeof(raceFinishedByte));
+        snapshot.raceFinished = static_cast<bool>(raceFinishedByte);
+
+        // Leer tiempos de llegada, en el mismo orden que raceStates
+        for (uint32_t r = 0; r < raceCount; ++r) {
+            uint32_t timeBE = 0;
+            socket.recvall(&timeBE, sizeof(timeBE));
+            uint32_t timeHost = ntohl(timeBE);
+            float timeSeconds = *reinterpret_cast<float*>(&timeHost);
+            snapshot.raceStates[r].finishTimeSeconds = timeSeconds;
+        }
+
+        return snapshot;
+    }
 
 std::optional<Snapshot> ClientProtocol::receiveControlFromServer() {
     // se recibio un codigo de control

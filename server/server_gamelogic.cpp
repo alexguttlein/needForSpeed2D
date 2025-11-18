@@ -1,10 +1,11 @@
 #include "server_gamelogic.h"
-#include <iostream>
-#include <cmath>
 
 
-GameLogic::GameLogic() {
+GameLogic::GameLogic(){
     world = raceBuilder.getWorld();
+    //auto objects = mapLoader.loadCollidersFromYaml("server/Mapa1-nfs.yaml");
+    //mapSetObjects.createBodiesFromObjects(world, objects);
+
 }
 
 
@@ -45,29 +46,78 @@ void GameLogic::update(int currentTick) {
 
     b2World_Step(world, dt, 4);
     checkCollisions(); // Verificar colisiones después de actualizar la física
+
+    // Tiempo actual de carrera en segundos (a partir de ticks)
+    float currentRaceTime = static_cast<float>(currentTick) /
+                            static_cast<float>(Constants::TICKS_PER_SECOND);
+
+    for (auto const& [id, car] : cars) {
+        if (!raceLogic.hasPlayerFinished(id)) {
+            Vector2D<float> carPosition = car->getPosition();
+            bool justFinished = raceLogic.checkCheckpoint(id, carPosition); // Verificar si cruzó un checkpoint y terminó
+            if (justFinished) {
+                raceLogic.setCurrentRaceTimeSeconds(currentRaceTime);
+            }
+        }
+    }
 }
 
 
 std::shared_ptr<Snapshot> GameLogic::getSnapshot(EventType controlEvent) const {
     auto snapshot = std::make_shared<Snapshot>();
-    snapshot->playerId = lastCommandPlayerId;
+    snapshot->playerId     = lastCommandPlayerId;
     snapshot->controlEvent = controlEvent;
-    snapshot->playersSize = static_cast<uint32_t>(cars.size());
+    snapshot->playersSize  = static_cast<uint32_t>(cars.size());
 
-    for (auto const& [id, car] : cars) {
-            CarStateDTO dto;
-            dto.car_id = id;
-            dto.health = car->getHealth();
-            dto.position = car->getPosition();
-            dto.angle = car->getDirection();
-            dto.speed = car->getSpeed();
-            snapshot->cars.push_back(dto);
+    snapshot->raceStates.clear();
+    snapshot->raceStates.reserve(cars.size());
+
+    const auto& finishedPlayers = raceLogic.getFinishedPlayers();
+    bool allFinished = !cars.empty();
+
+    for (const auto& [id, car] : cars) {
+        RaceStateDTO raceState{};
+        raceState.playerId      = id;
+        raceState.nextCheckpoint = raceLogic.getNextCheckpointPosition(id);
+        raceState.currentHints   = raceLogic.getHintsForPlayer(id, car->getPosition());
+        raceState.hasFinished    = raceLogic.hasPlayerFinished(id);
+
+        if (!raceState.hasFinished) {
+            allFinished = false;
+        }
+
+        raceState.finishPosition = 0;
+        raceState.finishTimeSeconds = raceLogic.getFinishTime(id);
+        if (raceState.hasFinished) {
+            auto it = std::find(finishedPlayers.begin(), finishedPlayers.end(), id);
+            if (it != finishedPlayers.end()) {
+                raceState.finishPosition = static_cast<int>(std::distance(finishedPlayers.begin(), it)) + 1;
+            }
+        }
+
+        snapshot->raceStates.push_back(raceState);
     }
+
+    snapshot->cars.clear();
+    snapshot->cars.reserve(cars.size());
+    for (auto const& [id, car] : cars) {
+        CarStateDTO dto;
+        dto.car_id   = id;
+        dto.health   = car->getHealth();
+        dto.position = car->getPosition();
+        dto.angle    = car->getDirection();
+        dto.speed    = car->getSpeed();
+        snapshot->cars.push_back(dto);
+    }
+
+    snapshot->raceFinished = allFinished;
+
     return snapshot;
 }
 
 
 void GameLogic::addCar(int playerId, int carType) {
+    raceLogic.addPlayer(playerId); // Agregar jugador a RaceLogic
     raceBuilder.addSelectCar(carType);
     std::shared_ptr<Car> newCar = raceBuilder.getCars().back();
     cars[playerId] = newCar;

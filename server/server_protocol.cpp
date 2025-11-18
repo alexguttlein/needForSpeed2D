@@ -3,8 +3,10 @@
 #include "common/constants.h"
 #include "common/eventType.h"
 
+
 ServerProtocol::ServerProtocol(Socket socket) :
     socket(std::move(socket)) , isClosed(false) {}
+
 
 void ServerProtocol::closeSocket() {
     if (isConnectionClosed()) return;
@@ -12,9 +14,11 @@ void ServerProtocol::closeSocket() {
     socket.close();
 }
 
+
 bool ServerProtocol::isConnectionClosed() const {
     return socket.is_stream_send_closed() || socket.is_stream_recv_closed();
 }
+
 
 Message ServerProtocol::receiveMessage() {
     Message message;
@@ -77,6 +81,7 @@ void ServerProtocol::appendUInt32(std::vector<uint8_t>& buffer, uint32_t value) 
     buffer.insert(buffer.end(), bytes, bytes + sizeof(be_value));
 }
 
+
 char ServerProtocol::commandToKey(const uint8_t& command) {
     const uint8_t KEY_BITS = command & 0x7F; // Mask to get the lower 7 bits
     try {
@@ -90,10 +95,12 @@ char ServerProtocol::commandToKey(const uint8_t& command) {
     }
 }
 
+
 void ServerProtocol::addIntToUint8tVector(std::vector<uint8_t>& buffer, int value) {
     uint32_t num = static_cast<uint32_t>(value);
     appendBigEndian(buffer, num);
 }
+
 
 template<typename T>
 void ServerProtocol::appendBigEndian(std::vector<uint8_t>& buffer, T value) {
@@ -101,6 +108,7 @@ void ServerProtocol::appendBigEndian(std::vector<uint8_t>& buffer, T value) {
         buffer.push_back(static_cast<uint8_t>((value >> (8 * i)) & 0xFF));
     }
 }
+
 
 void ServerProtocol::sendSnapshot(std::shared_ptr<Snapshot>& snapshot) {
     if (isConnectionClosed()) return;
@@ -139,23 +147,47 @@ void ServerProtocol::sendSnapshot(std::shared_ptr<Snapshot>& snapshot) {
         // Nota: asumo que angle guarda el coseno y seno (c, s) del ángulo como Vector2D.
         appendUInt32(buffer, *reinterpret_cast<const uint32_t*>(&carState.angle.x)); // cos(angle)
         appendUInt32(buffer, *reinterpret_cast<const uint32_t*>(&carState.angle.y)); // sin(angle)
-
-        // std::cout << "debug: se va a enviar: " << carState.position.x << ", " <<
-        //     carState.position.y << std::endl;
     }
 
-    // for (uint32_t i = 0; i < snapshot->playersSize; ++i) {
-    //     addIntToUint8tVector(buffer, snapshot->players.at(i).playerId);
-    //     // posX y posY en big-endian
-    //     appendUInt32(buffer, snapshot->players.at(i).posX);
-    //     appendUInt32(buffer, snapshot->players.at(i).posY);
+    // raceStates: uno por jugador, alineado con cars
+    uint32_t raceCount = static_cast<uint32_t>(snapshot->raceStates.size());
+    appendUInt32(buffer, raceCount);
 
-    //     std::cout << "debug: se va a enviar: " << snapshot->players.at(i).posX << ", " <<
-    //         snapshot->players.at(i).posY << std::endl;
-    // }
+    for (const auto& rs : snapshot->raceStates) {
+        // playerId
+        addIntToUint8tVector(buffer, rs.playerId);
+
+        // nextCheckpoint (Vector2D<float>, 8 bytes total)
+        appendUInt32(buffer, *reinterpret_cast<const uint32_t*>(&rs.nextCheckpoint.x));
+        appendUInt32(buffer, *reinterpret_cast<const uint32_t*>(&rs.nextCheckpoint.y));
+
+        // currentHints (uint32_t size + Vector2D<float> * size)
+        uint32_t hintsSize = static_cast<uint32_t>(rs.currentHints.size());
+        appendUInt32(buffer, hintsSize);
+        for (const auto& hint : rs.currentHints) {
+            appendUInt32(buffer, *reinterpret_cast<const uint32_t*>(&hint.x));
+            appendUInt32(buffer, *reinterpret_cast<const uint32_t*>(&hint.y));
+        }
+
+        // hasFinished (1 byte)
+        buffer.push_back(static_cast<uint8_t>(rs.hasFinished));
+
+        // finishPosition (int, típicamente 4 bytes)
+        addIntToUint8tVector(buffer, rs.finishPosition);
+    }
+
+    // Flag de fin de carrera (1 byte)
+    buffer.push_back(static_cast<uint8_t>(snapshot->raceFinished));
+
+    // Tiempos de llegada (float por jugador, en el mismo orden que raceStates)
+    for (const auto& rs : snapshot->raceStates) {
+        uint32_t timeBits = *reinterpret_cast<const uint32_t*>(&rs.finishTimeSeconds);
+        appendUInt32(buffer, timeBits);
+    }
 
     socket.sendall(buffer.data(), buffer.size());
 }
+
 
 void ServerProtocol::sendControl(uint8_t code) {
     if (isConnectionClosed()) return;
@@ -165,6 +197,7 @@ void ServerProtocol::sendControl(uint8_t code) {
     buffer.push_back(code); //se agrega el codigo de control
     socket.sendall(buffer.data(), buffer.size());
 }
+
 
 void ServerProtocol::sendGamesList(uint8_t& type, const std::vector<unsigned char>& vector) {
     if (socket.is_stream_send_closed()) return;
@@ -179,6 +212,7 @@ void ServerProtocol::sendGamesList(uint8_t& type, const std::vector<unsigned cha
 
     socket.sendall(buffer.data(), buffer.size());
 }
+
 
 void ServerProtocol::sendCreateJoinAccepted(std::vector<uint8_t>& buffer) {
     if (isConnectionClosed()) return;

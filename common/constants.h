@@ -73,6 +73,7 @@ namespace  Constants {
     static constexpr float SPAWN_OFFSET_X = 50.0f; 
     static constexpr float MAX_ROW_X = 600.0f;
     static constexpr float CHECKPOINT_RADIUS = 5.0f; 
+    static constexpr float HINT_SPACING = 3.0f; // ver como cambia esto con el mapa
 
     // renderizado con fisica en metros
     static constexpr float SCALE_METER_TO_PIXEL = 25.0f;
