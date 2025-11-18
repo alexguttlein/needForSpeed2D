@@ -33,6 +33,8 @@ public:
     bool loadCheckpoint(const std::string& pathPng);
     bool loadHint(const std::string& pathPng);
 
+    void setRaceFinished(bool finished, const std::vector<RaceStateDTO>& standings);
+
     Vector2D<float> hudNextCheckpoint_{};               
     std::vector<Vector2D<float>> hudHints_{};
 
@@ -56,6 +58,12 @@ private:
     void drawText_(const std::string& s, int x, int y, SDL_Color col, bool centerY = true);
     void drawCheckpoint_();
     void drawHints_();
+
+    void renderResultsTable();
+    void renderResultsBackground_();
+    void renderResultsTablePanel_(const SDL_Rect& tableRect);
+    void renderResultsUpgradesPanel_(const SDL_Rect& panelRect);
+
 
     SDL_Renderer* ren;
     int winW, winH;
@@ -86,15 +94,16 @@ private:
     SDL_Texture* checkpointTex = nullptr;
     SDL_Texture* hintTex       = nullptr;
 
-    // dentro de ClientDibujador (zona privada)
     int selfScreenX_ = 0;
     int selfScreenY_ = 0;
-    // Tamaños máximos en pantalla para las texturas de checkpoint y hint
-    int checkpointSizePx = 32; // lado aproximado del icono de checkpoint
-    int hintSizePx       = 16; // lado aproximado del icono de hint
+    int checkpointSizePx = 32;
+    int hintSizePx       = 16;
 
     TTF_Font* uiFont = nullptr;
     int uiFontSize = 16;
+
+    bool raceFinished_ = false;
+    std::vector<RaceStateDTO> finalStandings_; 
 };
 
 #endif // TP_TALLER_G7_CLIENT_DIBUJADOR_H

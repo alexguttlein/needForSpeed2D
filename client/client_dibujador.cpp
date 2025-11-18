@@ -122,6 +122,11 @@ void ClientDibujador::updateCamera_(int px, int py) {
     }
 }
 
+void ClientDibujador::setRaceFinished(bool finished, const std::vector<RaceStateDTO>& standings) {
+    raceFinished_ = finished;
+    finalStandings_ = standings;
+}
+
 void ClientDibujador::renderFrame(int playerX, int playerY) {
     int px = playerX;
     int py = playerY;
@@ -164,6 +169,11 @@ void ClientDibujador::renderFrame(int playerX, int playerY) {
 }
 
 void ClientDibujador::renderAll(const std::vector<CarStateDTO>& cars, int selfId) {
+    if (raceFinished_) {
+        renderResultsTable();
+        return;
+    }
+
     if (!raceStarted_) {
         raceStarted_ = true;
         raceStartTicks_ = SDL_GetTicks();
@@ -225,6 +235,137 @@ void ClientDibujador::renderAll(const std::vector<CarStateDTO>& cars, int selfId
     SDL_RenderPresent(ren);
 }
 
+void ClientDibujador::renderResultsTable() {
+    renderResultsBackground_();
+
+    if (!uiFont) {
+        SDL_RenderPresent(ren);
+        return;
+    }
+
+    const int margin = 40;
+
+    SDL_Rect tableRect;
+    tableRect.w = static_cast<int>(winW * 0.65f); 
+    tableRect.h = static_cast<int>(winH * 0.6f);
+    tableRect.x = margin;
+    tableRect.y = (winH - tableRect.h) / 2;
+
+    SDL_Rect upgradesRect;
+    upgradesRect.w = static_cast<int>(winW * 0.22f);
+    upgradesRect.h = tableRect.h;
+    upgradesRect.x = winW - upgradesRect.w - margin;
+    upgradesRect.y = tableRect.y;
+
+    renderResultsTablePanel_(tableRect);
+    renderResultsUpgradesPanel_(upgradesRect);
+    SDL_RenderPresent(ren);
+}
+
+void ClientDibujador::renderResultsBackground_() {
+    if (mapTex) {
+        SDL_Rect src{ 0, 0, mapW, mapH };
+        SDL_Rect dst{ 0, 0, winW, winH };
+
+        SDL_SetRenderDrawColor(ren, 0, 0, 0, 255);
+        SDL_RenderClear(ren);
+
+        SDL_SetRenderDrawBlendMode(ren, SDL_BLENDMODE_BLEND);
+        Uint8 oldAlpha = 255;
+        SDL_GetTextureAlphaMod(mapTex, &oldAlpha);
+        SDL_SetTextureAlphaMod(mapTex, 80);
+        SDL_RenderCopy(ren, mapTex, &src, &dst);
+        SDL_SetTextureAlphaMod(mapTex, oldAlpha);
+    } else {
+        SDL_SetRenderDrawColor(ren, 10, 10, 15, 255);
+        SDL_RenderClear(ren);
+    }
+}
+
+void ClientDibujador::renderResultsTablePanel_(const SDL_Rect& tableRect) {
+
+    drawPanel_(tableRect.x, tableRect.y, tableRect.w, tableRect.h, 200);
+
+    std::string title = "Resultados de la carrera";
+    int titleX = tableRect.x + (tableRect.w / 2) - 140;
+    int titleY = tableRect.y + 20;
+    drawText_(title, titleX, titleY, {255, 255, 255, 255}, false);
+
+    int startY = tableRect.y + 70;
+    int lineH  = uiFontSize + 6;
+
+    std::vector<RaceStateDTO> ordered = finalStandings_;
+    std::sort(ordered.begin(), ordered.end(),
+              [](const RaceStateDTO& a, const RaceStateDTO& b) {
+                  return a.finishPosition < b.finishPosition;
+              });
+
+    for (size_t i = 0; i < ordered.size(); ++i) {
+        const auto& rs = ordered[i];
+        int   pos  = rs.finishPosition;
+        float time = rs.finishTimeSeconds;
+
+        char buffer[128];
+        if (time >= 0.0f) {
+            std::snprintf(buffer, sizeof(buffer),
+                          "%d) Jugador %d - %.2f s",
+                          pos, rs.playerId, time);
+        } else {
+            std::snprintf(buffer, sizeof(buffer),
+                          "%d) Jugador %d - DNF",
+                          pos, rs.playerId);
+        }
+        int textX = tableRect.x + 40;
+        int textY = startY + static_cast<int>(i) * lineH;
+
+        if (textY + lineH > tableRect.y + tableRect.h - 20) {
+            break;
+        }
+
+        drawText_(buffer, textX, textY, {230, 230, 230, 255}, false);
+    }
+}
+
+void ClientDibujador::renderResultsUpgradesPanel_(const SDL_Rect& panelRect) {
+    drawPanel_(panelRect.x, panelRect.y, panelRect.w, panelRect.h, 180);
+
+    drawText_("Mejoras",
+              panelRect.x + 20,
+              panelRect.y + 16,
+              {255, 255, 255, 255},
+              false);
+
+    int y  = panelRect.y + 60;
+    int dy = uiFontSize + 14;
+
+    drawText_("[Q] + Vida",
+              panelRect.x + 20,
+              y,
+              {220, 220, 220, 255},
+              false);
+    y += dy;
+
+    drawText_("[E] + Aceleracion",
+              panelRect.x + 20,
+              y,
+              {220, 220, 220, 255},
+              false);
+    y += dy;
+
+    drawText_("[V] + Velocidad",
+              panelRect.x + 20,
+              y,
+              {220, 220, 220, 255},
+              false);
+    y += dy;
+
+    drawText_("[C] + Control",
+              panelRect.x + 20,
+              y,
+              {220, 220, 220, 255},
+              false);
+}
+
 void ClientDibujador::drawPanel_(int x, int y, int w, int h, Uint8 a) {
     SDL_SetRenderDrawBlendMode(ren, SDL_BLENDMODE_BLEND);
     SDL_SetRenderDrawColor(ren, 16, 16, 20, a);
@@ -276,22 +417,17 @@ void ClientDibujador::drawHUD_() {
         return;
     }
 
-    const int pad    = 12;
-    const int panelH = 64;
-
-    // Panel izquierdo (velocidad + vida)
-    const int leftPanelW = 320;
+    const int pad    = 0;
     const int leftPx     = pad;
     const int leftPy     = pad;
-    drawPanel_(leftPx, leftPy, leftPanelW, panelH, 180);
+
     drawHudSpeed_(leftPx, leftPy);
     drawHudHealth_(leftPx, leftPy);
 
-    // Panel derecho (posición en la carrera + checkpoints)
     const int rightPanelW = 300;
     const int rightPx     = winW - rightPanelW - pad;
     const int rightPy     = pad;
-    drawPanel_(rightPx, rightPy, rightPanelW, panelH, 180);
+
     drawHudRace_(rightPx, rightPy);
     drawHudTime_(rightPx, rightPy, rightPanelW);
 }
@@ -371,7 +507,6 @@ void ClientDibujador::updateRaceState(const RaceStateDTO& raceState) {
 }
 
 void ClientDibujador::drawHudTime_(int panelX, int panelY, int panelW) {
-    // tiempo desde que arrancó la carrera
     Uint32 now = SDL_GetTicks();
     Uint32 elapsedMs = raceStarted_ ? (now - raceStartTicks_) : 0;
 
@@ -485,8 +620,8 @@ void ClientDibujador::drawMinimap_(const std::vector<CarStateDTO>& cars, int sel
     }
     if (!selfCar) return;
 
-    const int pad      = 10;
-    const int miniSize = 160;
+    const int pad      = 0;
+    const int miniSize = 110;
     const int miniX    = pad;
     const int miniY    = winH - pad - miniSize;
 

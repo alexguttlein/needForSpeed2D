@@ -146,6 +146,15 @@ void ServerProtocol::sendSnapshot(std::shared_ptr<Snapshot>& snapshot) {
         addIntToUint8tVector(buffer, rs.finishPosition);
     }
 
+    // Flag de fin de carrera (1 byte)
+    buffer.push_back(static_cast<uint8_t>(snapshot->raceFinished));
+
+    // Tiempos de llegada (float por jugador, en el mismo orden que raceStates)
+    for (const auto& rs : snapshot->raceStates) {
+        uint32_t timeBits = *reinterpret_cast<const uint32_t*>(&rs.finishTimeSeconds);
+        appendUInt32(buffer, timeBits);
+    }
+
     socket.sendall(buffer.data(), buffer.size());
 }
 

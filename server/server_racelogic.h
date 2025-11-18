@@ -21,6 +21,7 @@ private:
     std::map<int, int> nextCheckpointIndex;
     std::vector<int> finishedPlayers; // guardamos en orden los jugadores que terminaron
     std::mutex finishMutex;
+    std::map<int, float> finishTimes;
 
 public:
     /*
@@ -58,6 +59,18 @@ public:
     *
     * */
     std::vector<int> getFinishedPlayers() const;
+
+    /*
+    * Devuelve el tiempo (en segundos) en que el jugador terminó la carrera; -1 si no terminó
+    *
+    * */
+    float getFinishTime(int playerId) const;
+
+    /*
+    * Informa a RaceLogic el tiempo actual (en segundos) para registrar cuando un jugador termina
+    *
+    * */
+    void setCurrentRaceTimeSeconds(float currentTimeSeconds);
 
     /*
     * Verifica si el jugador ha completado el checkpoint actual

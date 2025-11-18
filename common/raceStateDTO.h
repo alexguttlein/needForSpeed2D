@@ -13,6 +13,7 @@ struct RaceStateDTO {
     Vector2D<float> nextCheckpoint;
     std::vector<Vector2D<float>> currentHints;
     bool hasFinished;
-    int finishPosition;    
+    int finishPosition;
+    float finishTimeSeconds;   
 };
 #endif // RACE_STATE_DTO_H

@@ -122,6 +122,10 @@ void Client::run() {
                 dib.updateRaceState(*myRace);
             }
 
+            if (snapshot.raceFinished) {
+                dib.setRaceFinished(true, snapshot.raceStates);
+            }
+
             dib.renderAll(snapshot.cars, selfId.load());
         }
 

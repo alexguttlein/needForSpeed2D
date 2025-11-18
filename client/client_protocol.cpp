@@ -221,6 +221,19 @@ std::optional<Snapshot> ClientProtocol::receiveMessageFromServer() {
 
             snapshot.raceStates.push_back(std::move(rs));
         }
+        // Flag de fin de carrera
+        uint8_t raceFinishedByte = 0;
+        socket.recvall(&raceFinishedByte, sizeof(raceFinishedByte));
+        snapshot.raceFinished = static_cast<bool>(raceFinishedByte);
+
+        // Leer tiempos de llegada, en el mismo orden que raceStates
+        for (uint32_t r = 0; r < raceCount; ++r) {
+            uint32_t timeBE = 0;
+            socket.recvall(&timeBE, sizeof(timeBE));
+            uint32_t timeHost = ntohl(timeBE);
+            float timeSeconds = *reinterpret_cast<float*>(&timeHost);
+            snapshot.raceStates[r].finishTimeSeconds = timeSeconds;
+        }
 
         return snapshot;
     }

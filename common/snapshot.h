@@ -13,6 +13,7 @@ struct Snapshot {
     uint32_t playersSize;
     std::vector<CarStateDTO> cars;
     std::vector<RaceStateDTO> raceStates;
+    bool raceFinished = false;      // true cuando todos los jugadores terminaron
     Snapshot () = default;
 };
 #pragma pack(pop)

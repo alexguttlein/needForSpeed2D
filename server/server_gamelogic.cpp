@@ -46,11 +46,18 @@ void GameLogic::update(int currentTick) {
 
     b2World_Step(world, dt, 4);
     checkCollisions(); // Verificar colisiones después de actualizar la física
-    
+
+    // Tiempo actual de carrera en segundos (a partir de ticks)
+    float currentRaceTime = static_cast<float>(currentTick) /
+                            static_cast<float>(Constants::TICKS_PER_SECOND);
+
     for (auto const& [id, car] : cars) {
         if (!raceLogic.hasPlayerFinished(id)) {
             Vector2D<float> carPosition = car->getPosition();
-            raceLogic.checkCheckpoint(id, carPosition); // Verificar si cruzó un checkpoint
+            bool justFinished = raceLogic.checkCheckpoint(id, carPosition); // Verificar si cruzó un checkpoint y terminó
+            if (justFinished) {
+                raceLogic.setCurrentRaceTimeSeconds(currentRaceTime);
+            }
         }
     }
 }
@@ -66,6 +73,7 @@ std::shared_ptr<Snapshot> GameLogic::getSnapshot(EventType controlEvent) const {
     snapshot->raceStates.reserve(cars.size());
 
     const auto& finishedPlayers = raceLogic.getFinishedPlayers();
+    bool allFinished = !cars.empty();
 
     for (const auto& [id, car] : cars) {
         RaceStateDTO raceState{};
@@ -74,7 +82,12 @@ std::shared_ptr<Snapshot> GameLogic::getSnapshot(EventType controlEvent) const {
         raceState.currentHints   = raceLogic.getHintsForPlayer(id, car->getPosition());
         raceState.hasFinished    = raceLogic.hasPlayerFinished(id);
 
+        if (!raceState.hasFinished) {
+            allFinished = false;
+        }
+
         raceState.finishPosition = 0;
+        raceState.finishTimeSeconds = raceLogic.getFinishTime(id);
         if (raceState.hasFinished) {
             auto it = std::find(finishedPlayers.begin(), finishedPlayers.end(), id);
             if (it != finishedPlayers.end()) {
@@ -96,6 +109,8 @@ std::shared_ptr<Snapshot> GameLogic::getSnapshot(EventType controlEvent) const {
         dto.speed    = car->getSpeed();
         snapshot->cars.push_back(dto);
     }
+
+    snapshot->raceFinished = allFinished;
 
     return snapshot;
 }

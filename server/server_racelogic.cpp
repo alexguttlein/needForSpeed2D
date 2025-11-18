@@ -50,7 +50,10 @@ bool RaceLogic::finishRace(int playerId) {
 
     if (it->second == static_cast<int>(mapData.checkpoints.size())) {
         finishedPlayers.push_back(playerId); // Guardamos el orden de llegada
-        std::cout << "Jugador " << playerId << " ha terminado la carrera! Posición: " 
+        if (finishTimes.find(playerId) == finishTimes.end()) {
+            finishTimes[playerId] = 0.0f;
+        }
+        std::cout << "Jugador " << playerId << " ha terminado la carrera! Posición: "
                   << finishedPlayers.size() << std::endl;
         return true;
     }
@@ -103,6 +106,26 @@ bool RaceLogic::hasPlayerFinished(int playerId) const {
 
 std::vector<int> RaceLogic::getFinishedPlayers() const {
     return finishedPlayers;
+}
+
+
+float RaceLogic::getFinishTime(int playerId) const {
+    auto it = finishTimes.find(playerId);
+    if (it == finishTimes.end()) {
+        return -1.0f;
+    }
+    return it->second;
+}
+
+
+void RaceLogic::setCurrentRaceTimeSeconds(float currentTimeSeconds) {
+    std::lock_guard<std::mutex> lock(finishMutex);
+    for (int playerId : finishedPlayers) {
+        auto it = finishTimes.find(playerId);
+        if (it != finishTimes.end() && it->second <= 0.0f) {
+            it->second = currentTimeSeconds;
+        }
+    }
 }
 
 
