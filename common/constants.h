@@ -75,6 +75,17 @@ namespace  Constants {
     static constexpr float CHECKPOINT_RADIUS = 5.0f; 
     static constexpr float HINT_SPACING = 3.0f; // ver como cambia esto con el mapa
 
+    // constantes representacion autos:
+    static constexpr int FORD = 1;
+    static constexpr int MAZDA = 2;
+    static constexpr int CORROLLA = 3;
+    static constexpr int BMW = 4;
+    static constexpr int JEEP = 5;
+    static constexpr int CIVIC = 6;
+    static constexpr int TRUCK = 7;
+
+    // cuando este el yaml habria que poner ahi los valores de los autos hardcodeados
+
     // renderizado con fisica en metros
     static constexpr float SCALE_METER_TO_PIXEL = 25.0f;
 

@@ -2,7 +2,7 @@
 
 Car::Car(b2WorldId world,Vector2D<float> position, float acceleration, float control,
     float weight, float maxSpeed, float maxReverseSpeed, 
-    float health)
+    float health, float height, float width)
     : world(world) 
     , position(position)
     , acceleration(acceleration)
@@ -10,7 +10,9 @@ Car::Car(b2WorldId world,Vector2D<float> position, float acceleration, float con
     , weight(weight)
     , maxSpeed(maxSpeed)
     , maxReverseSpeed(maxReverseSpeed)
-    , health(health) {
+    , health(health)
+    , height(height)
+    , width(width){
 
         setCarBox2DBody(position);
 
@@ -29,8 +31,7 @@ void Car::setCarBox2DBody(Vector2D<float> position) {
     b2Body_SetAwake(body, true);
 
     // Forma del auto: rectángulo simple
-    
-    b2Polygon shape = b2MakeBox(1.20f / 2.0f, 1.28f / 2.0f);
+    b2Polygon shape = b2MakeBox(width, height);
     b2ShapeDef shapeDef = b2DefaultShapeDef();
     shapeDef.density = weight;    
     shapeDef.enableContactEvents = true; 

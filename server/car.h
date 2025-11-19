@@ -33,13 +33,15 @@ private:
     bool isTurningLeft = false;
     bool isTurningRight = false;
 
+    float height, width;
+
 public:
     /*
     * Constructor de Car.
     * Inicializa los atributos del auto con los valores recibidos por parámetro.
     * */
     explicit Car(b2WorldId world,Vector2D<float> position, float acceleration, float control,
-        float weight, float maxSpeed, float maxReverseSpeed, float health);
+        float weight, float maxSpeed, float maxReverseSpeed, float health, float height, float width);
 
     /*
     * Configura el cuerpo Box2D del auto

@@ -60,7 +60,10 @@ void Client::run() {
         std::fprintf(stderr, "No pude cargar assets/maps/iberty.png\n");
     }
 
-    if (!dib.loadCarAtlas("assets/need-for-speed/cars/auto-1.png", 8, 2, 0.0f, true)) {
+    char carPath[256];
+    std::sprintf(carPath, "assets/need-for-speed/cars/auto-%d.png", selectedCarId+1);
+
+    if (!dib.loadCarAtlas(carPath, 8, 2, 0.0f, true)) {
         std::fprintf(stderr, "No pude cargar atlas del auto\n");
     }
 

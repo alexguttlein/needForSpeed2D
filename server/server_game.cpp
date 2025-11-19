@@ -20,7 +20,7 @@ void Game::addClientHandler(ClientHandler* client) {
     clientQueues.push_back(&client->getClientQueue());
 
     if (gameloop) {
-        gameloop->addPlayer(client->getId());
+        gameloop->addPlayer(client->getId(), client->getCarId());
     }
 
     // si alcanzamos el número de jugadores, arrancamos GameLoop si aún no arrancó
@@ -30,7 +30,7 @@ void Game::addClientHandler(ClientHandler* client) {
         gameloop = std::make_unique<GameLoop>(sharedQueue, clientQueues, clientHandlers, mtx, this);
 
         for (auto* handler : clientHandlers)
-            gameloop->addPlayer(handler->getId());
+            gameloop->addPlayer(handler->getId(), handler->getCarId() + 1);
         gameloop->start();
     }
 }

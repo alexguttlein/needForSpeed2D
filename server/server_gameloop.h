@@ -74,7 +74,7 @@ public:
     * Agrega un nuevo jugador al GameLoop
     *
     * */
-    void addPlayer(int playerId);
+    void addPlayer(int playerId, int carId);
 
     /*
     * Llama a las funciones que simulan el juego

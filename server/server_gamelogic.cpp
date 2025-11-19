@@ -121,6 +121,7 @@ void GameLogic::addCar(int playerId, int carType) {
     raceBuilder.addSelectCar(carType);
     std::shared_ptr<Car> newCar = raceBuilder.getCars().back();
     cars[playerId] = newCar;
+   
 }
 
 

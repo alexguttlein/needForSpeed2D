@@ -88,6 +88,10 @@ void ClientHandler::setCarId(int carSelected) {
     carId = carSelected;
 }
 
+int ClientHandler::getCarId() const {
+    return carId;
+}
+
 ClientHandler::~ClientHandler() {
     std::cout << "debug: destruyendo clientHandler" << std::endl;
 };

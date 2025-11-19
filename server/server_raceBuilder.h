@@ -41,10 +41,10 @@ public:
     std::vector<std::shared_ptr<Car>>& getCars();
 
     /*
-    * Retorna la posicion de spawn siguiente y actualiza la posición para el próximo auto
+    * Retorna la posicion de spawn y actualiza la posición para el próximo auto
     * 
     * */
-    Vector2D<float> getNextSpawnPosition();
+    Vector2D<float> getSpawnPosition();
 
     /*
     * Agrega un auto seleccionado al mundo Box2D

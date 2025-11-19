@@ -16,7 +16,7 @@ RaceBuilder::~RaceBuilder() {
 
 
 // por ahora asi, mas adelante se deberia poner a cada auto segun como salio en la carrera
-Vector2D<float> RaceBuilder::getNextSpawnPosition() {
+Vector2D<float> RaceBuilder::getSpawnPosition() {
     Vector2D<float> currentPos = {nextSpawnX, nextSpawnY};
     nextSpawnX += Constants::SPAWN_OFFSET_X;
 
@@ -24,28 +24,46 @@ Vector2D<float> RaceBuilder::getNextSpawnPosition() {
         nextSpawnX = Constants::SPAWN_START_X;
         nextSpawnY += Constants::SPAWN_OFFSET_X;
     }
+    currentPos.x /= Constants::SCALE_METER_TO_PIXEL;
+    currentPos.y /= Constants::SCALE_METER_TO_PIXEL;
     return currentPos;
 }
 
 
-// por ahora hardcodeamos 3 tipos de autos -> deberian estar hardcodeados en algun lado
+
 void RaceBuilder::addSelectCar(int carType) {
-    Vector2D<float> position = getNextSpawnPosition();
+    Vector2D<float> position = getSpawnPosition();
     std::shared_ptr<Car> car;
     switch (carType) {
-        case 1:
-            car = std::make_shared<Car>(world, Vector2D<float>{position.x / Constants::SCALE_METER_TO_PIXEL, position.y / Constants::SCALE_METER_TO_PIXEL}, 50.0f, 40.0f, 6.0f, 50.0f, 50.0f, 100.0f);
+
+        // Atributos: world, position, acceleration, control, weight, maxSpeed, maxReverseSpeed, health, height, width
+
+        case Constants::FORD:
+            car = std::make_shared<Car>(world, position, 50.0f, 40.0f, 6.0f, 50.0f, 50.0f, 90.0f, 1.20f / 2.0f, 1.28f / 2.0f);
             break;
-        case 2:
-            car = std::make_shared<Car>(world, Vector2D<float>{position.x, position.y}, 100.0f, 250.0f, 40.0f, 300.0f, 40.0f, 150.0f);
+        case Constants::MAZDA:
+            car = std::make_shared<Car>(world, position, 50.0f, 40.0f, 6.0f, 50.0f, 40.0f, 80.0f, 1.55f/2.0f,1.64f/2.0f);
             break;
-        case 3:
-            car = std::make_shared<Car>(world, Vector2D<float>{position.x, position.y}, 120.0f, 180.0f, 40.0f, 200.0f, 100.0f, 120.0f);
+        case Constants::CORROLLA:
+            car = std::make_shared<Car>(world, position, 50.0f, 40.0f, 6.0f, 50.0f, 50.0f, 100.0f, 1.45f/2.0f,1.64f/2.0f);
+            break;
+        case Constants::BMW:
+            car = std::make_shared<Car>(world, position, 50.0f, 40.0f, 6.0f, 50.0f, 50.0f, 70.0f, 1.48f/2.0f,1.68f/2.0f);
+            break;
+        case Constants::JEEP:
+            car = std::make_shared<Car>(world, position, 50.0f, 40.0f, 6.0f, 50.0f, 50.0f, 110.0f, 1.48f/2.0f,1.68f/2.0f);
+            break;
+        case Constants::CIVIC:
+            car = std::make_shared<Car>(world, position, 50.0f, 40.0f, 6.0f, 50.0f, 50.0f, 100.0f, 1.48f/2.0f,1.64f/2.0f);
+            break;
+        case Constants::TRUCK:
+            car = std::make_shared<Car>(world, position, 50.0f, 40.0f, 6.0f, 50.0f, 50.0f, 150.0f, 1.77f/2.0f,2.04f/2.0f);
             break;
         default:
             std::cerr << "Tipo de auto desconocido: " << carType << std::endl;
             return;
     }
+    std::cout << "Auto agregado de tipo: " << carType << std::endl;
     cars.push_back(car);
 }
 

@@ -63,5 +63,6 @@
         Queue<std::shared_ptr<Snapshot>>& getClientQueue();
         void setPlayerName(const std::string& string);
         void setCarId(int carId);
+        int getCarId() const;
     };
     #endif //CLIENTHANDLER_H
