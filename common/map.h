@@ -2,9 +2,9 @@
 #define MAP_H
 
 
-#include "vector2D.h"
-#include <vector>
 #include "../server/car.h"
+#include "RaceCircuitDTO.h"
+#include <unordered_map>
 
 /*
 * Estructura que representa un mapa con sus entidades y puntos clave
@@ -17,7 +17,8 @@ struct Map {
     int height;
     //std::vector<MapEntity> entities;
     //std::vector<Car> cars;
-    std::vector<Vector2D<float>> checkpoints;
+    //std::vector<Vector2D<float>> checkpoints;
+    std::unordered_map<std::string, RaceCircuit> circuits;
 
     Map() : width(0), height(0) {} // Constructor por defecto
     Map(int width, int height): width(width), height(height) {}

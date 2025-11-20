@@ -1,11 +1,11 @@
-#include "mapLoader.h"
+#include "yamlLoader.h"
 
 #include <fstream>
 #include <sstream>
 #include <algorithm>
 #include <cctype>
 
-bool MapLoader::isSafeCoord(float c) {
+bool YamlLoader::isSafeCoord(float c) {
     // Usamos 1,000,000.0f como límite superior seguro, mucho menor que el b2_huge de Box2D.
     const float MAX_COORD = 1000000.0f; 
     return std::isfinite(c) && (c > -MAX_COORD) && (c < MAX_COORD);
@@ -13,7 +13,7 @@ bool MapLoader::isSafeCoord(float c) {
 
 
 
-float MapLoader::extractFloatValue(const std::string& line) {
+float YamlLoader::extractFloatValue(const std::string& line) {
     try {
         size_t pos = line.find(':');
         if (pos == std::string::npos)
@@ -43,76 +43,90 @@ float MapLoader::extractFloatValue(const std::string& line) {
 
 
 
-Map MapLoader::loadMapFromYaml(const std::string& filepath) {
+Map YamlLoader::loadMapFromYaml(const std::string& filepath) {
     Map map;
-    std::ifstream file(filepath);
-    std::string line;
-    bool parsingCheckpoints = false;
-    Vector2D<float> currentCheckpoint = {0.0f, 0.0f};
-
-    std::cout << "[MapLoader] Intentando cargar mapa desde: " << filepath << std::endl;
+    std::cout << "[MapLoader] Intentando cargar TODOS los circuitos desde: " << filepath << std::endl;
     
-    if (!file.is_open()) {
-        std::cerr << "[MapLoader ERROR] No se pudo abrir el archivo: " << filepath << ". Fallback a valores por defecto." << std::endl;
-        // Fallback robusto
-        map.width = 800;
-        map.height = 600;
-        map.checkpoints.push_back({25.0f, 12.0f});  
-        return map;
-    }
+    try {
+        // 1. Cargar el archivo YAML completo
+        YAML::Node config = YAML::LoadFile(filepath);
 
-    while (std::getline(file, line)) {
-        // Eliminar espacios iniciales
-        line.erase(0, line.find_first_not_of(" \t"));
-        
-        if (line.empty() || line[0] == '#') {
-            continue; // Saltar líneas vacías o comentarios
+        // 2. Extraer dimensiones del Mapa (Nivel 'mapa')
+        if (config["mapa"]) {
+            map.width  = config["mapa"]["ancho"].as<int>(800);
+            map.height = config["mapa"]["alto"].as<int>(600);
+        } else {
+            std::cerr << "[MapLoader WARNING] No se encontró la sección 'mapa'. Usando valores por defecto." << std::endl;
         }
 
-        // --- Búsqueda de Dimensiones ---
-        if (line.rfind("ancho:", 0) == 0) {
-            map.width = static_cast<int>(extractFloatValue(line));
-
-        } else if (line.rfind("alto:", 0) == 0) {
-            map.height = static_cast<int>(extractFloatValue(line));
-
-        // --- Inicio de la Secuencia de Checkpoints ---
-        } else if (line.rfind("checkpoints:", 0) == 0) {
-            parsingCheckpoints = true;
-            continue;
+        // 3. Iterar sobre la sección 'circuitos'
+        YAML::Node circuitsNode = config["circuitos"];
+        if (!circuitsNode || !circuitsNode.IsMap()) {
+            throw std::runtime_error("No se encontró o 'circuitos' no es un mapa válido.");
+        }
         
-        // --- Parseo de Checkpoints ---
-        } else if (parsingCheckpoints) {
+        // Iterar sobre cada circuito (race_1, race_2, etc.)
+        for (YAML::const_iterator it = circuitsNode.begin(); it != circuitsNode.end(); ++it) {
+            std::string raceId = it->first.as<std::string>(); // Ej: "race_1"
+            YAML::Node raceNode = it->second;
             
-            // Si la línea contiene '- x:', es el inicio de un nuevo checkpoint
-            if (line.find("- x:") != std::string::npos) {
-                // Si encontramos '- x:', significa que la línea contiene el valor de X
-                currentCheckpoint.x = extractFloatValue(line);
-                currentCheckpoint.y = 0.0f; // Reiniciamos Y
+            RaceCircuit currentCircuit;
+            currentCircuit.race_id = raceId;
+
+            // --- 4. Cargar el punto de SPAWN ---
+            if (raceNode["Spawn"] && raceNode["Spawn"].IsSequence() && raceNode["Spawn"].size() > 0) {
+                YAML::Node spawnCoord = raceNode["Spawn"][0];
+                float x = spawnCoord["x"].as<float>(0.0f);
+                float y = spawnCoord["y"].as<float>(0.0f);
                 
-            } else if (line.find("y:") != std::string::npos) {
-                // Si la línea contiene 'y:', es el valor de Y
-                currentCheckpoint.y = extractFloatValue(line);
                 
-                // Si ya tenemos X e Y (X debe ser diferente de 0.0f del reset)
-                if (currentCheckpoint.x != 0.0f || currentCheckpoint.y != 0.0f) {
-                    map.checkpoints.push_back(currentCheckpoint);
-                    // Reset para el próximo checkpoint (importante, ya que 0,0 puede ser una coord válida)
-                    currentCheckpoint = {0.0f, 0.0f}; 
+                currentCircuit.checkpoints.push_back({x, y}); // Primer punto es el Spawn
+               
+                    //std::cerr << "[MapLoader WARNING] Spawn de '" << raceId << "' no válido. Ignorando." << std::endl;
+                
+            } else {
+                std::cerr << "[MapLoader WARNING] Carrera '" << raceId << "' no tiene un punto de Spawn definido." << std::endl;
+            }
+            
+            // --- 5. Cargar Checkpoints ---
+            if (raceNode["checkpoints"] && raceNode["checkpoints"].IsSequence()) {
+                for (const auto& checkpointNode : raceNode["checkpoints"]) {
+                    float x = checkpointNode["x"].as<float>(0.0f);
+                    float y = checkpointNode["y"].as<float>(0.0f);
+
+                   
+                    currentCircuit.checkpoints.push_back({x, y});
+                    //std::cerr << "[MapLoader WARNING] Checkpoint en '" << raceId << "' no válido. Ignorando." << std::endl;
+                    
                 }
             }
-            // Ignoramos otras líneas dentro del bloque 'checkpoints' que no sean '- x:' o 'y:'
+
+            // 6. Almacenar el circuito
+            if (currentCircuit.checkpoints.size() > 0) {
+                map.circuits[raceId] = currentCircuit;
+            } else {
+                 std::cerr << "[MapLoader WARNING] Carrera '" << raceId << "' no tiene puntos válidos y fue omitida." << std::endl;
+            }
         }
+        
+        std::cout << "[MapLoader] Carga completada. Total de circuitos listos: " << map.circuits.size() << std::endl;
+
+    } catch (const YAML::BadFile& e) {
+        std::cerr << "[MapLoader FATAL] No se pudo abrir o leer el archivo YAML: " << filepath << std::endl;
+        // Fallback simple
+    } catch (const std::exception& e) {
+        std::cerr << "[MapLoader FATAL] Error al parsear el YAML: " << e.what() << std::endl;
+        // Fallback simple
     }
     
-    std::cout << "[MapLoader] Dimensiones: " << map.width << "x" << map.height << ". Total checkpoints cargados: " << map.checkpoints.size() << std::endl;
     return map;
 }
 
 
 
 
-std::vector<MapObject> MapLoader::loadCollidersFromYaml(const std::string& filepath) {
+
+std::vector<MapObject> YamlLoader::loadCollidersFromYaml(const std::string& filepath) {
     std::vector<MapObject> objects;
 
     std::ifstream file(filepath);

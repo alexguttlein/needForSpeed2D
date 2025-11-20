@@ -19,9 +19,21 @@
 #include <iostream>
 #include <cmath>
 
+
+ enum RaceState {
+    IN_PROGRESS,
+    WAITING_FOR_TRANSITION, // La carrera ha terminado, estamos en el periodo de espera (10s)
+    GAME_OVER               // No hay más circuitos
+};
+
+
 class GameLogic {
 private:
     
+
+    int transitionStartTick = 0;
+    RaceState raceState = IN_PROGRESS;
+
     //MapLoader mapLoader;
     RaceBuilder raceBuilder;
     //MapSetObjects mapSetObjects;

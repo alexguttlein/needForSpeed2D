@@ -8,9 +8,10 @@
 #include <iostream>
 #include <vector>
 #include <box2d/box2d.h>
+#include <yaml-cpp/yaml.h>
 
 
-class MapLoader {
+class YamlLoader {
 private:
     
     bool isSafeCoord(float c);

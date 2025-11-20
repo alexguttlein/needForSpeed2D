@@ -30,6 +30,13 @@ Vector2D<float> RaceBuilder::getSpawnPosition() {
 }
 
 
+void RaceBuilder::setBaseSpawnPoint(const Vector2D<float>& basePoint) {
+    nextSpawnX = basePoint.x * Constants::SCALE_METER_TO_PIXEL;
+    nextSpawnY = basePoint.y * Constants::SCALE_METER_TO_PIXEL;
+}
+
+
+
 
 void RaceBuilder::addSelectCar(int carType) {
     Vector2D<float> position = getSpawnPosition();

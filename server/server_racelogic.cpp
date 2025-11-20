@@ -1,17 +1,87 @@
 #include "server_racelogic.h"
 
 
+RaceLogic::RaceLogic() : 
+    yamlLoader(),
+    mapData(yamlLoader.loadMapFromYaml("server/raceCheckpoints.yaml")),
+    actualRaceId("race_1"),
+    currentRaceId(1) {
+    
+        setCurrentCheckpoints(actualRaceId);
+}
+
+
+std::vector<Vector2D<float>> RaceLogic::getActualRaceCheckpoints() {
+    return actualRaceCheckpoints;
+}
+
+
+void RaceLogic::setCurrentRace() {
+    
+    finishedPlayers.clear();
+    nextCheckpointIndex.clear();
+    finishTimes.clear();
+
+    currentRaceId++;
+    actualRaceId = "race_" + std::to_string(currentRaceId);
+    std::cout << "[RaceLogic] Configurando el circuito de carrera actual: " << actualRaceId << std::endl;
+    
+    setCurrentCheckpoints(actualRaceId);
+}
+
+
+bool RaceLogic::hasNextRace() {
+    std::string nextRaceId = "race_" + std::to_string(currentRaceId + 1);
+    return mapData.circuits.find(nextRaceId) != mapData.circuits.end();
+} 
+
+bool RaceLogic::isRaceOver() {    
+    if (nextCheckpointIndex.empty()) {
+        return true; 
+    }
+    
+    int activePlayers = getActiveRacePlayers();
+    int requiredToFinish = (activePlayers / 2) + 1;
+
+    if (activePlayers == 1) {
+        requiredToFinish = 1;
+    }
+    return static_cast<int>(finishedPlayers.size()) >= requiredToFinish;
+}
+
+
+void RaceLogic::setCurrentCheckpoints(std::string raceId) {
+    auto it = mapData.circuits.find(raceId);
+    if (it != mapData.circuits.end()) {
+        actualRaceCheckpoints = it->second.checkpoints;
+        std::cout << "[RaceLogic] Circuito cargado con " << actualRaceCheckpoints.size() << " checkpoints." << std::endl;
+    } else {
+        std::cerr << "[RaceLogic ERROR] Circuito con ID '" << actualRaceId << "' no encontrado en los datos del mapa." << std::endl;
+    }
+}
+
+
 void RaceLogic::addPlayer(int playerId) {
     nextCheckpointIndex[playerId] = 0;
     std::cout << "[RaceLogic] Jugador " << playerId << " agregado. Próximo checkpoint: 0" << std::endl;
 }
 
 
+void RaceLogic::removePlayer(int playerId) {
+    nextCheckpointIndex.erase(playerId);
+}
+
+
+int RaceLogic::getActiveRacePlayers() {
+    return static_cast<int>(nextCheckpointIndex.size());
+}
+
+
 bool RaceLogic::completedCheckpoint(int playerId, const Vector2D<float>& currentCarPosition, int& currentCheckpointIdx) {
-    if (currentCheckpointIdx >= static_cast<int>(mapData.checkpoints.size())) {
+    if (currentCheckpointIdx >= static_cast<int>(actualRaceCheckpoints.size())) {
         return false;
     }
-    const Vector2D<float>& targetCheckpoint = mapData.checkpoints[currentCheckpointIdx];
+    const Vector2D<float>& targetCheckpoint = actualRaceCheckpoints[currentCheckpointIdx];
     float dx = targetCheckpoint.x - currentCarPosition.x;
     float dy = targetCheckpoint.y - currentCarPosition.y;
     float distanceSq = dx*dx + dy*dy; 
@@ -21,7 +91,7 @@ bool RaceLogic::completedCheckpoint(int playerId, const Vector2D<float>& current
         currentCheckpointIdx++;
         nextCheckpointIndex[playerId] = currentCheckpointIdx;
         
-        if (currentCheckpointIdx < static_cast<int>(mapData.checkpoints.size())) {
+        if (currentCheckpointIdx < static_cast<int>(actualRaceCheckpoints.size())) {
             std::cout << "[RaceLogic] Jugador " << playerId << " cruzó checkpoint " 
                       << currentCheckpointIdx - 1 << ". Siguiente: " 
                       << std::to_string(currentCheckpointIdx) << std::endl;
@@ -48,7 +118,7 @@ bool RaceLogic::finishRace(int playerId) {
         return false;
     }
 
-    if (it->second == static_cast<int>(mapData.checkpoints.size())) {
+    if (it->second == static_cast<int>(actualRaceCheckpoints.size())) {
         finishedPlayers.push_back(playerId); // Guardamos el orden de llegada
         if (finishTimes.find(playerId) == finishTimes.end()) {
             finishTimes[playerId] = 0.0f;
@@ -64,18 +134,18 @@ bool RaceLogic::finishRace(int playerId) {
 bool RaceLogic::checkCheckpoint(int playerId, const Vector2D<float>& currentCarPosition) {
  
     auto it = nextCheckpointIndex.find(playerId);
-    if (it == nextCheckpointIndex.end() || mapData.checkpoints.empty() || hasPlayerFinished(playerId)) {
+    if (it == nextCheckpointIndex.end() || actualRaceCheckpoints.empty() || hasPlayerFinished(playerId)) {
         return false;
     }
     int currentCheckpointIdx = it->second;
 
-    if (currentCheckpointIdx >= static_cast<int>(mapData.checkpoints.size())) {
+    if (currentCheckpointIdx >= static_cast<int>(actualRaceCheckpoints.size())) {
         return false;
     }
 
     bool crossed = completedCheckpoint(playerId, currentCarPosition, currentCheckpointIdx);
     
-    if (crossed && nextCheckpointIndex.at(playerId) == static_cast<int>(mapData.checkpoints.size())) {
+    if (crossed && nextCheckpointIndex.at(playerId) == static_cast<int>(actualRaceCheckpoints.size())) {
         return finishRace(playerId); 
     }
     return false;
@@ -86,16 +156,16 @@ Vector2D<float> RaceLogic::getNextCheckpointPosition(int playerId) const {
 
     auto it = nextCheckpointIndex.find(playerId);
     
-    if (it == nextCheckpointIndex.end() || mapData.checkpoints.empty()) {
+    if (it == nextCheckpointIndex.end() || actualRaceCheckpoints.empty()) {
         return Vector2D<float>{0.0f, 0.0f}; 
     }
     
     int currentCheckpointIdx = it->second;
 
-    if (currentCheckpointIdx >= static_cast<int>(mapData.checkpoints.size())) {
-        return mapData.checkpoints.back(); 
+    if (currentCheckpointIdx >= static_cast<int>(actualRaceCheckpoints.size())) {
+        return actualRaceCheckpoints.back(); 
     }
-    return mapData.checkpoints[currentCheckpointIdx];
+    return actualRaceCheckpoints[currentCheckpointIdx];
 }
 
 

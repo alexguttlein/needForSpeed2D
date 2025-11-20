@@ -165,7 +165,7 @@ if(TALLER_SERVER)
 
     # Link the taller_common lib target
     # target_link_libraries(taller_server taller_common)
-    target_link_libraries(taller_server PRIVATE taller_common ${BOX2D_TARGET})
+    target_link_libraries(taller_server PRIVATE taller_common ${BOX2D_TARGET} yaml-cpp)
 endif()
 
 if(TALLER_EDITOR)

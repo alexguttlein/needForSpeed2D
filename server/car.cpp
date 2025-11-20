@@ -58,6 +58,11 @@ Vector2D<float> Car::getPosition() const {
 }
 
 
+void Car::setPosition(const Vector2D<float>& newPosition) {
+    b2Body_SetTransform(body, b2Vec2{newPosition.x, newPosition.y}, b2Body_GetRotation(body));
+}
+
+
 Vector2D<float> Car::getDirection() const {
     b2Rot angle = b2Body_GetRotation(body);
     return Vector2D<float>(angle.c, angle.s);
@@ -218,10 +223,17 @@ Car::~Car() {
     // b2DestroyBody(body);
 }
 
-// Destruir body de forma segura
+
 void Car::destroyBody() {
     if (b2Body_IsValid(body)) {
         b2DestroyBody(body);
-        body = b2BodyId{}; // set nulo seguro
+        body = b2BodyId{}; 
     }
 }
+
+
+void Car::resetVelocity() {
+    b2Body_SetLinearVelocity(body, b2Vec2{0.0f, 0.0f});
+    b2Body_SetAngularVelocity(body, 0.0f);
+}
+

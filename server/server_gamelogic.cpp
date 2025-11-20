@@ -34,6 +34,13 @@ void GameLogic::processCommand(int car_id, const std::string& command, bool isPr
 
 void GameLogic::update(int currentTick) {
     const float dt = 1.0f / 60.0f;
+
+
+    if (raceState == GAME_OVER) {
+        return; 
+    }
+
+
     for (auto const& [id, car] : cars) {
         car->applyMovement();
         car->applyFriction(); 
@@ -47,19 +54,66 @@ void GameLogic::update(int currentTick) {
     b2World_Step(world, dt, 4);
     checkCollisions(); // Verificar colisiones después de actualizar la física
 
-    // Tiempo actual de carrera en segundos (a partir de ticks)
     float currentRaceTime = static_cast<float>(currentTick) /
                             static_cast<float>(Constants::TICKS_PER_SECOND);
 
-    for (auto const& [id, car] : cars) {
-        if (!raceLogic.hasPlayerFinished(id)) {
-            Vector2D<float> carPosition = car->getPosition();
-            bool justFinished = raceLogic.checkCheckpoint(id, carPosition); // Verificar si cruzó un checkpoint y terminó
-            if (justFinished) {
-                raceLogic.setCurrentRaceTimeSeconds(currentRaceTime);
+
+    if (raceState == IN_PROGRESS) {
+        for (auto const& [id, car] : cars) {
+            if (!raceLogic.hasPlayerFinished(id)) {
+                Vector2D<float> carPosition = car->getPosition();
+                bool justFinished = raceLogic.checkCheckpoint(id, carPosition); 
+                if (justFinished) {
+                    raceLogic.setCurrentRaceTimeSeconds(currentRaceTime);
+                }
             }
         }
+        
+        if (raceLogic.isRaceOver()) {
+            std::cout << "--- CARRERA TERMINADA. INICIANDO ESPERA de " 
+                      << Constants::UPGRADE_WAIT_SECONDS << " segundos ---" << std::endl;
+            
+            raceState = WAITING_FOR_TRANSITION;
+            transitionStartTick = currentTick;
+           
+        }
+    } 
+    // --- 2. GESTIÓN DEL TIMER DE ESPERA ---
+    else if (raceState == WAITING_FOR_TRANSITION) {
+        
+        if (currentTick - transitionStartTick >= Constants::UPGRADE_WAIT_TICKS) {
+            
+            if (raceLogic.hasNextRace()) {
+                std::cout << "--- TRANSICIÓN: CONFIGURANDO PRÓXIMA CARRERA ---" << std::endl;
+               
+                raceLogic.setCurrentRace(); 
+                std::vector<Vector2D<float>> checkpoints = raceLogic.getActualRaceCheckpoints();
+                
+                if (!checkpoints.empty()) {
+                    const Vector2D<float>& newSpawnPoint = checkpoints[0];
+                    raceBuilder.setBaseSpawnPoint(newSpawnPoint); 
+                    
+                    for (auto const& [id, car] : cars) {
+                        Vector2D<float> spawnPos = raceBuilder.getSpawnPosition();
+                        
+                        // Reposicionar
+                        car->setPosition(spawnPos); 
+                        car->resetVelocity(); 
+                        raceLogic.addPlayer(id); 
+                    }
+                }
+                
+                raceState = IN_PROGRESS; 
+                
+            } else {
+                // FIN DE LA COMPETICIÓN
+                std::cout << "--- COMPETICIÓN FINALIZADA. NO HAY MÁS CIRCUITOS. ---" << std::endl;
+                raceState = GAME_OVER; 
+            }
+        } 
     }
+
+
 }
 
 

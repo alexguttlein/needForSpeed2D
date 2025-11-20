@@ -61,6 +61,9 @@ namespace  Constants {
     static constexpr int TICKS_PER_SECOND = 60;
     static constexpr int MAX_TICKS = 36000; // 10 minutos a 60 ticks por segundo
 
+    static constexpr int UPGRADE_WAIT_SECONDS = 10;
+    static constexpr int UPGRADE_WAIT_TICKS = Constants::UPGRADE_WAIT_SECONDS * Constants::TICKS_PER_SECOND;
+
     //constantes del juego
     static constexpr float HEALTH_UPGRADE = 20.0f;
     static constexpr float ACCELERATION_UPGRADE = 5.0f;
@@ -72,7 +75,7 @@ namespace  Constants {
     static constexpr float SPAWN_START_Y = 90.0f;
     static constexpr float SPAWN_OFFSET_X = 50.0f; 
     static constexpr float MAX_ROW_X = 600.0f;
-    static constexpr float CHECKPOINT_RADIUS = 5.0f; 
+    static constexpr float CHECKPOINT_RADIUS = 2.0f; 
     static constexpr float HINT_SPACING = 3.0f; // ver como cambia esto con el mapa
 
     // constantes representacion autos:

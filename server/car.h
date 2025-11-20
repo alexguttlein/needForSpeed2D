@@ -60,6 +60,12 @@ public:
     *
     * */
     Vector2D<float> getPosition() const;
+
+    /*
+    * Establece la posición del auto en el plano
+    *
+    * */
+    void setPosition(const Vector2D<float>& newPosition);
     
     /*
     * Obtiene la dirección del auto como un vector normalizado
@@ -198,10 +204,23 @@ public:
     *
     * */
     ~Car();
+    
+    /*
+    * Destruye el cuerpo Box2D del auto de manera segura
+    *
+    * */
+    void destroyBody(); 
 
-    void destroyBody(); // destrucción segura, llamada desde GameLogic
-
+    /*
+    * Obtiene el ID del cuerpo Box2D del auto
+    *
+    * */    
     b2BodyId getBodyId() const { return body; }
 
+    /*
+    * Resetea la velocidad del auto a cero
+    *
+    * */
+    void resetVelocity();    
 };
 #endif // CAR_H

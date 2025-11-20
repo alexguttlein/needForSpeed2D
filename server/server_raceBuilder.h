@@ -47,6 +47,12 @@ public:
     Vector2D<float> getSpawnPosition();
 
     /*
+    * Setea el punto base de spawn para los autos
+    *
+    * */
+    void setBaseSpawnPoint(const Vector2D<float>& basePoint);
+
+    /*
     * Agrega un auto seleccionado al mundo Box2D
     *
     * */

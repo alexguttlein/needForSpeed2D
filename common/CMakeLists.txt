@@ -22,4 +22,5 @@ target_sources(taller_common
     raceStateDTO.h
     eventType.h
     gameInfo.h
+    RaceCircuitDTO.h
     )

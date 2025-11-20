@@ -169,10 +169,10 @@ void ClientDibujador::renderFrame(int playerX, int playerY) {
 }
 
 void ClientDibujador::renderAll(const std::vector<CarStateDTO>& cars, int selfId) {
-    if (raceFinished_) {
-        renderResultsTable();
-        return;
-    }
+    // if (raceFinished_) {
+    //     renderResultsTable();
+    //     return;
+    // }
 
     if (!raceStarted_) {
         raceStarted_ = true;
