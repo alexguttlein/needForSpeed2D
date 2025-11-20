@@ -123,19 +123,19 @@ public:
     * agrega el tiempo que hizo en carrera al tiempo total del jugador
     *
     * */
-    //void addTimeFinishPlayer(float addedTime);
+    void addTimeFinishPlayer(float addedTime, int playerId);
 
     /*
     * penaliza el tiempo total del jugador por haber comprado una mejora
     *
     * */
-    void upgradePenalizeTimeToPlayer(float penalizeTime);
+    void upgradePenalizeTimeToPlayer(float penalizeTime, int playerId);
 
     /*
     * Devuelve el tiempo total de finalización del jugador
     *
     * */
-    //float getAllTimeFinishTime(int playerId) const;
+    float getAllTimeFinishTime(int playerId);
 
     /*
     * Verifica si el jugador ha completado el checkpoint actual

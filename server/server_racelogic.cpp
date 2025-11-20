@@ -28,7 +28,7 @@ void RaceLogic::setCurrentRace() {
     currentRaceId++;
     actualRaceId = "race_" + std::to_string(currentRaceId);
     std::cout << "[RaceLogic] Configurando el circuito de carrera actual: " << actualRaceId << std::endl;
-    
+
     setCurrentCheckpoints(actualRaceId);
 }
 
@@ -202,35 +202,36 @@ void RaceLogic::setCurrentRaceTimeSeconds(float currentTimeSeconds) {
 }
 
 
-// void RaceLogic::addTimeFinishPlayer(float addedTime) {
-//     std::lock_guard<std::mutex> lock(finishMutex);
-//     for (int playerId : finishedPlayers) {
-//         auto it = allTimeFinishTimes.find(playerId);
-//         if (it != allTimeFinishTimes.end() && it->second <= 0.0f) {
-//             it->second += addedTime;
-//         }
-//     }
-// }
-
-
-void RaceLogic::upgradePenalizeTimeToPlayer(float penalizeTime) {
+void RaceLogic::addTimeFinishPlayer(float addedTime, int playerId) {
     std::lock_guard<std::mutex> lock(finishMutex);
-    for (int playerId : finishedPlayers) {
-        auto it = finishTimes.find(playerId);
-        if (it != finishTimes.end() && it->second <= 0.0f) {
-            it->second -= penalizeTime;
-        }
+    auto it = allTimeFinishTimes.find(playerId);
+    if (it != allTimeFinishTimes.end()) {
+        it->second += addedTime;
+    } else {
+        allTimeFinishTimes[playerId] = addedTime;
+    }
+  
+}
+
+
+void RaceLogic::upgradePenalizeTimeToPlayer(float penalizeTime, int playerId) {
+    std::lock_guard<std::mutex> lock(finishMutex);
+    auto it = allTimeFinishTimes.find(playerId);
+    if (it != allTimeFinishTimes.end()) {
+        it->second += penalizeTime;
+    } else {
+        allTimeFinishTimes[playerId] = penalizeTime;
     }
 }
 
 
-// float RaceLogic::getAllTimeFinishTime(int playerId) const {
-//     auto it = allTimeFinishTimes.find(playerId);
-//     if (it == allTimeFinishTimes.end()) {
-//         return -1.0f;
-//     }
-//     return it->second;
-// }
+float RaceLogic::getAllTimeFinishTime(int playerId) {
+    auto it = allTimeFinishTimes.find(playerId);
+    if (it == allTimeFinishTimes.end()) {
+        return -1.0f;
+    }
+    return it->second;
+}
 
 
 std::vector<Vector2D<float>> RaceLogic::getHintsForPlayer(int playerId, const Vector2D<float>& currentCarPosition) const {

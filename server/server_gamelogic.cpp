@@ -95,6 +95,11 @@ void GameLogic::update(int currentTick) {
                 bool justFinished = raceLogic.checkCheckpoint(id, carPosition); 
                 if (justFinished) {
                     raceLogic.setCurrentRaceTimeSeconds(currentRaceTime);
+                    raceLogic.addTimeFinishPlayer(currentRaceTime, id); // actualizo tiempo en carrera total
+                    //checkeo timer general
+                    float alltime = raceLogic.getAllTimeFinishTime(id);
+                    std::cout << "Jugador " << id << " tiempo general hasta ahora: " 
+                              << alltime << " segundos." << std::endl;
                 }
             }
         }
