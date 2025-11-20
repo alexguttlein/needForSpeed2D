@@ -25,7 +25,7 @@ namespace  Constants {
     static constexpr unsigned char TYPE_SNAPSHOT = 0x30;
     static constexpr unsigned char TYPE_CONTROL = 0x31;
     static constexpr unsigned char TYPE_GAME_LIST = 0x32;
-    static constexpr int MAX_PLAYERS_IN_GAME = 2; // por ahora
+    static constexpr int MAX_PLAYERS_IN_GAME = 1; // por ahora
 
     // constantes de tamanios de queues
     static const unsigned int CLIENT_QUEUE_MAXSIZE = 100;
@@ -75,7 +75,7 @@ namespace  Constants {
     static constexpr float SPAWN_START_Y = 90.0f;
     static constexpr float SPAWN_OFFSET_X = 50.0f; 
     static constexpr float MAX_ROW_X = 600.0f;
-    static constexpr float CHECKPOINT_RADIUS = 2.0f; 
+    static constexpr float CHECKPOINT_RADIUS = 3.0f; 
     static constexpr float HINT_SPACING = 3.0f; // ver como cambia esto con el mapa
 
     // constantes representacion autos:

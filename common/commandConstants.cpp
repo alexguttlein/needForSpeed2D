@@ -6,6 +6,10 @@ const std::unordered_map<CommandConstants::Key, CommandConstants::Bit> CommandCo
     { A, BIT02 },
     { S, BIT03 },
     { D, BIT04 },
+    { KEY_1, BIT05 },
+    { KEY_2, BIT06 },
+    { KEY_3, BIT07 },
+    { KEY_4, BIT08 },
 };
 
 // Metodo que inicializa el mapa bit / tecla
@@ -14,6 +18,10 @@ const std::unordered_map<CommandConstants::Bit, CommandConstants::Key> CommandCo
     { BIT02, A },
     { BIT03, S },
     { BIT04, D },
+    { BIT05, KEY_1 },
+    { BIT06, KEY_2 },
+    { BIT07, KEY_3 },
+    { BIT08, KEY_4 },
 };
 
 // Metodo que traduce un caracter de teclado a bit hexadecimal

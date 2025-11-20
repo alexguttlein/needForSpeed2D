@@ -30,7 +30,7 @@
 class GameLogic {
 private:
     
-
+    int raceStartTick = 0;
     int transitionStartTick = 0;
     RaceState raceState = IN_PROGRESS;
 
@@ -41,6 +41,9 @@ private:
     b2WorldId world;
     std::map<int, std::shared_ptr<Car>> cars;
     int lastCommandPlayerId = 0;
+
+    std::map<int, bool> hasSelectedUpgrade;
+    std::map<int, int> selectedUpgradeId;
 
 public:
 

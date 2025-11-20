@@ -31,6 +31,10 @@ CommandConstants::Key ClientProtocol::sdlToKey(const SDL_KeyCode input) {
         case SDLK_a: return CommandConstants::A;
         case SDLK_s: return CommandConstants::S;
         case SDLK_d: return CommandConstants::D;
+        case SDLK_1: return CommandConstants::KEY_1;
+        case SDLK_2: return CommandConstants::KEY_2;
+        case SDLK_3: return CommandConstants::KEY_3;
+        case SDLK_4: return CommandConstants::KEY_4;
         default: throw std::invalid_argument("Tecla no válida");
     }
 }

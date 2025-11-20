@@ -222,5 +222,11 @@ public:
     *
     * */
     void resetVelocity();    
+    
+    /*
+    * Resetea los estados de movimiento del auto
+    *
+    * */
+    void resetMovementStates();
 };
 #endif // CAR_H

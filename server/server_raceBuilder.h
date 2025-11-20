@@ -13,6 +13,8 @@ private:
     std::vector<std::shared_ptr<Car>> cars;
     float nextSpawnX;
     float nextSpawnY;
+    float baseSpawnX = 0.0f; // Punto de referencia (Checkpoint 0)
+    float baseSpawnY = 0.0f;
     
 public:
 

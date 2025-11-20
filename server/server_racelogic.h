@@ -22,6 +22,7 @@ private:
     std::vector<int> finishedPlayers; // guardamos en orden los jugadores que terminaron
     std::mutex finishMutex;
     std::map<int, float> finishTimes;
+    std::map<int, float> allTimeFinishTimes;
 
     std::vector<Vector2D<float>> actualRaceCheckpoints;
     std::string actualRaceId; // ID del circuito actual
@@ -117,6 +118,24 @@ public:
     *
     * */
     void setCurrentRaceTimeSeconds(float currentTimeSeconds);
+
+    /*
+    * agrega el tiempo que hizo en carrera al tiempo total del jugador
+    *
+    * */
+    //void addTimeFinishPlayer(float addedTime);
+
+    /*
+    * penaliza el tiempo total del jugador por haber comprado una mejora
+    *
+    * */
+    void upgradePenalizeTimeToPlayer(float penalizeTime);
+
+    /*
+    * Devuelve el tiempo total de finalización del jugador
+    *
+    * */
+    //float getAllTimeFinishTime(int playerId) const;
 
     /*
     * Verifica si el jugador ha completado el checkpoint actual

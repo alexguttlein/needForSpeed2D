@@ -237,3 +237,10 @@ void Car::resetVelocity() {
     b2Body_SetAngularVelocity(body, 0.0f);
 }
 
+
+void Car::resetMovementStates() {
+    isAccelerating = false;
+    isBraking = false;
+    isTurningLeft = false;
+    isTurningRight = false;
+}

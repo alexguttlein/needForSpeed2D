@@ -18,17 +18,45 @@ void GameLogic::processCommand(int car_id, const std::string& command, bool isPr
     auto& car = it->second;
     lastCommandPlayerId = car_id;
 
-    if (command == "w") {
-        car->setIsAccelerating(isPressed);
-    } else if (command == "s") {
-        car->setIsBraking(isPressed);
-    } else if (command == "a") {
-        car->setIsTurningLeft(isPressed);
-    } else if (command == "d") {
-        car->setIsTurningRight(isPressed);
-    } else {
-        std::cout << "Comando desconocido: " << command << std::endl; // deberias meter funcion de lectura de cheats
+    if(raceState == IN_PROGRESS){
+        if (command == "w") {
+            car->setIsAccelerating(isPressed);
+        } else if (command == "s") {
+            car->setIsBraking(isPressed);
+        } else if (command == "a") {
+            car->setIsTurningLeft(isPressed);
+        } else if (command == "d") {
+            car->setIsTurningRight(isPressed);
+        }  else {
+            std::cout << "Comando desconocido: " << command << std::endl; // deberias meter funcion de lectura de cheats
+        }
     }
+
+
+    if(raceState == WAITING_FOR_TRANSITION){
+        
+        bool alreadySelected = hasSelectedUpgrade.count(car_id) && hasSelectedUpgrade[car_id];
+
+        if (alreadySelected) {
+            std::cout << "Jugador " << car_id << " ya selecciono una mejora para esta ronda." << std::endl;
+            return;
+        }
+
+        int upgrade = 0;
+        if (command == "1") { upgrade = 1; } 
+        else if (command == "2") { upgrade = 2; }
+        else if (command == "3") { upgrade = 3; }
+        else if (command == "4") { upgrade = 4; }
+        
+        if (upgrade > 0) {
+            // 2. Marcar el estado como TRUE de forma PERSISTENTE para este jugador
+            hasSelectedUpgrade[car_id] = true;
+            selectedUpgradeId[car_id] = upgrade;
+            std::cout << "Jugador " << car_id << " selecciono MEJORA " << upgrade << "." << std::endl;
+        }
+
+    } 
+
 }
 
 
@@ -54,7 +82,9 @@ void GameLogic::update(int currentTick) {
     b2World_Step(world, dt, 4);
     checkCollisions(); // Verificar colisiones después de actualizar la física
 
-    float currentRaceTime = static_cast<float>(currentTick) /
+    // con esto el timer se resetea al iniciar la carrera
+    int ticksElapsed = currentTick - raceStartTick;
+    float currentRaceTime = static_cast<float>(ticksElapsed) /
                             static_cast<float>(Constants::TICKS_PER_SECOND);
 
 
@@ -78,7 +108,8 @@ void GameLogic::update(int currentTick) {
            
         }
     } 
-    // --- 2. GESTIÓN DEL TIMER DE ESPERA ---
+
+
     else if (raceState == WAITING_FOR_TRANSITION) {
         
         if (currentTick - transitionStartTick >= Constants::UPGRADE_WAIT_TICKS) {
@@ -91,18 +122,34 @@ void GameLogic::update(int currentTick) {
                 
                 if (!checkpoints.empty()) {
                     const Vector2D<float>& newSpawnPoint = checkpoints[0];
-                    raceBuilder.setBaseSpawnPoint(newSpawnPoint); 
-                    
+                    raceBuilder.setBaseSpawnPoint(newSpawnPoint);
+
                     for (auto const& [id, car] : cars) {
                         Vector2D<float> spawnPos = raceBuilder.getSpawnPosition();
                         
                         // Reposicionar
+                        car->resetMovementStates();
                         car->setPosition(spawnPos); 
                         car->resetVelocity(); 
                         raceLogic.addPlayer(id); 
                     }
                 }
-                
+
+
+                // Aplicar mejoras leyendo la INTENCIÓN GUARDADA
+                for (auto const& [id, upgradeId] : selectedUpgradeId) {
+                    auto carIt = cars.find(id);
+                    if (carIt != cars.end() && upgradeId > 0) {
+                        std::shared_ptr<Car> car = carIt->second;
+                        // Aquí llamas a la función que aplica el efecto real al Car.
+                        //car->applyUpgrade(upgradeId);
+                        std::cout << "Aplicando MEJORA " << upgradeId << " al jugador " << id << std::endl; 
+                    }
+                }
+                hasSelectedUpgrade.clear();
+                selectedUpgradeId.clear();
+
+                raceStartTick = currentTick;
                 raceState = IN_PROGRESS; 
                 
             } else {

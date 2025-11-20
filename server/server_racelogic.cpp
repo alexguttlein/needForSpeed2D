@@ -18,10 +18,13 @@ std::vector<Vector2D<float>> RaceLogic::getActualRaceCheckpoints() {
 
 void RaceLogic::setCurrentRace() {
     
+    std::cout << "tiempo que hizo en la carrera: " << std::endl;
+    for (int playerId : finishedPlayers) {
+        std::cout << "Jugador " << playerId << ": " << finishTimes[playerId] << " segundos." << std::endl;
+    }
     finishedPlayers.clear();
     nextCheckpointIndex.clear();
     finishTimes.clear();
-
     currentRaceId++;
     actualRaceId = "race_" + std::to_string(currentRaceId);
     std::cout << "[RaceLogic] Configurando el circuito de carrera actual: " << actualRaceId << std::endl;
@@ -197,6 +200,37 @@ void RaceLogic::setCurrentRaceTimeSeconds(float currentTimeSeconds) {
         }
     }
 }
+
+
+// void RaceLogic::addTimeFinishPlayer(float addedTime) {
+//     std::lock_guard<std::mutex> lock(finishMutex);
+//     for (int playerId : finishedPlayers) {
+//         auto it = allTimeFinishTimes.find(playerId);
+//         if (it != allTimeFinishTimes.end() && it->second <= 0.0f) {
+//             it->second += addedTime;
+//         }
+//     }
+// }
+
+
+void RaceLogic::upgradePenalizeTimeToPlayer(float penalizeTime) {
+    std::lock_guard<std::mutex> lock(finishMutex);
+    for (int playerId : finishedPlayers) {
+        auto it = finishTimes.find(playerId);
+        if (it != finishTimes.end() && it->second <= 0.0f) {
+            it->second -= penalizeTime;
+        }
+    }
+}
+
+
+// float RaceLogic::getAllTimeFinishTime(int playerId) const {
+//     auto it = allTimeFinishTimes.find(playerId);
+//     if (it == allTimeFinishTimes.end()) {
+//         return -1.0f;
+//     }
+//     return it->second;
+// }
 
 
 std::vector<Vector2D<float>> RaceLogic::getHintsForPlayer(int playerId, const Vector2D<float>& currentCarPosition) const {

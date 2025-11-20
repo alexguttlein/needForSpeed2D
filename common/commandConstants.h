@@ -11,6 +11,10 @@ public:
         A = 'a',
         S = 's',
         D = 'd',
+        KEY_1 = '1',
+        KEY_2 = '2',
+        KEY_3 = '3',
+        KEY_4 = '4',
     };
 
     enum Bit : unsigned char {
@@ -18,6 +22,11 @@ public:
         BIT02 = 0x02,
         BIT03 = 0x03,
         BIT04 = 0x04,
+       
+        BIT05 = 0x05,
+        BIT06 = 0x06,
+        BIT07 = 0x07,
+        BIT08 = 0x08,
     };
 
     // MÉTODOS DE TRADUCCIÓN

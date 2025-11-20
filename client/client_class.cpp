@@ -94,6 +94,10 @@ void Client::run() {
                     case SDLK_s: commandQueue.push({ SDLK_s, true }); break;
                     case SDLK_a: commandQueue.push({ SDLK_a, true }); break;
                     case SDLK_d: commandQueue.push({ SDLK_d, true }); break;
+                    case SDLK_1: commandQueue.push({ SDLK_1, true }); break;
+                    case SDLK_2: commandQueue.push({ SDLK_2, true }); break;
+                    case SDLK_3: commandQueue.push({ SDLK_3, true }); break;
+                    case SDLK_4: commandQueue.push({ SDLK_4, true }); break;
                 }
             }
             else if (e.type == SDL_KEYUP) {
