@@ -75,6 +75,7 @@ void Client::run() {
 
     // bool haveSnapshot = false;
     Snapshot snapshot;
+    bool lastRaceFinished = false; 
 
     while (running) {
         auto start = std::chrono::steady_clock::now();
@@ -129,10 +130,13 @@ void Client::run() {
                 dib.updateRaceState(*myRace);
             }
 
-            if (snapshot.raceFinished) {
+            if (snapshot.raceFinished && !lastRaceFinished) {
                 dib.setRaceFinished(true, snapshot.raceStates);
             }
-
+            if (!snapshot.raceFinished && lastRaceFinished) {
+                dib.setRaceFinished(false, {});
+            }
+            lastRaceFinished = snapshot.raceFinished;
             dib.renderAll(snapshot.cars, selfId.load());
         }
 
