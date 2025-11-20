@@ -123,8 +123,19 @@ void ClientDibujador::updateCamera_(int px, int py) {
 }
 
 void ClientDibujador::setRaceFinished(bool finished, const std::vector<RaceStateDTO>& standings) {
-    raceFinished_ = finished;
-    finalStandings_ = standings;
+    if (finished) {
+        if (!raceFinished_) {
+            raceFinished_ = true;
+            finalStandings_ = standings;
+            resultsStartTicks_ = SDL_GetTicks();
+        } else {
+            finalStandings_ = standings;
+        }
+    } else {
+        raceFinished_ = false;
+        finalStandings_.clear();
+        resultsStartTicks_ = 0;
+    }
 }
 
 void ClientDibujador::renderFrame(int playerX, int playerY) {
@@ -169,10 +180,22 @@ void ClientDibujador::renderFrame(int playerX, int playerY) {
 }
 
 void ClientDibujador::renderAll(const std::vector<CarStateDTO>& cars, int selfId) {
-    // if (raceFinished_) {
-    //     renderResultsTable();
-    //     return;
-    // }
+     if (raceFinished_) {
+        Uint32 now = SDL_GetTicks();
+        const Uint32 SHOW_RESULTS_MS = 10000;
+
+        if (now - resultsStartTicks_ < SHOW_RESULTS_MS) {
+            renderResultsTable();
+            return;
+        } else {
+            raceFinished_ = false;
+            finalStandings_.clear();
+            resultsStartTicks_ = 0;
+
+            raceStarted_ = false;
+            raceStartTicks_ = 0;
+        }
+    }
 
     if (!raceStarted_) {
         raceStarted_ = true;
@@ -228,7 +251,6 @@ void ClientDibujador::renderAll(const std::vector<CarStateDTO>& cars, int selfId
     drawCheckpoint_();
     drawHints_();
 
-    hudPlayers_ = std::max(1, (int)cars.size());
     drawHUD_();
     drawMinimap_(cars, selfId);
 

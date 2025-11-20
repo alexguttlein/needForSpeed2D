@@ -82,8 +82,8 @@ private:
     float facingDeg = 0.0f;
     int lastX = -1, lastY = -1;
 
-    int   hudPos_       = 1;      // posición P
-    int   hudPlayers_   = 1;      // N jugadores (se actualiza desde cars.size())
+    int   hudPos_       = 1;      
+    int   hudPlayers_   = 2; 
     int   hudHp_        = 100;     // vida actual
     int   hudMaxHp_     = 100;    // vida máxima
     float hudSpeedKph_  = 128.f;  // velocidad simulada (km/h)
@@ -104,6 +104,8 @@ private:
 
     bool raceFinished_ = false;
     std::vector<RaceStateDTO> finalStandings_; 
+    Uint32 resultsStartTicks_ = 0;
+
 };
 
 #endif // TP_TALLER_G7_CLIENT_DIBUJADOR_H
