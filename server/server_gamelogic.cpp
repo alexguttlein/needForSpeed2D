@@ -116,7 +116,8 @@ void GameLogic::update(int currentTick) {
             
             if (raceLogic.hasNextRace()) {
                 std::cout << "--- TRANSICIÓN: CONFIGURANDO PRÓXIMA CARRERA ---" << std::endl;
-               
+                
+                std::vector<int> finishedPlayers = raceLogic.getFinishedPlayers(); // obtenemos orden de llegada
                 raceLogic.setCurrentRace(); 
                 std::vector<Vector2D<float>> checkpoints = raceLogic.getActualRaceCheckpoints();
                 
@@ -124,14 +125,19 @@ void GameLogic::update(int currentTick) {
                     const Vector2D<float>& newSpawnPoint = checkpoints[0];
                     raceBuilder.setBaseSpawnPoint(newSpawnPoint);
 
-                    for (auto const& [id, car] : cars) {
-                        Vector2D<float> spawnPos = raceBuilder.getSpawnPosition();
-                        
-                        // Reposicionar
-                        car->resetMovementStates();
-                        car->setPosition(spawnPos); 
-                        car->resetVelocity(); 
-                        raceLogic.addPlayer(id); 
+                    // 1. REPOSICIONAR: (orden de llegada)
+                    for (int playerId : finishedPlayers) {
+                        auto carIt = cars.find(playerId);
+                        if (carIt != cars.end()) {
+                            std::shared_ptr<Car> car = carIt->second;
+                            
+                            Vector2D<float> spawnPos = raceBuilder.getSpawnPosition(); 
+                            // Reposicionar, resetear y añadir a la nueva carrera
+                            car->resetMovementStates();
+                            car->setPosition(spawnPos); 
+                            car->resetVelocity(); 
+                            raceLogic.addPlayer(playerId); 
+                        }
                     }
                 }
 
