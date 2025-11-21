@@ -219,9 +219,7 @@ void RaceLogic::upgradePenalizeTimeToPlayer(float penalizeTime, int playerId) {
     auto it = allTimeFinishTimes.find(playerId);
     if (it != allTimeFinishTimes.end()) {
         it->second += penalizeTime;
-    } else {
-        allTimeFinishTimes[playerId] = penalizeTime;
-    }
+    } 
 }
 
 
