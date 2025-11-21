@@ -141,6 +141,7 @@ void GameLogic::update(int currentTick) {
                             car->resetMovementStates();
                             car->setPosition(spawnPos); 
                             car->resetVelocity(); 
+                            car->clearUpgradeEffects();
                             raceLogic.addPlayer(playerId); 
                         }
                     }

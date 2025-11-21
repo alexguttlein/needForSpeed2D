@@ -1,4 +1,5 @@
 #include "car.h"
+#include <iostream>
 
 Car::Car(b2WorldId world,Vector2D<float> position, float acceleration, float control,
     float weight, float maxSpeed, float maxReverseSpeed, 
@@ -116,7 +117,8 @@ bool Car::isDestroyed() const {
 b2Vec2 Car::getForce(bool accelerate) const {
     b2Rot dir = b2Body_GetRotation(body);
     b2Vec2 dirBox{dir.c, dir.s};
-    return dirBox * (accelerate ? acceleration * accelerationMultiplier : -acceleration * accelerationMultiplier);
+    float f = accelerate ? acceleration : -acceleration;
+    return dirBox * (f * accelerationMultiplier);
 }
 
 
@@ -140,7 +142,7 @@ void Car::turnLeft() {
     float speed = getBoxSpeed();
     float directionFactor = (speed < 0.0f) ? -1.0f : 1.0f;
     if (std::abs(speed) > 0.5f) {
-        b2Body_ApplyTorque(body, (-control + controlMultiplier) * directionFactor, true);
+        b2Body_ApplyTorque(body, -control * controlMultiplier * directionFactor, true);
     }
 }
 
@@ -148,7 +150,7 @@ void Car::turnRight() {
     float speed = getBoxSpeed();
     float directionFactor = (speed < 0.0f) ? -1.0f : 1.0f;
     if (std::abs(speed) > 0.5f) {
-        b2Body_ApplyTorque(body, (control + controlMultiplier) * directionFactor, true);
+        b2Body_ApplyTorque(body, control * controlMultiplier * directionFactor, true);
     }
 }
 
@@ -201,17 +203,20 @@ void Car::takeDamage(float damage) {
 
 
 void Car::upgradeControl() {
-    controlMultiplier += Constants::CONTROL_UPGRADE;
+    controlMultiplier *= Constants::CONTROL_UPGRADE;
+    std:: cout << "Upgraded control. New control multiplier: " << controlMultiplier << std::endl;
 }
 
 
 void Car::upgradeAcceleration() {
-   accelerationMultiplier = Constants::ACCELERATION_UPGRADE;
+   accelerationMultiplier *= Constants::ACCELERATION_UPGRADE;
+   std:: cout << "Upgraded acceleration. New acceleration multiplier: " << accelerationMultiplier << std::endl;
 }
 
 
 void Car::upgradeHealth(){
-    maxHealth += Constants::HEALTH_UPGRADE;
+    health += Constants::HEALTH_UPGRADE;
+    std:: cout << "Upgraded health. New health: " << health << std::endl;
 }
 
 
@@ -221,7 +226,8 @@ void Car::repair() {
 
 
 void Car::upgradeSpeed() {
-    speedMultiplier = Constants::MAX_SPEED_UPGRADE;
+    speedMultiplier *= Constants::MAX_SPEED_UPGRADE;
+    std:: cout << "Upgraded speed. New speed multiplier: " << speedMultiplier << std::endl;
 }
 
 
@@ -252,8 +258,7 @@ void Car::resetMovementStates() {
 }
 
 
-void Car::applyUpgrade(int upgradeId) {
-    clearUpgradeEffects();     
+void Car::applyUpgrade(int upgradeId) {     
     if (upgradeId == 1) { 
         upgradeHealth();
     } else if (upgradeId == 2) { 
@@ -271,10 +276,16 @@ void Car::clearUpgradeEffects() {
     
     accelerationMultiplier = 1.0f;
     speedMultiplier = 1.0f;
-    controlMultiplier = 0.0f;
+    controlMultiplier = 1.0f;
 
     if (currentUpgradeId == 1) {
-        maxHealth -= Constants::HEALTH_UPGRADE; // Revertir Max Health temporalmente aumentado
+        health -= Constants::HEALTH_UPGRADE; // Revertir Max Health temporalmente aumentado
     }
     currentUpgradeId = 0;
+
+    std:: cout << "Cleared upgrade effects. Current Upgrade ID: " << currentUpgradeId << std::endl;
+    std:: cout << "Health after clearing: " << health << std::endl;
+    std:: cout << "Acceleration Multiplier after clearing: " << accelerationMultiplier << std::endl;
+    std:: cout << "Speed Multiplier after clearing: " << speedMultiplier << std::endl;
+    std:: cout << "Control Multiplier after clearing: " << controlMultiplier << std::endl;
 }

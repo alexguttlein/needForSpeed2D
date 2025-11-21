@@ -29,7 +29,7 @@ private:
     bool destroyed = false;
     float speedMultiplier = 1.0f;
     float accelerationMultiplier = 1.0f;
-    float controlMultiplier = 0.0f;
+    float controlMultiplier = 1.0f;
     int currentUpgradeId = 0;
 
 
