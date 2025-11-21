@@ -66,8 +66,9 @@ namespace  Constants {
 
     //constantes del juego
     static constexpr float HEALTH_UPGRADE = 20.0f;
-    static constexpr float ACCELERATION_UPGRADE = 5.0f;
-    static constexpr float CONTROL_UPGRADE = 0.1f;
+    static constexpr float ACCELERATION_UPGRADE = 1.2f;
+    static constexpr float CONTROL_UPGRADE = 2.0f;
+    static constexpr float MAX_SPEED_UPGRADE = 1.2f;
     static constexpr float NO_HEALTH = 0.0f;
     static constexpr float FRICTION_BASE = 0.1f;
     static constexpr float INITIAL_SPEED = 0.0f;

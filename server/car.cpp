@@ -116,13 +116,13 @@ bool Car::isDestroyed() const {
 b2Vec2 Car::getForce(bool accelerate) const {
     b2Rot dir = b2Body_GetRotation(body);
     b2Vec2 dirBox{dir.c, dir.s};
-    return dirBox * (accelerate ? acceleration : -acceleration);
+    return dirBox * (accelerate ? acceleration * accelerationMultiplier : -acceleration * accelerationMultiplier);
 }
 
 
 void Car::accelerate() {
     float speed = getBoxSpeed();
-    if (speed >= maxSpeed) return;
+    if (speed >= (maxSpeed * speedMultiplier)) return;
     b2Vec2 force = getForce(true);
     b2Body_ApplyForceToCenter(body, force, true);
 }
@@ -140,7 +140,7 @@ void Car::turnLeft() {
     float speed = getBoxSpeed();
     float directionFactor = (speed < 0.0f) ? -1.0f : 1.0f;
     if (std::abs(speed) > 0.5f) {
-        b2Body_ApplyTorque(body, -control * directionFactor, true);
+        b2Body_ApplyTorque(body, (-control + controlMultiplier) * directionFactor, true);
     }
 }
 
@@ -148,7 +148,7 @@ void Car::turnRight() {
     float speed = getBoxSpeed();
     float directionFactor = (speed < 0.0f) ? -1.0f : 1.0f;
     if (std::abs(speed) > 0.5f) {
-        b2Body_ApplyTorque(body, control * directionFactor, true);
+        b2Body_ApplyTorque(body, (control + controlMultiplier) * directionFactor, true);
     }
 }
 
@@ -201,12 +201,12 @@ void Car::takeDamage(float damage) {
 
 
 void Car::upgradeControl() {
-    control += Constants::CONTROL_UPGRADE;
+    controlMultiplier += Constants::CONTROL_UPGRADE;
 }
 
 
 void Car::upgradeAcceleration() {
-    acceleration += Constants::ACCELERATION_UPGRADE;
+   accelerationMultiplier = Constants::ACCELERATION_UPGRADE;
 }
 
 
@@ -218,6 +218,12 @@ void Car::upgradeHealth(){
 void Car::repair() {
     health = std::min(maxHealth, health + Constants::HEALTH_UPGRADE);
 }
+
+
+void Car::upgradeSpeed() {
+    speedMultiplier = Constants::MAX_SPEED_UPGRADE;
+}
+
 
 Car::~Car() {
     // b2DestroyBody(body);
@@ -243,4 +249,32 @@ void Car::resetMovementStates() {
     isBraking = false;
     isTurningLeft = false;
     isTurningRight = false;
+}
+
+
+void Car::applyUpgrade(int upgradeId) {
+    clearUpgradeEffects();     
+    if (upgradeId == 1) { 
+        upgradeHealth();
+    } else if (upgradeId == 2) { 
+        upgradeAcceleration();
+    } else if (upgradeId == 3) { 
+        upgradeControl();
+    } else if (upgradeId == 4) { 
+        upgradeSpeed();
+    }
+    currentUpgradeId = upgradeId;
+}
+
+
+void Car::clearUpgradeEffects() {
+    
+    accelerationMultiplier = 1.0f;
+    speedMultiplier = 1.0f;
+    controlMultiplier = 0.0f;
+
+    if (currentUpgradeId == 1) {
+        maxHealth -= Constants::HEALTH_UPGRADE; // Revertir Max Health temporalmente aumentado
+    }
+    currentUpgradeId = 0;
 }

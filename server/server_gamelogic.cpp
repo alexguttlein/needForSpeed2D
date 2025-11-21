@@ -153,7 +153,7 @@ void GameLogic::update(int currentTick) {
                     if (carIt != cars.end() && upgradeId > 0) {
                         std::shared_ptr<Car> car = carIt->second;
                         // Aquí llamas a la función que aplica el efecto real al Car.
-                        //car->applyUpgrade(upgradeId);
+                        car->applyUpgrade(upgradeId);
                         raceLogic.upgradePenalizeTimeToPlayer(Constants::UPGRADE_WAIT_SECONDS, id); // penalizo tiempo por mejora
                         std::cout << "Aplicando MEJORA " << upgradeId << " al jugador " << id << std::endl; 
                     }

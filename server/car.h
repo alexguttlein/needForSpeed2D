@@ -22,10 +22,16 @@ private:
     float maxSpeed, maxReverseSpeed;
     float friction = 2.0f;
 
+
     // estado del auto
     float health;
     float maxHealth = health;
     bool destroyed = false;
+    float speedMultiplier = 1.0f;
+    float accelerationMultiplier = 1.0f;
+    float controlMultiplier = 0.0f;
+    int currentUpgradeId = 0;
+
 
     // estados de movimiento
     bool isAccelerating = false;
@@ -200,6 +206,12 @@ public:
     void repair();
     
     /*
+    * Mejora la velocidad máxima del auto
+    *
+    * */
+    void upgradeSpeed();
+    
+    /*
     * Destructor de Car
     *
     * */
@@ -228,5 +240,17 @@ public:
     *
     * */
     void resetMovementStates();
+    
+    /*
+    * Aplica una mejora al auto según el ID de la mejora
+    *
+    * */
+    void applyUpgrade(int upgradeId);
+    
+    /*
+    * Limpia los efectos de las mejoras aplicadas al auto
+    *
+    * */
+    void clearUpgradeEffects();
 };
 #endif // CAR_H
