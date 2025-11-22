@@ -7,11 +7,11 @@
 #include "../common/snapshot.h"
 #include "../common/eventType.h"
 
-//#include "mapLoader.h"
+#include "mapLoader.h"
 #include "server_raceBuilder.h"
 #include "server_racelogic.h"
 #include "box2d/box2d.h"
-//#include "mapSetObjects.h"
+#include "mapSetObjects.h"
 
 
 #include <map> 
@@ -35,8 +35,9 @@ private:
     RaceState raceState = IN_PROGRESS;
 
     //MapLoader mapLoader;
+    MapLoader mapLoader;
     RaceBuilder raceBuilder;
-    //MapSetObjects mapSetObjects;
+    MapSetObjects mapSetObjects;
     RaceLogic raceLogic;
     b2WorldId world;
     std::map<int, std::shared_ptr<Car>> cars;

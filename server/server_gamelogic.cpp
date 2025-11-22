@@ -3,9 +3,9 @@
 
 GameLogic::GameLogic(){
     world = raceBuilder.getWorld();
-    //auto objects = mapLoader.loadCollidersFromYaml("server/Mapa1-nfs.yaml");
-    //mapSetObjects.createBodiesFromObjects(world, objects);
+    auto objects = mapLoader.loadCollidersFromYaml("server/Mapa1-nfs.yaml");
 
+    mapSetObjects.createBodiesFromObjects(world, objects);
 }
 
 

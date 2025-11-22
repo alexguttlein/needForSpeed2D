@@ -7,7 +7,7 @@
 
 bool YamlLoader::isSafeCoord(float c) {
     // Usamos 1,000,000.0f como límite superior seguro, mucho menor que el b2_huge de Box2D.
-    const float MAX_COORD = 1000000.0f; 
+    const float MAX_COORD = 1000000.0f;
     return std::isfinite(c) && (c > -MAX_COORD) && (c < MAX_COORD);
 }
 
@@ -139,7 +139,7 @@ std::vector<MapObject> YamlLoader::loadCollidersFromYaml(const std::string& file
     MapObject current{};
     bool parsingObject = false;
     bool parsingPolygon = false;
-    
+
     bool readingPointX = false;
     float lastReadX = 0.0f;
 
@@ -149,25 +149,25 @@ std::vector<MapObject> YamlLoader::loadCollidersFromYaml(const std::string& file
         line.erase(0, line.find_first_not_of(" \t"));
 
         if (line.empty() || line[0] == '#') {
-            continue; 
+            continue;
         }
 
         // Detección del inicio de un NUEVO OBJETO con el marcador de lista YAML.
         if (line.find('-') == 0) {
             // Un colisionador comienza con '- height:' o '- id:', no con '- x:'
             if (line.find(" height:") != std::string::npos || line.find(" id:") != std::string::npos) {
-                
+
                 if (parsingObject) {
                     objects.push_back(current);
                 }
-                
+
                 // Iniciar un nuevo objeto
                 current = {};
                 current.isPolygon = false;
                 parsingObject = true;
                 parsingPolygon = false;
                 readingPointX = false;
-                
+
                 // Procesar 'height' si está en la línea de inicio
                 if (line.find(" height:") != std::string::npos) {
                     current.height = extractFloatValue(line);
@@ -183,24 +183,24 @@ std::vector<MapObject> YamlLoader::loadCollidersFromYaml(const std::string& file
 
         // --- 1. PARSING DE PUNTOS DEL POLÍGONO ---
         if (parsingPolygon) {
-            
+
             if (line.rfind("- x:", 0) == 0) {
                 lastReadX = extractFloatValue(line);
                 readingPointX = true;
                 continue;
-                
+
             } else if (readingPointX && line.rfind("y:", 0) == 0) {
                 b2Vec2 point;
                 point.x = lastReadX / Constants::SCALE_METER_TO_PIXEL;
                 point.y = extractFloatValue(line) / Constants::SCALE_METER_TO_PIXEL;
-                
+
                 current.polygonPoints.push_back(point);
-                
+
                 readingPointX = false;
                 continue;
 
             } else if (line.find("rotation:") != std::string::npos || line.find("x:") != std::string::npos ||
-                       line.find("width:") != std::string::npos || line.find("height:") != std::string::npos) 
+                       line.find("width:") != std::string::npos || line.find("height:") != std::string::npos)
             {
                 // El bloque del polígono terminó, la línea actual es una propiedad de objeto.
                 parsingPolygon = false;
@@ -214,13 +214,13 @@ std::vector<MapObject> YamlLoader::loadCollidersFromYaml(const std::string& file
         // --- 2. DETECCIÓN DE PROPIEDADES BÁSICAS ---
         if (line.rfind("x:", 0) == 0) {
             current.x = extractFloatValue(line) / Constants::SCALE_METER_TO_PIXEL;
-        } 
+        }
         else if (line.rfind("y:", 0) == 0) {
             current.y = extractFloatValue(line) / Constants::SCALE_METER_TO_PIXEL;
-        } 
+        }
         else if (line.rfind("width:", 0) == 0) {
             current.width = extractFloatValue(line) / Constants::SCALE_METER_TO_PIXEL ;
-        } 
+        }
         else if (line.rfind("height:", 0) == 0) {
             current.height = extractFloatValue(line) / Constants::SCALE_METER_TO_PIXEL ;
         }
@@ -233,15 +233,15 @@ std::vector<MapObject> YamlLoader::loadCollidersFromYaml(const std::string& file
     // Procesa el ÚLTIMO objeto al salir del bucle.
     if (parsingObject)
         objects.push_back(current);
-        
+
     // -------------------------------------------------------------------------
     // FILTRO DE VALIDACIÓN: Remueve objetos no-poligonales con dimensiones no positivas
     // -------------------------------------------------------------------------
-    
+
     size_t initialCount = objects.size();
     std::vector<MapObject> validObjects;
     int removedCount = 0;
-    
+
     for (const auto& obj : objects) {
         // Un objeto es válido si es un polígono (Box2D lo construye a partir de los puntos)
         // O si es un rectángulo y tiene ancho y alto > 0.
@@ -253,9 +253,9 @@ std::vector<MapObject> YamlLoader::loadCollidersFromYaml(const std::string& file
             // std::cerr << "[MapLoader WARNING] Objeto descartado (dimensión inválida): X=" << obj.x << ", Y=" << obj.y << ", W=" << obj.width << ", H=" << obj.height << std::endl;
         }
     }
-    
+
     if (removedCount > 0) {
-        std::cout << "[MapLoader WARNING] Se descartaron " << removedCount 
+        std::cout << "[MapLoader WARNING] Se descartaron " << removedCount
                   << " objetos con ancho o alto menor/igual a cero (para evitar ASSERT de Box2D)." << std::endl;
     }
 
