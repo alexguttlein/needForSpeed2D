@@ -13,7 +13,8 @@ Car::Car(b2WorldId world,Vector2D<float> position, float acceleration, float con
     , maxReverseSpeed(maxReverseSpeed)
     , health(health)
     , height(height)
-    , width(width){
+    , width(width)
+    , baseMaxHealth(health){
 
         setCarBox2DBody(position);
 
@@ -204,7 +205,7 @@ void Car::takeDamage(float damage) {
 
 void Car::upgradeControl() {
     controlMultiplier *= Constants::CONTROL_UPGRADE;
-    std:: cout << "Upgraded control. New control multiplier: " << controlMultiplier << std::endl;
+    b2Body_SetAngularDamping(body, b2Body_GetAngularDamping(body) * 0.8f);
 }
 
 
@@ -215,8 +216,8 @@ void Car::upgradeAcceleration() {
 
 
 void Car::upgradeHealth(){
-    health += Constants::HEALTH_UPGRADE;
-    std:: cout << "Upgraded health. New health: " << health << std::endl;
+    maxHealth += Constants::HEALTH_UPGRADE; 
+    health = std::min(maxHealth, health + Constants::HEALTH_UPGRADE); 
 }
 
 
@@ -227,7 +228,7 @@ void Car::repair() {
 
 void Car::upgradeSpeed() {
     speedMultiplier *= Constants::MAX_SPEED_UPGRADE;
-    std:: cout << "Upgraded speed. New speed multiplier: " << speedMultiplier << std::endl;
+    b2Body_SetLinearDamping(body, b2Body_GetLinearDamping(body) * 0.8f);
 }
 
 
@@ -274,18 +275,15 @@ void Car::applyUpgrade(int upgradeId) {
 
 void Car::clearUpgradeEffects() {
     
+    b2Body_SetLinearDamping(body, 0.5f);
+    b2Body_SetAngularDamping(body, 8.0f);
     accelerationMultiplier = 1.0f;
     speedMultiplier = 1.0f;
     controlMultiplier = 1.0f;
 
     if (currentUpgradeId == 1) {
-        health -= Constants::HEALTH_UPGRADE; // Revertir Max Health temporalmente aumentado
+        maxHealth = baseMaxHealth; 
+        health = std::min(health, baseMaxHealth);
     }
     currentUpgradeId = 0;
-
-    std:: cout << "Cleared upgrade effects. Current Upgrade ID: " << currentUpgradeId << std::endl;
-    std:: cout << "Health after clearing: " << health << std::endl;
-    std:: cout << "Acceleration Multiplier after clearing: " << accelerationMultiplier << std::endl;
-    std:: cout << "Speed Multiplier after clearing: " << speedMultiplier << std::endl;
-    std:: cout << "Control Multiplier after clearing: " << controlMultiplier << std::endl;
 }

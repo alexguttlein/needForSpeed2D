@@ -41,6 +41,8 @@ private:
 
     float height, width;
 
+    float baseMaxHealth; // La vida máxima original/permanente.
+
 public:
     /*
     * Constructor de Car.
