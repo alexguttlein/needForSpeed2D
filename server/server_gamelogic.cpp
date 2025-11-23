@@ -3,7 +3,6 @@
 
 GameLogic::GameLogic(){
     world = raceBuilder.getWorld();
-
     auto objects = mapLoader.loadCollidersFromYaml("server/Mapa1-nfs.yaml");
     mapSetObjects.createBodiesFromObjects(world, objects);
 }
@@ -19,184 +18,61 @@ void GameLogic::processCommand(int car_id, const std::string& command, bool isPr
     lastCommandPlayerId = car_id;
 
     if(raceState == IN_PROGRESS){
-        if (command == "w") {
+        if (command == Constants::MOVE_FORDWARD) {
             car->setIsAccelerating(isPressed);
-        } else if (command == "s") {
+        } else if (command == Constants::MOVE_BACKWARD) {
             car->setIsBraking(isPressed);
-        } else if (command == "a") {
+        } else if (command == Constants::TURN_LEFT) {
             car->setIsTurningLeft(isPressed);
-        } else if (command == "d") {
+        } else if (command == Constants::TURN_RIGHT) {
             car->setIsTurningRight(isPressed);
         }  else {
             std::cout << "Comando desconocido: " << command << std::endl; // deberias meter funcion de lectura de cheats
         }
     }
-
-
-    if(raceState == WAITING_FOR_TRANSITION){
-        
-        bool alreadySelected = hasSelectedUpgrade.count(car_id) && hasSelectedUpgrade[car_id];
-
-        if (alreadySelected) {
-            std::cout << "Jugador " << car_id << " ya selecciono una mejora para esta ronda." << std::endl;
-            return;
-        }
-
-        int upgrade = 0;
-        if (command == "1") { upgrade = 1; } 
-        else if (command == "2") { upgrade = 2; }
-        else if (command == "3") { upgrade = 3; }
-        else if (command == "4") { upgrade = 4; }
-        
-        if (upgrade > 0) {
-            // 2. Marcar el estado como TRUE de forma PERSISTENTE para este jugador
-            hasSelectedUpgrade[car_id] = true;
-            selectedUpgradeId[car_id] = upgrade;
-            std::cout << "Jugador " << car_id << " selecciono MEJORA " << upgrade << "." << std::endl;
-        }
-
+    if(raceState == WAITING_FOR_TRANSITION){        
+        processUpgradeSelection(car_id, command);
     } 
+}
 
+
+void GameLogic::processUpgradeSelection(int car_id, const std::string& command){
+
+    bool alreadySelected = hasSelectedUpgrade.count(car_id) && hasSelectedUpgrade[car_id];
+
+    if (alreadySelected) {
+        std::cout << "Jugador " << car_id << " ya selecciono una mejora para esta ronda." << std::endl;
+        return;
+    }
+
+    int upgrade = Constants::DEFAULT_UPGRADE_ID;
+    if (command == Constants::SELECT_HEALTH_UPGRADE) { upgrade = Constants::HEALTH_UPGRADE_ID; } 
+    else if (command == Constants::SELECT_ACCELERATION_UPGRADE) { upgrade = Constants::ACCELERATION_UPGRADE_ID; }
+    else if (command == Constants::SELECT_CONTROL_UPGRADE) { upgrade = Constants::CONTROL_UPGRADE_ID; }
+    else if (command == Constants::SELECT_MAX_SPEED_UPGRADE) { upgrade = Constants::MAX_SPEED_UPGRADE_ID; }
+    
+    if (upgrade > Constants::DEFAULT_UPGRADE_ID) {
+        hasSelectedUpgrade[car_id] = true;
+        selectedUpgradeId[car_id] = upgrade;
+        std::cout << "Jugador " << car_id << " selecciono MEJORA " << upgrade << "." << std::endl;
+    }
 }
 
 
 void GameLogic::update(int currentTick) {
-    const float dt = 1.0f / 60.0f;
-
-
+  
     if (raceState == GAME_OVER) {
         return; 
     }
 
-
-    for (auto const& [id, car] : cars) {
-        car->applyMovement();
-        car->applyFriction(); 
-    }
-
-    // agregar funcion de fin de juego por tiempo
-    if (currentTick >= Constants::MAX_TICKS) {
-        std::cout << "Tiempo máximo de la partida alcanzado. Finalizando juego..." << std::endl;
-    }
-
-    b2World_Step(world, dt, 4);
-    checkCollisions(); // Verificar colisiones después de actualizar la física
-
-    // con esto el timer se resetea al iniciar la carrera
-    int ticksElapsed = currentTick - raceStartTick;
-    float currentRaceTime = static_cast<float>(ticksElapsed) /
-                            static_cast<float>(Constants::TICKS_PER_SECOND);
-
+    simulateRacePhysics(Constants::DT, currentTick);
+    float currentRaceTime = getCurrentTimeSeconds(currentTick);  // con esto el timer se resetea al iniciar la carrera
 
     if (raceState == IN_PROGRESS) {
-
-            for (auto const& [id, car] : cars) {
-                if (!raceLogic.hasPlayerFinished(id)) {
-                    Vector2D<float> carPosition = car->getPosition();
-                    bool justFinished = raceLogic.checkCheckpoint(id, carPosition); 
-                    if (justFinished) {
-                        raceLogic.setCurrentRaceTimeSeconds(currentRaceTime);
-                        raceLogic.addTimeFinishPlayer(currentRaceTime, id); // actualizo tiempo en carrera total
-                    }
-                }
-            }
-        
-            if (raceLogic.isRaceOver()) {
-
-                if(raceLogic.hasNextRace()){
-            
-                    std::cout << "--- CARRERA TERMINADA. INICIANDO ESPERA de " 
-                        << Constants::UPGRADE_WAIT_SECONDS << " segundos ---" << std::endl;
-            
-                    raceState = WAITING_FOR_TRANSITION;
-                    transitionStartTick = currentTick;
-                }
-                else {
-                    std::cout << "--- CARRERA TERMINADA. NO HAY MÁS CIRCUITOS. ---" << std::endl;
-                    raceState = GAME_OVER;
-                    leaderboard = raceLogic.getLeaderBoard();
-                    std::cout << "🏆 LEADERBOARD FINAL 🏆" << std::endl;
-
-                    for (size_t i = 0; i < leaderboard.size(); ++i) {
-                        const auto& entry = leaderboard[i];
-                        std::cout << (i + 1) << ". Jugador " << entry.playerId 
-                                << " - Tiempo Total: " << entry.finishTime << " segundos." << std::endl;
-                    
-                    }
-                    raceState = GAME_OVER;
-                }
-            } 
-
+        simulateRaceInProgress(currentTick, currentRaceTime); 
+    
     } else if (raceState == WAITING_FOR_TRANSITION) {
-            
-        if (currentTick - transitionStartTick >= Constants::UPGRADE_WAIT_TICKS) {
-            
-            std::cout << "--- TRANSICIÓN: CONFIGURANDO PRÓXIMA CARRERA ---" << std::endl;
-            
-            std::vector<int> finishedPlayers = raceLogic.getFinishedPlayers(); // obtenemos orden de llegada
-            raceLogic.setCurrentRace(); 
-            std::vector<Vector2D<float>> checkpoints = raceLogic.getActualRaceCheckpoints();
-            
-            if (!checkpoints.empty()) {
-                const Vector2D<float>& newSpawnPoint = checkpoints[0];
-                raceBuilder.setBaseSpawnPoint(newSpawnPoint);
-
-                // 1. REPOSICIONAR: (orden de llegada)
-                for (int playerId : finishedPlayers) {
-                    auto carIt = cars.find(playerId);
-                    if (carIt != cars.end()) {
-                        std::shared_ptr<Car> car = carIt->second;
-                        
-                        Vector2D<float> spawnPos = raceBuilder.getSpawnPosition(); 
-                        // Reposicionar, resetear y añadir a la nueva carrera
-                        car->resetMovementStates();
-                        car->setPosition(spawnPos); 
-                        car->resetVelocity(); 
-                        car->clearUpgradeEffects();
-                        raceLogic.addPlayer(playerId); 
-                    }
-                }
-            }
-
-
-            // Aplicar mejoras leyendo la INTENCIÓN GUARDADA
-            for (auto const& [id, upgradeId] : selectedUpgradeId) {
-                auto carIt = cars.find(id);
-                if (carIt != cars.end() && upgradeId > 0) {
-                    std::shared_ptr<Car> car = carIt->second;
-                    // Aquí llamas a la función que aplica el efecto real al Car.
-                    car->applyUpgrade(upgradeId);
-
-                    float penalizeTime = 0.0f;
-                    switch (upgradeId) {
-                        case 1:
-                            penalizeTime = Constants::PENALIZE_HEALTH_UPGRADE;
-                            break;
-                        case 2:
-                            penalizeTime = Constants::PENALIZE_ACCELERATION_UPGRADE;
-                            break;
-                        case 3:
-                            penalizeTime = Constants::PENALIZE__CONTROL_UPGRADE;
-                            break;
-                        case 4:
-                            penalizeTime = Constants::PENALIZE_SPEED_UPGRADE;
-                            break;
-                        default:
-                            penalizeTime = 0.0f;
-                            break;
-                    }
-
-                    raceLogic.upgradePenalizeTimeToPlayer(penalizeTime, id); // penalizo tiempo por mejora
-                    std::cout << "Penalizando al jugador " << id << " con " << penalizeTime << " segundos por mejora." << std::endl;
-                    std::cout << "Aplicando MEJORA " << upgradeId << " al jugador " << id << std::endl; 
-                }
-            }
-            hasSelectedUpgrade.clear();
-            selectedUpgradeId.clear();
-
-            raceStartTick = currentTick;
-            raceState = IN_PROGRESS; 
-        } 
+        simulateRaceInTransition(currentTick);
     }
 }   
 
@@ -300,11 +176,10 @@ void GameLogic::checkCollisions() {
                           << ", Vida B: " 
                           << (carB ? std::to_string(carB->getHealth()) : "N/A") 
                           << ", Velocidad: " << hitSpeed
-                          << std::endl;
-            }            
+                          << std::endl;       
+            }    
         }
     }
-
     if (contactEvents.endCount > 0) {
         for (int i = 0; i < contactEvents.endCount; ++i) {
             const b2ContactEndTouchEvent* event = &contactEvents.endEvents[i];
@@ -327,7 +202,6 @@ void GameLogic::applyCollisionDamage(Car* carA, Car* carB, b2Vec2 normal, float 
         float finalDamageA = damage * angleFactorA;
         carA->takeDamage(finalDamageA);
     }
-
     if (carB) {
         Vector2D<float> forwardB = carB->getDirection();
         b2Vec2 inverseNormal = b2Neg(normal); 
@@ -352,6 +226,159 @@ float GameLogic::getCollisionSpeed(b2BodyId bodyA, b2BodyId bodyB) {
     b2Vec2 relativeVel = b2Sub(velA, velB); 
     return b2Length(relativeVel);
 }
+
+
+void GameLogic::simulateRaceInTransition(int currentTick){
+    if (currentTick - transitionStartTick >= Constants::UPGRADE_WAIT_TICKS) {
+            
+            std::cout << "--- TRANSICIÓN: CONFIGURANDO PRÓXIMA CARRERA ---" << std::endl;
+            
+            resetFinishRace();
+            applyUpgradeToCar();
+            hasSelectedUpgrade.clear();
+            selectedUpgradeId.clear();
+
+            raceStartTick = currentTick;
+            raceState = IN_PROGRESS; 
+    } 
+}
+
+
+void GameLogic::applyUpgradeToCar(){
+
+    for (auto const& [id, upgradeId] : selectedUpgradeId) {
+        auto carIt = cars.find(id);
+        if (carIt != cars.end() && upgradeId > Constants::DEFAULT_UPGRADE_ID) {
+
+            std::shared_ptr<Car> car = carIt->second;
+            car->applyUpgrade(upgradeId);
+
+            float penalizeTime = Constants::DEFAULT_PENALIZE;
+            switch (upgradeId) {
+                case Constants::HEALTH_UPGRADE_ID:
+                    penalizeTime = Constants::PENALIZE_HEALTH_UPGRADE;
+                    break;
+                case Constants::ACCELERATION_UPGRADE_ID:
+                    penalizeTime = Constants::PENALIZE_ACCELERATION_UPGRADE;
+                    break;
+                case Constants::CONTROL_UPGRADE_ID:
+                    penalizeTime = Constants::PENALIZE__CONTROL_UPGRADE;
+                    break;
+                case Constants::MAX_SPEED_UPGRADE_ID:
+                    penalizeTime = Constants::PENALIZE_SPEED_UPGRADE;
+                    break;
+                default:
+                    penalizeTime = Constants::DEFAULT_PENALIZE;
+                    break;
+            }
+            raceLogic.upgradePenalizeTimeToPlayer(penalizeTime, id); // penalizo tiempo por mejora
+            std::cout << "Penalizando al jugador " << id << " con " << penalizeTime << " segundos por mejora." << std::endl;
+            std::cout << "Aplicando MEJORA " << upgradeId << " al jugador " << id << std::endl; 
+        }
+    }
+}
+
+
+void GameLogic::resetFinishRace(){
+
+    std::vector<int> finishedPlayers = raceLogic.getFinishedPlayers(); // obtenemos orden de llegada
+    raceLogic.setCurrentRace(); 
+    std::vector<Vector2D<float>> checkpoints = raceLogic.getActualRaceCheckpoints();
+    
+    if (!checkpoints.empty()) {
+        const Vector2D<float>& newSpawnPoint = checkpoints[0];
+        raceBuilder.setBaseSpawnPoint(newSpawnPoint);
+
+        // 1. REPOSICIONAR: (orden de llegada)
+        for (int playerId : finishedPlayers) {
+            auto carIt = cars.find(playerId);
+            if (carIt != cars.end()) {
+                std::shared_ptr<Car> car = carIt->second;
+                
+                Vector2D<float> spawnPos = raceBuilder.getSpawnPosition(); 
+                car->resetMovementStates();
+                car->setPosition(spawnPos); 
+                car->resetVelocity(); 
+                car->clearUpgradeEffects();
+                raceLogic.addPlayer(playerId); 
+            }
+        }
+    }
+}
+
+
+void GameLogic::simulateRaceInProgress(int currentTick, float currentRaceTime) {
+
+    for (auto const& [id, car] : cars) {
+    
+        if (!raceLogic.hasPlayerFinished(id)) {
+            Vector2D<float> carPosition = car->getPosition();
+            bool justFinished = raceLogic.checkCheckpoint(id, carPosition); 
+            if (justFinished) {
+                raceLogic.setCurrentRaceTimeSeconds(currentRaceTime);
+                raceLogic.addTimeFinishPlayer(currentRaceTime, id); // actualizo tiempo en carrera total
+            }
+        }
+    }
+    if (raceLogic.isRaceOver()) {
+
+        if(raceLogic.hasNextRace()) {
+            setTransition(currentTick);
+        }
+        else {
+            finishGame();
+        }
+    } 
+}
+
+
+void GameLogic::simulateRacePhysics(const float dt, int currentTick) {
+
+    for (auto const& [id, car] : cars) {
+        car->applyMovement();
+        car->applyFriction(); 
+    }
+    checkFinishGameByTime(currentTick);
+    b2World_Step(world, dt, 4);
+    checkCollisions(); // Verificar colisiones después de actualizar la física
+}
+
+
+float GameLogic::getCurrentTimeSeconds(int currentTick) {
+    int ticksElapsed = currentTick - raceStartTick;
+    return static_cast<float>(ticksElapsed) / static_cast<float>(Constants::TICKS_PER_SECOND);
+}
+
+
+void GameLogic::setTransition(int currentTick) {
+    std::cout << "--- CARRERA TERMINADA. INICIANDO ESPERA de " << Constants::UPGRADE_WAIT_SECONDS << " segundos ---" << std::endl;
+    raceState = WAITING_FOR_TRANSITION;
+    transitionStartTick = currentTick;
+}
+
+
+void GameLogic::finishGame() {
+    std::cout << "--- CARRERA TERMINADA. NO HAY MÁS CIRCUITOS. ---" << std::endl;
+    leaderboard = raceLogic.getLeaderBoard();
+
+    std::cout << "🏆 LEADERBOARD FINAL 🏆" << std::endl;
+    for (size_t i = 0; i < leaderboard.size(); ++i) {
+        const auto& entry = leaderboard[i];
+        std::cout << (i + 1) << ". Jugador " << entry.playerId 
+                << " - Tiempo Total: " << entry.finishTime << " segundos." << std::endl;
+    
+    }
+    raceState = GAME_OVER;
+}
+
+
+void GameLogic::checkFinishGameByTime(int currentTick) {
+    if (currentTick >= Constants::MAX_TICKS) {
+        std::cout << "Tiempo máximo de la partida alcanzado. Finalizando juego..." << std::endl;
+        finishGame();
+    }
+}
+
 
 GameLogic::~GameLogic() {
 

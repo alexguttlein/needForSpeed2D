@@ -6,6 +6,7 @@
 #include "car.h"
 #include "../common/snapshot.h"
 #include "../common/eventType.h"
+#include "../common/constants.h"
 
 #include "yamlLoader.h"
 #include "leaderBoard.h"
@@ -62,6 +63,12 @@ public:
    void processCommand(int car_id, const std::string& command, bool isPressed);
 
     /*
+    * Procesa la selección de mejora de un jugador durante el estado WAITING_FOR_TRANSITION
+    *
+    * */
+   void processUpgradeSelection(int car_id, const std::string& command);
+
+    /*
     * Actualiza la lógica del juego (física, estado de autos, etc.)
     *
     * */
@@ -102,6 +109,60 @@ public:
     *
     * */
     b2Vec2 getCollisionNormal(b2BodyId bodyA, b2BodyId bodyB);
+
+    /*
+    * Simula la lógica de la carrera cuando está en transición
+    *
+    * */
+    void simulateRaceInTransition(int currentTick);
+
+    /*
+    * Aplica la mejora seleccionada a un auto
+    *
+    */
+    void applyUpgradeToCar();
+
+    /*
+    * Resetea el estado de la carrera para iniciar una nueva ronda
+    *
+    * */
+    void resetFinishRace();
+
+    /*
+    * Simula la lógica de la carrera cuando está en progreso
+    *
+    * */
+    void simulateRaceInProgress(int currentTick, float currentRaceTime);
+
+    /*
+    * Simula la física de la carrera por un intervalo de tiempo dt
+    *
+    * */
+    void simulateRacePhysics(const float dt, int currentTick);
+
+    /*
+    * Convierte el tick actual a tiempo en segundos
+    *
+    * */
+    float getCurrentTimeSeconds(int currentTick);
+
+    /*
+    * si hay otra carrera disponible, setea el estado a WAITING_FOR_TRANSITION
+    *
+    * */
+    void setTransition(int currentTick);
+
+    /*
+    * Finaliza el juego, actualizando el estado correspondiente
+    *
+    * */
+    void finishGame();
+
+    /*
+    * Verifica si se debe finalizar el juego por tiempo y actualiza el estado
+    * si en 10 minutos no se han terminado una carrera finaliza el game.
+    * */
+    void checkFinishGameByTime(int currentTick);
 
     ~GameLogic();
 };

@@ -27,8 +27,8 @@ void Car::setCarBox2DBody(Vector2D<float> position) {
     bodyDef.type = b2_dynamicBody;
     bodyDef.position = {position.x, position.y};
     bodyDef.enableSleep = false; 
-    bodyDef.linearDamping = 0.5f; // aplica fricción lineal
-    bodyDef.angularDamping = 8.0f; // aplica fricción angular
+    bodyDef.linearDamping = Constants::DEFAULT_LINEAR_DAMPING; // aplica fricción lineal
+    bodyDef.angularDamping = Constants::DEFAULT_ANGULAR_DAMPING; // aplica fricción angular
     body = b2CreateBody(world, &bodyDef);
     b2Body_SetAwake(body, true);
 
@@ -44,8 +44,8 @@ void Car::setCarBox2DBody(Vector2D<float> position) {
     shapeDef.userData = this;          
 
     b2ShapeId shapeId = b2CreatePolygonShape(body, &shapeDef, &shape);
-    b2Shape_SetFriction(shapeId, 0.0f);
-    b2Shape_SetRestitution(shapeId, 0.4f);
+    b2Shape_SetFriction(shapeId, Constants::FRICTION_BASE);
+    b2Shape_SetRestitution(shapeId, Constants::DEFAULT_RESTITUTION);
 }
 
 
@@ -255,13 +255,13 @@ void Car::resetMovementStates() {
 
 
 void Car::applyUpgrade(int upgradeId) {     
-    if (upgradeId == 1) { 
+    if (upgradeId == Constants::HEALTH_UPGRADE_ID) { 
         upgradeHealth();
-    } else if (upgradeId == 2) { 
+    } else if (upgradeId == Constants::ACCELERATION_UPGRADE_ID) { 
         upgradeAcceleration();
-    } else if (upgradeId == 3) { 
+    } else if (upgradeId == Constants::CONTROL_UPGRADE_ID) { 
         upgradeControl();
-    } else if (upgradeId == 4) { 
+    } else if (upgradeId == Constants::MAX_SPEED_UPGRADE_ID) { 
         upgradeSpeed();
     }
     currentUpgradeId = upgradeId;
@@ -270,17 +270,17 @@ void Car::applyUpgrade(int upgradeId) {
 
 void Car::clearUpgradeEffects() {
     
-    b2Body_SetLinearDamping(body, 0.5f);
-    b2Body_SetAngularDamping(body, 8.0f);
-    accelerationMultiplier = 1.0f;
-    speedMultiplier = 1.0f;
-    controlMultiplier = 1.0f;
+    b2Body_SetLinearDamping(body, Constants::DEFAULT_LINEAR_DAMPING);
+    b2Body_SetAngularDamping(body, Constants::DEFAULT_ANGULAR_DAMPING);
+    accelerationMultiplier = Constants::DEFAULT_MULTIPLIER;
+    speedMultiplier = Constants::DEFAULT_MULTIPLIER;
+    controlMultiplier = Constants::DEFAULT_MULTIPLIER;
 
-    if (currentUpgradeId == 1) {
+    if (currentUpgradeId == Constants::HEALTH_UPGRADE_ID) {
         maxHealth = baseMaxHealth; 
         health = std::min(health, baseMaxHealth);
     }
-    currentUpgradeId = 0;
+    currentUpgradeId = Constants::DEFAULT_UPGRADE_ID;
 }
 
 

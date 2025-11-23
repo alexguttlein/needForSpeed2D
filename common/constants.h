@@ -60,18 +60,52 @@ namespace  Constants {
     static constexpr int THREAD_SLEEP_MS = 16; // aprox 60 FPS
     static constexpr int TICKS_PER_SECOND = 60;
     static constexpr int MAX_TICKS = 36000; // 10 minutos a 60 ticks por segundo
+    static constexpr float DT = 1.0f / static_cast<float>(TICKS_PER_SECOND);
 
+    // constantes de espera entre carreras para seleccionar mejoras
     static constexpr int UPGRADE_WAIT_SECONDS = 10;
     static constexpr int UPGRADE_WAIT_TICKS = Constants::UPGRADE_WAIT_SECONDS * Constants::TICKS_PER_SECOND;
 
     //constantes del juego
+
+    // nombre de movimientos
+    static constexpr const char* MOVE_FORDWARD = "w";
+    static constexpr const char* MOVE_BACKWARD = "s";
+    static constexpr const char* TURN_LEFT = "a";
+    static constexpr const char* TURN_RIGHT = "d";
+
+
+    // mejora de atributos
     static constexpr float HEALTH_UPGRADE = 20.0f;
     static constexpr float ACCELERATION_UPGRADE = 2.0f;
     static constexpr float CONTROL_UPGRADE = 2.0f;
     static constexpr float MAX_SPEED_UPGRADE = 1.2f;
+
+    // nombre de mejoras
+    static constexpr const char* SELECT_HEALTH_UPGRADE = "1";
+    static constexpr const char* SELECT_ACCELERATION_UPGRADE = "2";
+    static constexpr const char* SELECT_CONTROL_UPGRADE = "3";
+    static constexpr const char* SELECT_MAX_SPEED_UPGRADE = "4";
+    
+    // representacion mejoras en int
+    static constexpr int DEFAULT_UPGRADE_ID = 0;
+    static constexpr int HEALTH_UPGRADE_ID = 1;
+    static constexpr int ACCELERATION_UPGRADE_ID = 2;
+    static constexpr int CONTROL_UPGRADE_ID = 3;
+    static constexpr int MAX_SPEED_UPGRADE_ID = 4;
+
+
+    // atributos autos
     static constexpr float NO_HEALTH = 0.0f;
-    static constexpr float FRICTION_BASE = 0.1f;
+    static constexpr float FRICTION_BASE = 0.0f;
     static constexpr float INITIAL_SPEED = 0.0f;
+    static constexpr float DEFAULT_RESTITUTION = 0.4f;
+    static constexpr float DEFAULT_LINEAR_DAMPING = 0.5f;
+    static constexpr float DEFAULT_ANGULAR_DAMPING = 8.0f;
+    static constexpr float DEFAULT_MULTIPLIER = 1.0f;
+    
+    // constantes de spawn - checkpoints - hints
+
     static constexpr float SPAWN_START_X = 90.0f;
     static constexpr float SPAWN_START_Y = 90.0f;
     static constexpr float SPAWN_OFFSET_X = 50.0f; 
@@ -80,6 +114,7 @@ namespace  Constants {
     static constexpr float HINT_SPACING = 3.0f; // ver como cambia esto con el mapa
 
     // constante penalizacion por mejora
+    static constexpr float DEFAULT_PENALIZE = 0.0f;
     static constexpr float PENALIZE_HEALTH_UPGRADE = 8.0f;
     static constexpr float PENALIZE__CONTROL_UPGRADE = 6.0f;
     static constexpr float PENALIZE_ACCELERATION_UPGRADE = 10.0f; 
