@@ -56,7 +56,7 @@ void Client::run() {
 
     ClientDibujador dib(ren, W, H);
 
-    if (!dib.loadMap("assets/need-for-speed/cities/Liberty.png")) {
+    if (!dib.loadMap("assets/need-for-speed/cities/Liberty.png", "assets/need-for-speed/cities/Liberty_BRIDGES.png")) {
         std::fprintf(stderr, "No pude cargar assets/maps/iberty.png\n");
     }
 

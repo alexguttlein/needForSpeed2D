@@ -14,7 +14,7 @@ public:
     ClientDibujador(SDL_Renderer* r, int winW, int winH);
     ~ClientDibujador();
 
-    bool loadMap(const std::string& pathPng);
+    bool loadMap(const std::string& pathPng, const std::string& pathPngOver);
     bool loadCarAtlas(const std::string& pathPng, int cols = 8, int rows = 2,
                       float angle0Deg = 0.f, bool clockwise = true);
 
@@ -69,6 +69,7 @@ private:
     int winW, winH;
 
     SDL_Texture* mapTex = nullptr;
+    SDL_Texture* mapOverTex = nullptr;
     int mapW = 0, mapH = 0;
 
     SDL_Texture* carTex = nullptr;
