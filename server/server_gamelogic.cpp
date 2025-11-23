@@ -3,8 +3,8 @@
 
 GameLogic::GameLogic(){
     world = raceBuilder.getWorld();
-    auto objects = mapLoader.loadCollidersFromYaml("server/Mapa1-nfs.yaml");
 
+    auto objects = mapLoader.loadCollidersFromYaml("server/Mapa1-nfs.yaml");
     mapSetObjects.createBodiesFromObjects(world, objects);
 }
 
@@ -162,7 +162,7 @@ void GameLogic::update(int currentTick) {
                                 penalizeTime = Constants::PENALIZE_HEALTH_UPGRADE;
                                 break;
                             case 2:
-                                penalizeTime = Constants::PENALIZE_LAST_CHANCE_UPGRADE;
+                                penalizeTime = Constants::PENALIZE_ACCELERATION_UPGRADE;
                                 break;
                             case 3:
                                 penalizeTime = Constants::PENALIZE__CONTROL_UPGRADE;
@@ -279,7 +279,7 @@ void GameLogic::checkCollisions() {
                  
                 float hitSpeed = getCollisionSpeed(bodyA, bodyB);
 
-                const float MIN_HIT_SPEED = 0.2f; 
+                const float MIN_HIT_SPEED = 1.0f; 
                 if (hitSpeed < MIN_HIT_SPEED) {
                     continue; // No es un impacto severo, ignorar
                 }
@@ -310,8 +310,8 @@ void GameLogic::checkCollisions() {
 
 
 void GameLogic::applyCollisionDamage(Car* carA, Car* carB, b2Vec2 normal, float hitSpeed) {
-    const float DAMAGE_FACTOR = 1.5f; 
-    float damage = (hitSpeed * hitSpeed) * DAMAGE_FACTOR;
+    const float DAMAGE_FACTOR = 1.2f; 
+    float damage = hitSpeed * DAMAGE_FACTOR;
 
     if (carA) {
         Vector2D<float> forwardA = carA->getDirection();

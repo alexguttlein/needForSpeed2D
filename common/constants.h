@@ -25,7 +25,7 @@ namespace  Constants {
     static constexpr unsigned char TYPE_SNAPSHOT = 0x30;
     static constexpr unsigned char TYPE_CONTROL = 0x31;
     static constexpr unsigned char TYPE_GAME_LIST = 0x32;
-    static constexpr int MAX_PLAYERS_IN_GAME = 1; // por ahora
+    static constexpr int MAX_PLAYERS_IN_GAME = 2; // por ahora
 
     // constantes de tamanios de queues
     static const unsigned int CLIENT_QUEUE_MAXSIZE = 100;
@@ -66,7 +66,7 @@ namespace  Constants {
 
     //constantes del juego
     static constexpr float HEALTH_UPGRADE = 20.0f;
-    static constexpr float ACCELERATION_UPGRADE = 1.2f;
+    static constexpr float ACCELERATION_UPGRADE = 2.0f;
     static constexpr float CONTROL_UPGRADE = 2.0f;
     static constexpr float MAX_SPEED_UPGRADE = 1.2f;
     static constexpr float NO_HEALTH = 0.0f;
@@ -80,10 +80,10 @@ namespace  Constants {
     static constexpr float HINT_SPACING = 3.0f; // ver como cambia esto con el mapa
 
     // constante penalizacion por mejora
-    static constexpr float PENALIZE_HEALTH_UPGRADE = 12.0f;
-    static constexpr float PENALIZE__CONTROL_UPGRADE = 8.0f;
-    static constexpr float PENALIZE_LAST_CHANCE_UPGRADE = 20.0f; 
-    static constexpr float PENALIZE_SPEED_UPGRADE = 10.0f; 
+    static constexpr float PENALIZE_HEALTH_UPGRADE = 8.0f;
+    static constexpr float PENALIZE__CONTROL_UPGRADE = 6.0f;
+    static constexpr float PENALIZE_ACCELERATION_UPGRADE = 10.0f; 
+    static constexpr float PENALIZE_SPEED_UPGRADE = 12.0f; 
 
     // constantes representacion autos:
     static constexpr int FORD = 1;

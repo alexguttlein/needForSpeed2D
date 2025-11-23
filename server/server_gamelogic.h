@@ -34,7 +34,6 @@ private:
     int transitionStartTick = 0;
     RaceState raceState = IN_PROGRESS;
 
-    //MapLoader mapLoader;
     YamlLoader mapLoader;
     RaceBuilder raceBuilder;
     MapSetObjects mapSetObjects;

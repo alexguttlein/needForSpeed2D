@@ -202,16 +202,17 @@ public:
     void upgradeControl();
 
     /*
-    * Repara el auto (restaura la salud al máximo)
-    *
-    * */
-    void repair();
-    
-    /*
     * Mejora la velocidad máxima del auto
     *
     * */
     void upgradeSpeed();
+    
+    /*
+    * Aplica la mejora de "última oportunidad" al auto
+    *
+    * si se destruye el auto, lo restaura con el 30% de la salud máxima
+    * */
+   // void upgradeLastChance();
     
     /*
     * Destructor de Car

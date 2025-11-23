@@ -8,10 +8,11 @@ void MapSetObjects::createStaticBody(b2WorldId world, const b2Vec2& position, co
     b2BodyId body = b2CreateBody(world, &bodyDef);
     
     b2ShapeDef shapeDef = b2DefaultShapeDef();
-
+    
     for (const auto& shape : fixtures) {
         // La b2Polygon ya contiene el hull calculado. 
         b2CreatePolygonShape(body, &shapeDef, &shape);
+        //b2Shape_SetFriction(shapeId, 0.5f);
     }
 }
 

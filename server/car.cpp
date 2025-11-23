@@ -221,11 +221,6 @@ void Car::upgradeHealth(){
 }
 
 
-void Car::repair() {
-    health = std::min(maxHealth, health + Constants::HEALTH_UPGRADE);
-}
-
-
 void Car::upgradeSpeed() {
     speedMultiplier *= Constants::MAX_SPEED_UPGRADE;
     b2Body_SetLinearDamping(body, b2Body_GetLinearDamping(body) * 0.8f);
