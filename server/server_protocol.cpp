@@ -132,6 +132,9 @@ void ServerProtocol::sendSnapshot(std::shared_ptr<Snapshot>& snapshot) {
         
         // car_id (int, típicamente 4 bytes)
         addIntToUint8tVector(buffer, carState.car_id);
+
+        // currentUpgradeId (int, típicamente 4 bytes)
+        addIntToUint8tVector(buffer, carState.currentUpgradeId);
         
         // health (float, 4 bytes)
         appendUInt32(buffer, *reinterpret_cast<const uint32_t*>(&carState.health));
@@ -156,6 +159,9 @@ void ServerProtocol::sendSnapshot(std::shared_ptr<Snapshot>& snapshot) {
     for (const auto& rs : snapshot->raceStates) {
         // playerId
         addIntToUint8tVector(buffer, rs.playerId);
+
+        // currentRaceId
+        addIntToUint8tVector(buffer, rs.currentRaceId);
 
         // nextCheckpoint (Vector2D<float>, 8 bytes total)
         appendUInt32(buffer, *reinterpret_cast<const uint32_t*>(&rs.nextCheckpoint.x));

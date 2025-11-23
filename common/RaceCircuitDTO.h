@@ -7,7 +7,7 @@
 
 /*
 * Estructura que representa un circuito de carrera
-*
+* Usado para cargar los checkpoints desde YAML y identificar el circuito
 * */
 struct RaceCircuit {
     std::string race_id;

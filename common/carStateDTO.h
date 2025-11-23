@@ -10,7 +10,8 @@
 *
 * */
 struct CarStateDTO {
-    int car_id;       
+    int car_id;     
+    int currentUpgradeId;
     float health;       
     Vector2D<float> position; 
     Vector2D<float> angle;

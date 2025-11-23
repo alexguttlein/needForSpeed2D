@@ -156,5 +156,11 @@ public:
     * 
     * */
     std::vector<Vector2D<float>> getHintsForPlayer(int playerId, const Vector2D<float>& currentCarPosition) const;
+
+    /*
+    * Devuelve el ID del circuito de carrera actual - numero de carrera 
+    *
+    * */
+    int getCurrentRaceId() const;
 };
 #endif // SERVER_RACELOGIC_H

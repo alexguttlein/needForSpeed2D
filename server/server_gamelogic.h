@@ -7,7 +7,7 @@
 #include "../common/snapshot.h"
 #include "../common/eventType.h"
 
-#include "mapLoader.h"
+#include "yamlLoader.h"
 #include "server_raceBuilder.h"
 #include "server_racelogic.h"
 #include "box2d/box2d.h"
@@ -35,7 +35,7 @@ private:
     RaceState raceState = IN_PROGRESS;
 
     //MapLoader mapLoader;
-    MapLoader mapLoader;
+    YamlLoader mapLoader;
     RaceBuilder raceBuilder;
     MapSetObjects mapSetObjects;
     RaceLogic raceLogic;

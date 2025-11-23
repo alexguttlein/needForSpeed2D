@@ -254,5 +254,11 @@ public:
     *
     * */
     void clearUpgradeEffects();
+    
+    /*
+    * Obtiene el ID de la mejora actual aplicada al auto
+    *
+    * */
+    int getCurrentUpgradeId();
 };
 #endif // CAR_H

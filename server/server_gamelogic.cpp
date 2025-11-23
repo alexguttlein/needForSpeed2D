@@ -155,7 +155,28 @@ void GameLogic::update(int currentTick) {
                         std::shared_ptr<Car> car = carIt->second;
                         // Aquí llamas a la función que aplica el efecto real al Car.
                         car->applyUpgrade(upgradeId);
-                        raceLogic.upgradePenalizeTimeToPlayer(Constants::UPGRADE_WAIT_SECONDS, id); // penalizo tiempo por mejora
+
+                        float penalizeTime = 0.0f;
+                        switch (upgradeId) {
+                            case 1:
+                                penalizeTime = Constants::PENALIZE_HEALTH_UPGRADE;
+                                break;
+                            case 2:
+                                penalizeTime = Constants::PENALIZE_LAST_CHANCE_UPGRADE;
+                                break;
+                            case 3:
+                                penalizeTime = Constants::PENALIZE__CONTROL_UPGRADE;
+                                break;
+                            case 4:
+                                penalizeTime = Constants::PENALIZE_SPEED_UPGRADE;
+                                break;
+                            default:
+                                penalizeTime = 0.0f;
+                                break;
+                        }
+
+                        raceLogic.upgradePenalizeTimeToPlayer(penalizeTime, id); // penalizo tiempo por mejora
+                        std::cout << "Penalizando al jugador " << id << " con " << penalizeTime << " segundos por mejora." << std::endl;
                         std::cout << "Aplicando MEJORA " << upgradeId << " al jugador " << id << std::endl; 
                     }
                 }
@@ -192,6 +213,7 @@ std::shared_ptr<Snapshot> GameLogic::getSnapshot(EventType controlEvent) const {
     for (const auto& [id, car] : cars) {
         RaceStateDTO raceState{};
         raceState.playerId      = id;
+        raceState.currentRaceId = raceLogic.getCurrentRaceId();
         raceState.nextCheckpoint = raceLogic.getNextCheckpointPosition(id);
         raceState.currentHints   = raceLogic.getHintsForPlayer(id, car->getPosition());
         raceState.hasFinished    = raceLogic.hasPlayerFinished(id);
@@ -217,6 +239,7 @@ std::shared_ptr<Snapshot> GameLogic::getSnapshot(EventType controlEvent) const {
     for (auto const& [id, car] : cars) {
         CarStateDTO dto;
         dto.car_id   = id;
+        dto.currentUpgradeId = car->getCurrentUpgradeId();
         dto.health   = car->getHealth();
         dto.position = car->getPosition();
         dto.angle    = car->getDirection();

@@ -78,7 +78,12 @@ namespace  Constants {
     static constexpr float MAX_ROW_X = 600.0f;
     static constexpr float CHECKPOINT_RADIUS = 3.0f; 
     static constexpr float HINT_SPACING = 3.0f; // ver como cambia esto con el mapa
-    static constexpr float PENALIZE_TIME_UPGRADE = 10.0f;
+
+    // constante penalizacion por mejora
+    static constexpr float PENALIZE_HEALTH_UPGRADE = 12.0f;
+    static constexpr float PENALIZE__CONTROL_UPGRADE = 8.0f;
+    static constexpr float PENALIZE_LAST_CHANCE_UPGRADE = 20.0f; 
+    static constexpr float PENALIZE_SPEED_UPGRADE = 10.0f; 
 
     // constantes representacion autos:
     static constexpr int FORD = 1;

@@ -287,3 +287,8 @@ void Car::clearUpgradeEffects() {
     }
     currentUpgradeId = 0;
 }
+
+
+int Car::getCurrentUpgradeId() {
+    return currentUpgradeId;
+}

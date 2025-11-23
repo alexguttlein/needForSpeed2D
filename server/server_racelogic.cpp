@@ -268,3 +268,8 @@ std::vector<Vector2D<float>> RaceLogic::getHintsForPlayer(int playerId, const Ve
     }
     return hints;
 }
+
+
+int RaceLogic::getCurrentRaceId() const {
+    return currentRaceId;
+}
