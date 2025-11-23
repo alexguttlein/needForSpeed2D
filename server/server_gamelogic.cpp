@@ -89,113 +89,116 @@ void GameLogic::update(int currentTick) {
 
 
     if (raceState == IN_PROGRESS) {
-        for (auto const& [id, car] : cars) {
-            if (!raceLogic.hasPlayerFinished(id)) {
-                Vector2D<float> carPosition = car->getPosition();
-                bool justFinished = raceLogic.checkCheckpoint(id, carPosition); 
-                if (justFinished) {
-                    raceLogic.setCurrentRaceTimeSeconds(currentRaceTime);
-                    raceLogic.addTimeFinishPlayer(currentRaceTime, id); // actualizo tiempo en carrera total
-                    //checkeo timer general
-                    float alltime = raceLogic.getAllTimeFinishTime(id);
-                    std::cout << "Jugador " << id << " tiempo general hasta ahora: " 
-                              << alltime << " segundos." << std::endl;
+
+            for (auto const& [id, car] : cars) {
+                if (!raceLogic.hasPlayerFinished(id)) {
+                    Vector2D<float> carPosition = car->getPosition();
+                    bool justFinished = raceLogic.checkCheckpoint(id, carPosition); 
+                    if (justFinished) {
+                        raceLogic.setCurrentRaceTimeSeconds(currentRaceTime);
+                        raceLogic.addTimeFinishPlayer(currentRaceTime, id); // actualizo tiempo en carrera total
+                    }
                 }
             }
-        }
         
-        if (raceLogic.isRaceOver()) {
-            std::cout << "--- CARRERA TERMINADA. INICIANDO ESPERA de " 
-                      << Constants::UPGRADE_WAIT_SECONDS << " segundos ---" << std::endl;
+            if (raceLogic.isRaceOver()) {
+
+                if(raceLogic.hasNextRace()){
             
-            raceState = WAITING_FOR_TRANSITION;
-            transitionStartTick = currentTick;
-           
-        }
-    } 
+                    std::cout << "--- CARRERA TERMINADA. INICIANDO ESPERA de " 
+                        << Constants::UPGRADE_WAIT_SECONDS << " segundos ---" << std::endl;
+            
+                    raceState = WAITING_FOR_TRANSITION;
+                    transitionStartTick = currentTick;
+                }
+                else {
+                    std::cout << "--- CARRERA TERMINADA. NO HAY MÁS CIRCUITOS. ---" << std::endl;
+                    raceState = GAME_OVER;
+                    leaderboard = raceLogic.getLeaderBoard();
+                    std::cout << "🏆 LEADERBOARD FINAL 🏆" << std::endl;
 
+                    for (size_t i = 0; i < leaderboard.size(); ++i) {
+                        const auto& entry = leaderboard[i];
+                        std::cout << (i + 1) << ". Jugador " << entry.playerId 
+                                << " - Tiempo Total: " << entry.finishTime << " segundos." << std::endl;
+                    
+                    }
+                    raceState = GAME_OVER;
+                }
+            } 
 
-    else if (raceState == WAITING_FOR_TRANSITION) {
-        
+    } else if (raceState == WAITING_FOR_TRANSITION) {
+            
         if (currentTick - transitionStartTick >= Constants::UPGRADE_WAIT_TICKS) {
             
-            if (raceLogic.hasNextRace()) {
-                std::cout << "--- TRANSICIÓN: CONFIGURANDO PRÓXIMA CARRERA ---" << std::endl;
-                
-                std::vector<int> finishedPlayers = raceLogic.getFinishedPlayers(); // obtenemos orden de llegada
-                raceLogic.setCurrentRace(); 
-                std::vector<Vector2D<float>> checkpoints = raceLogic.getActualRaceCheckpoints();
-                
-                if (!checkpoints.empty()) {
-                    const Vector2D<float>& newSpawnPoint = checkpoints[0];
-                    raceBuilder.setBaseSpawnPoint(newSpawnPoint);
+            std::cout << "--- TRANSICIÓN: CONFIGURANDO PRÓXIMA CARRERA ---" << std::endl;
+            
+            std::vector<int> finishedPlayers = raceLogic.getFinishedPlayers(); // obtenemos orden de llegada
+            raceLogic.setCurrentRace(); 
+            std::vector<Vector2D<float>> checkpoints = raceLogic.getActualRaceCheckpoints();
+            
+            if (!checkpoints.empty()) {
+                const Vector2D<float>& newSpawnPoint = checkpoints[0];
+                raceBuilder.setBaseSpawnPoint(newSpawnPoint);
 
-                    // 1. REPOSICIONAR: (orden de llegada)
-                    for (int playerId : finishedPlayers) {
-                        auto carIt = cars.find(playerId);
-                        if (carIt != cars.end()) {
-                            std::shared_ptr<Car> car = carIt->second;
-                            
-                            Vector2D<float> spawnPos = raceBuilder.getSpawnPosition(); 
-                            // Reposicionar, resetear y añadir a la nueva carrera
-                            car->resetMovementStates();
-                            car->setPosition(spawnPos); 
-                            car->resetVelocity(); 
-                            car->clearUpgradeEffects();
-                            raceLogic.addPlayer(playerId); 
-                        }
-                    }
-                }
-
-
-                // Aplicar mejoras leyendo la INTENCIÓN GUARDADA
-                for (auto const& [id, upgradeId] : selectedUpgradeId) {
-                    auto carIt = cars.find(id);
-                    if (carIt != cars.end() && upgradeId > 0) {
+                // 1. REPOSICIONAR: (orden de llegada)
+                for (int playerId : finishedPlayers) {
+                    auto carIt = cars.find(playerId);
+                    if (carIt != cars.end()) {
                         std::shared_ptr<Car> car = carIt->second;
-                        // Aquí llamas a la función que aplica el efecto real al Car.
-                        car->applyUpgrade(upgradeId);
-
-                        float penalizeTime = 0.0f;
-                        switch (upgradeId) {
-                            case 1:
-                                penalizeTime = Constants::PENALIZE_HEALTH_UPGRADE;
-                                break;
-                            case 2:
-                                penalizeTime = Constants::PENALIZE_ACCELERATION_UPGRADE;
-                                break;
-                            case 3:
-                                penalizeTime = Constants::PENALIZE__CONTROL_UPGRADE;
-                                break;
-                            case 4:
-                                penalizeTime = Constants::PENALIZE_SPEED_UPGRADE;
-                                break;
-                            default:
-                                penalizeTime = 0.0f;
-                                break;
-                        }
-
-                        raceLogic.upgradePenalizeTimeToPlayer(penalizeTime, id); // penalizo tiempo por mejora
-                        std::cout << "Penalizando al jugador " << id << " con " << penalizeTime << " segundos por mejora." << std::endl;
-                        std::cout << "Aplicando MEJORA " << upgradeId << " al jugador " << id << std::endl; 
+                        
+                        Vector2D<float> spawnPos = raceBuilder.getSpawnPosition(); 
+                        // Reposicionar, resetear y añadir a la nueva carrera
+                        car->resetMovementStates();
+                        car->setPosition(spawnPos); 
+                        car->resetVelocity(); 
+                        car->clearUpgradeEffects();
+                        raceLogic.addPlayer(playerId); 
                     }
                 }
-                hasSelectedUpgrade.clear();
-                selectedUpgradeId.clear();
-
-                raceStartTick = currentTick;
-                raceState = IN_PROGRESS; 
-                
-            } else {
-                // FIN DE LA COMPETICIÓN
-                std::cout << "--- COMPETICIÓN FINALIZADA. NO HAY MÁS CIRCUITOS. ---" << std::endl;
-                raceState = GAME_OVER; 
             }
+
+
+            // Aplicar mejoras leyendo la INTENCIÓN GUARDADA
+            for (auto const& [id, upgradeId] : selectedUpgradeId) {
+                auto carIt = cars.find(id);
+                if (carIt != cars.end() && upgradeId > 0) {
+                    std::shared_ptr<Car> car = carIt->second;
+                    // Aquí llamas a la función que aplica el efecto real al Car.
+                    car->applyUpgrade(upgradeId);
+
+                    float penalizeTime = 0.0f;
+                    switch (upgradeId) {
+                        case 1:
+                            penalizeTime = Constants::PENALIZE_HEALTH_UPGRADE;
+                            break;
+                        case 2:
+                            penalizeTime = Constants::PENALIZE_ACCELERATION_UPGRADE;
+                            break;
+                        case 3:
+                            penalizeTime = Constants::PENALIZE__CONTROL_UPGRADE;
+                            break;
+                        case 4:
+                            penalizeTime = Constants::PENALIZE_SPEED_UPGRADE;
+                            break;
+                        default:
+                            penalizeTime = 0.0f;
+                            break;
+                    }
+
+                    raceLogic.upgradePenalizeTimeToPlayer(penalizeTime, id); // penalizo tiempo por mejora
+                    std::cout << "Penalizando al jugador " << id << " con " << penalizeTime << " segundos por mejora." << std::endl;
+                    std::cout << "Aplicando MEJORA " << upgradeId << " al jugador " << id << std::endl; 
+                }
+            }
+            hasSelectedUpgrade.clear();
+            selectedUpgradeId.clear();
+
+            raceStartTick = currentTick;
+            raceState = IN_PROGRESS; 
         } 
     }
-
-
-}
+}   
 
 
 std::shared_ptr<Snapshot> GameLogic::getSnapshot(EventType controlEvent) const {
@@ -248,6 +251,11 @@ std::shared_ptr<Snapshot> GameLogic::getSnapshot(EventType controlEvent) const {
     }
 
     snapshot->raceFinished = allFinished;
+
+    if(raceState == GAME_OVER){
+        snapshot->gameFinished = true;
+        snapshot->leaderboards = leaderboard;
+    }
 
     return snapshot;
 }

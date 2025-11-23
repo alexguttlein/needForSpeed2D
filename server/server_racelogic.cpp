@@ -273,3 +273,24 @@ std::vector<Vector2D<float>> RaceLogic::getHintsForPlayer(int playerId, const Ve
 int RaceLogic::getCurrentRaceId() const {
     return currentRaceId;
 }
+
+
+Leaderboard RaceLogic::getLeaderBoard() const {
+    
+    Leaderboard leaderboard;
+
+    for (const auto& pair : allTimeFinishTimes) {
+        float time = pair.second;
+        
+        if (time >= 0.0f) { 
+            leaderboard.push_back({pair.first, time});
+        }
+    }
+
+    auto compareByTime = [](const PlayerTime& a, const PlayerTime& b) {
+        return a.finishTime < b.finishTime; // Orden ascendente
+    };
+
+    std::sort(leaderboard.begin(), leaderboard.end(), compareByTime);
+    return leaderboard;
+}

@@ -235,6 +235,27 @@ std::optional<Snapshot> ClientProtocol::receiveSnapshotFromServer() {
             snapshot.raceStates[r].finishTimeSeconds = timeSeconds;
         }
 
+
+        // Flag de fin de juego
+        uint8_t gameFinishedByte = 0;
+        socket.recvall(&gameFinishedByte, sizeof(gameFinishedByte));
+        snapshot.gameFinished = static_cast<bool>(gameFinishedByte);
+
+        // Leer leaderboard final
+        for (uint32_t r = 0; r < playersSizeBE; ++r) {
+            PlayerTime pt{};
+            uint32_t playerIdBE = 0;
+            socket.recvall(&playerIdBE, sizeof(playerIdBE));
+            pt.playerId = static_cast<int>(ntohl(playerIdBE));
+
+            uint32_t finishTimeBE = 0;
+            socket.recvall(&finishTimeBE, sizeof(finishTimeBE));
+            uint32_t finishTimeHost = ntohl(finishTimeBE);
+            pt.finishTime = *reinterpret_cast<float*>(&finishTimeHost);
+
+            snapshot.leaderboards.push_back(pt);
+        }
+
         return snapshot;
     }
 

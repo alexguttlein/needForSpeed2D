@@ -37,4 +37,5 @@ target_sources(taller_server
     server_racelogic.h
     mapSetObjects.h
     yamlLoader.h
+    leaderBoard.h
     )

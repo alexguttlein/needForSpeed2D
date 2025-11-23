@@ -8,6 +8,7 @@
 #include "../common/eventType.h"
 
 #include "yamlLoader.h"
+#include "leaderBoard.h"
 #include "server_raceBuilder.h"
 #include "server_racelogic.h"
 #include "box2d/box2d.h"
@@ -21,7 +22,7 @@
 
 
  enum RaceState {
-    IN_PROGRESS,
+    IN_PROGRESS,            // La carrera está en progreso
     WAITING_FOR_TRANSITION, // La carrera ha terminado, estamos en el periodo de espera (10s)
     GAME_OVER               // No hay más circuitos
 };
@@ -35,6 +36,7 @@ private:
     RaceState raceState = IN_PROGRESS;
 
     YamlLoader mapLoader;
+    Leaderboard leaderboard;
     RaceBuilder raceBuilder;
     MapSetObjects mapSetObjects;
     RaceLogic raceLogic;

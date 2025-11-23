@@ -4,6 +4,7 @@
 #include "common/eventType.h"
 #include "carStateDTO.h"
 #include "raceStateDTO.h"
+#include "../server/leaderBoard.h"
 #include <vector>
 #include "gameInfo.h"
 
@@ -16,6 +17,8 @@ struct Snapshot {
     std::vector<GameInfo> gameList;
     std::vector<RaceStateDTO> raceStates;
     bool raceFinished = false;      // true cuando todos los jugadores terminaron
+    bool gameFinished = false;  // true cuando no hay más circuitos
+    std::vector<PlayerTime> leaderboards; // Leaderboard final partida
     Snapshot () = default;
 };
 #pragma pack(pop)

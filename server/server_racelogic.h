@@ -5,6 +5,7 @@
 #include "../common/vector2D.h"
 #include "../common/constants.h"
 #include "yamlLoader.h"
+#include "leaderBoard.h"
 #include <map>
 #include <vector>
 #include <iostream>
@@ -162,5 +163,12 @@ public:
     *
     * */
     int getCurrentRaceId() const;
+
+    /*
+    * Genera el leaderboard final basado en los tiempos de finalización de los jugadores
+    * devuelve un vector ordenado por tiempo ascendente
+    * 
+    * */
+    Leaderboard getLeaderBoard() const;
 };
 #endif // SERVER_RACELOGIC_H
