@@ -56,22 +56,22 @@ void RaceBuilder::addSelectCar(int carType) {
             car = std::make_shared<Car>(world, position, 50.0f, 40.0f, 6.0f, 50.0f, 50.0f, 90.0f, 1.20f / 2.0f, 1.28f / 2.0f);
             break;
         case Constants::MAZDA:
-            car = std::make_shared<Car>(world, position, 50.0f, 40.0f, 6.0f, 50.0f, 40.0f, 80.0f, 1.55f/2.0f,1.64f/2.0f);
+            car = std::make_shared<Car>(world, position, 65.0f, 70.0f, 3.0f, 70.0f, 40.0f, 80.0f, 1.55f/2.0f,1.64f/2.0f);
             break;
         case Constants::CORROLLA:
-            car = std::make_shared<Car>(world, position, 50.0f, 40.0f, 6.0f, 50.0f, 50.0f, 100.0f, 1.45f/2.0f,1.64f/2.0f);
+            car = std::make_shared<Car>(world, position, 55.0f, 55.0f, 6.0f, 60.0f, 50.0f, 100.0f, 1.45f/2.0f,1.64f/2.0f);
             break;
         case Constants::BMW:
-            car = std::make_shared<Car>(world, position, 50.0f, 40.0f, 6.0f, 50.0f, 50.0f, 70.0f, 1.48f/2.0f,1.68f/2.0f);
+            car = std::make_shared<Car>(world, position, 60.0f, 70.0f, 3.0f, 50.0f, 60.0f, 70.0f, 1.48f/2.0f,1.68f/2.0f);
             break;
         case Constants::JEEP:
-            car = std::make_shared<Car>(world, position, 50.0f, 40.0f, 6.0f, 50.0f, 50.0f, 110.0f, 1.48f/2.0f,1.68f/2.0f);
+            car = std::make_shared<Car>(world, position, 40.0f, 70.0f, 3.0f, 50.0f, 50.0f, 110.0f, 1.48f/2.0f,1.68f/2.0f);
             break;
         case Constants::CIVIC:
-            car = std::make_shared<Car>(world, position, 50.0f, 40.0f, 6.0f, 50.0f, 50.0f, 100.0f, 1.48f/2.0f,1.64f/2.0f);
+            car = std::make_shared<Car>(world, position, 50.0f, 70.0f, 5.0f, 50.0f, 50.0f, 100.0f, 1.48f/2.0f,1.64f/2.0f);
             break;
         case Constants::TRUCK:
-            car = std::make_shared<Car>(world, position, 50.0f, 40.0f, 6.0f, 50.0f, 50.0f, 150.0f, 1.77f/2.0f,2.04f/2.0f);
+            car = std::make_shared<Car>(world, position, 50.0f, 90.0f, 5.0f, 50.0f, 50.0f, 150.0f, 1.77f/2.0f,2.04f/2.0f);
             break;
         default:
             std::cerr << "Tipo de auto desconocido: " << carType << std::endl;
