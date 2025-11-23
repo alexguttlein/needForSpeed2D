@@ -241,8 +241,14 @@ std::optional<Snapshot> ClientProtocol::receiveSnapshotFromServer() {
         socket.recvall(&gameFinishedByte, sizeof(gameFinishedByte));
         snapshot.gameFinished = static_cast<bool>(gameFinishedByte);
 
+        // 🟢 Leer TAMAÑO del leaderboard
+        uint32_t leaderboardSizeBE = 0;
+        socket.recvall(&leaderboardSizeBE, sizeof(leaderboardSizeBE));
+        uint32_t leaderboardSize = ntohl(leaderboardSizeBE);
+
         // Leer leaderboard final
-        for (uint32_t r = 0; r < playersSizeBE; ++r) {
+        // 🟢 Usar el tamaño leído, NO playersSizeBE
+        for (uint32_t r = 0; r < leaderboardSize; ++r) {
             PlayerTime pt{};
             uint32_t playerIdBE = 0;
             socket.recvall(&playerIdBE, sizeof(playerIdBE));

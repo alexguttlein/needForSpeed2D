@@ -194,8 +194,12 @@ void ServerProtocol::sendSnapshot(std::shared_ptr<Snapshot>& snapshot) {
     // Flag de fin de juego (1 byte)
     buffer.push_back(static_cast<uint8_t>(snapshot->gameFinished));
 
-    // Leaderboard final (float por jugador, en el mismo orden que raceStates)
+   uint32_t leaderboardSize = static_cast<uint32_t>(snapshot->leaderboards.size());
+   appendUInt32(buffer, leaderboardSize); 
+
+    // 🟢 SOLO ENVIAR LOS DATOS DE LOS JUGADORES SI EL TAMAÑO ES > 0
     for (const auto& playerTime : snapshot->leaderboards) {
+        // Si leaderboardSize es 0, este bucle no se ejecuta.
         addIntToUint8tVector(buffer, playerTime.playerId);
         uint32_t timeBits = *reinterpret_cast<const uint32_t*>(&playerTime.finishTime);
         appendUInt32(buffer, timeBits);
