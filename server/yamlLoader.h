@@ -9,6 +9,7 @@
 #include <vector>
 #include <box2d/box2d.h>
 #include <yaml-cpp/yaml.h>
+#include "server/raceSpawnData.h"
 
 
 class YamlLoader {
@@ -20,8 +21,9 @@ private:
 public:
    
     static Map loadMapFromYaml(const std::string& filepath);
-
     static std::vector<MapObject> loadCollidersFromYaml(const std::string& filepath);
+    std::unordered_map<int, RaceSpawnData> loadRaceSpawnPositions(const std::string& filepath);
+
 };
 
 #endif // MAPLOADER_H

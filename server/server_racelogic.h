@@ -18,6 +18,7 @@ class RaceLogic {
 private:
     YamlLoader yamlLoader;
     Map mapData;
+    std::unordered_map<int, RaceSpawnData> spawnData; //posicion inicial de autos en carreras
     std::map<int, int> nextCheckpointIndex;
     std::vector<int> finishedPlayers; // guardamos en orden los jugadores que terminaron
     std::mutex finishMutex;
@@ -156,5 +157,7 @@ public:
     * 
     * */
     std::vector<Vector2D<float>> getHintsForPlayer(int playerId, const Vector2D<float>& currentCarPosition) const;
+
+    Vector2D<float> getSpawnPositionForPlayer(int playerIndex);
 };
 #endif // SERVER_RACELOGIC_H

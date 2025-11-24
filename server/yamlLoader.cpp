@@ -263,3 +263,71 @@ std::vector<MapObject> YamlLoader::loadCollidersFromYaml(const std::string& file
     std::cout << "[MapLoader] Total de objetos cargados y válidos: " << validObjects.size() << " (Iniciales: " << initialCount << ")" << std::endl;
     return validObjects;
 }
+
+std::unordered_map<int, RaceSpawnData> YamlLoader::loadRaceSpawnPositions(const std::string& filepath) {
+
+    std::unordered_map<int, RaceSpawnData> result;
+    YAML::Node root;
+
+    try {
+        root = YAML::LoadFile(filepath);
+    } catch (const std::exception& e) {
+        std::cerr << "[YamlLoader] Error cargando raceSpawnPositions: "
+                  << e.what() << std::endl;
+        return result;
+    }
+
+    if (!root["spawns"] || !root["spawns"].IsMap()) {
+        std::cerr << "[YamlLoader] archivo inválido: falta 'spawns' o no es un mapa."
+                  << std::endl;
+        return result;
+    }
+
+    const YAML::Node& spawnsNode = root["spawns"];
+
+    for (auto it = spawnsNode.begin(); it != spawnsNode.end(); ++it) {
+        std::string raceKey = it->first.as<std::string>();
+        const YAML::Node& raceNode = it->second;
+
+        // "race_1" → 1
+        int raceId = 0;
+        try {
+            raceId = std::stoi(raceKey.substr(5));  // saltea "race_"
+        } catch (...) {
+            std::cerr << "[YamlLoader] Clave inválida en spawns: " << raceKey << std::endl;
+            continue;
+        }
+
+        if (!raceNode["positions"] || !raceNode["positions"].IsSequence()) {
+            std::cerr << "[YamlLoader] 'positions' inválido para " << raceKey << std::endl;
+            continue;
+        }
+
+        RaceSpawnData data;
+
+        for (const auto& posNode : raceNode["positions"]) {
+            if (!posNode["x"] || !posNode["y"]) {
+                std::cerr << "[YamlLoader] posición inválida en " << raceKey << std::endl;
+                continue;
+            }
+
+            float x = posNode["x"].as<float>();
+            float y = posNode["y"].as<float>();
+
+            data.positions.emplace_back(x, y);
+        }
+
+        if (data.positions.empty()) {
+            std::cerr << "[YamlLoader] No se cargaron posiciones para " << raceKey << std::endl;
+            continue;
+        }
+
+        result[raceId] = data;
+
+        std::cout << "[YamlLoader] Cargadas " << data.positions.size()
+                  << " posiciones para raceId=" << raceId << std::endl;
+    }
+
+    return result;
+}
+

@@ -4,6 +4,7 @@
 RaceLogic::RaceLogic() : 
     yamlLoader(),
     mapData(yamlLoader.loadMapFromYaml("server/raceCheckpoints.yaml")),
+    spawnData(yamlLoader.loadRaceSpawnPositions("server/raceSpawnPositions.yaml")),
     actualRaceId("race_1"),
     currentRaceId(1) {
     
@@ -268,3 +269,23 @@ std::vector<Vector2D<float>> RaceLogic::getHintsForPlayer(int playerId, const Ve
     }
     return hints;
 }
+
+Vector2D<float> RaceLogic::getSpawnPositionForPlayer(int playerIndex) {
+    auto it = spawnData.find(currentRaceId);
+
+    if (it != spawnData.end()) {
+        const auto& positions = it->second.positions;
+        int count = static_cast<int>(positions.size());
+        if (playerIndex >= 0 && playerIndex < count) {
+            return positions[playerIndex];
+        }
+        // fallback: usar la primera posición
+        if (!positions.empty()) {
+            return positions[0];
+        }
+    }
+
+    // fallback general en caso de no haber spawnData
+    return Vector2D<float>{0.0f, 0.0f};
+}
+
