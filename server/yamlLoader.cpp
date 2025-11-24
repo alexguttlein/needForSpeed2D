@@ -1,16 +1,11 @@
 #include "yamlLoader.h"
 
-#include <fstream>
-#include <sstream>
-#include <algorithm>
-#include <cctype>
 
 bool YamlLoader::isSafeCoord(float c) {
     // Usamos 1,000,000.0f como límite superior seguro, mucho menor que el b2_huge de Box2D.
     const float MAX_COORD = 1000000.0f;
     return std::isfinite(c) && (c > -MAX_COORD) && (c < MAX_COORD);
 }
-
 
 
 float YamlLoader::extractFloatValue(const std::string& line) {
@@ -39,8 +34,6 @@ float YamlLoader::extractFloatValue(const std::string& line) {
         return 0.0f;
     }
 }
-
-
 
 
 Map YamlLoader::loadMapFromYaml(const std::string& filepath) {
@@ -121,9 +114,6 @@ Map YamlLoader::loadMapFromYaml(const std::string& filepath) {
     
     return map;
 }
-
-
-
 
 
 std::vector<MapObject> YamlLoader::loadCollidersFromYaml(const std::string& filepath) {
@@ -259,7 +249,81 @@ std::vector<MapObject> YamlLoader::loadCollidersFromYaml(const std::string& file
                   << " objetos con ancho o alto menor/igual a cero (para evitar ASSERT de Box2D)." << std::endl;
     }
 
-
     std::cout << "[MapLoader] Total de objetos cargados y válidos: " << validObjects.size() << " (Iniciales: " << initialCount << ")" << std::endl;
     return validObjects;
+}
+
+
+std::vector<NPCData> YamlLoader::loadNPCsFromYaml(const std::string& filepath) {
+    std::vector<NPCData> npcs;
+    std::cout << "[NPCLoader] Intentando cargar NPCs desde: " << filepath << std::endl;
+
+    std::ifstream file(filepath);
+    if (!file.is_open()) {
+        std::cerr << "[NPCLoader ERROR] No se pudo abrir: " << filepath << std::endl;
+        return npcs;
+    }
+
+    std::string line;
+    NPCData current{};
+    bool parsingNPC = false;
+    bool readingCoordX = false;
+    float lastReadX = 0.0f;
+
+    while (std::getline(file, line)) {
+
+        line.erase(0, line.find_first_not_of(" \t"));
+        if (line.empty() || line[0] == '#') {
+            continue;
+        }
+
+        if (line.find("- id:") == 0) {
+            
+            if (parsingNPC) {
+                if (current.id != 0) {
+                    npcs.push_back(current);
+                } else {
+                    std::cerr << "[NPCLoader WARNING] NPC descartado por ID inválido (0): Se requiere un ID único mayor a 0." << std::endl;
+                }
+            }
+
+            current = {};
+            current.id = static_cast<int>(extractFloatValue(line));
+            parsingNPC = true;
+            readingCoordX = false;
+            continue;
+        }
+
+        if (!parsingNPC) {
+            continue;
+        }
+
+        if (line.rfind("carType:", 0) == 0) {
+            current.carType = static_cast<int>(extractFloatValue(line));
+        } 
+        // else if (line.rfind("angle:", 0) == 0) {
+        //     current.angle = extractFloatValue(line);
+        // }
+        // --- PARSING DE POSICIÓN (x y) DENTRO DEL BLOQUE 'position:' ---
+        else if (line.rfind("position:", 0) == 0) {
+            continue;
+        }
+        else if (line.rfind("x:", 0) == 0) {
+            lastReadX = extractFloatValue(line);
+            readingCoordX = true;
+        }
+        else if (readingCoordX && line.rfind("y:", 0) == 0) {
+            current.x = lastReadX;
+            current.y = extractFloatValue(line);
+            readingCoordX = false;
+        }
+    }
+
+    if (parsingNPC && current.id != 0) {
+        npcs.push_back(current);
+    } else if (parsingNPC) {
+        std::cerr << "[NPCLoader WARNING] Último NPC descartado por ID inválido (0): Se requiere un ID único mayor a 0." << std::endl;
+    }
+    std::cout << "[NPCLoader] Total de NPCs cargados y válidos: " << npcs.size() << std::endl;
+    return npcs;
 }

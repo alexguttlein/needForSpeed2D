@@ -11,6 +11,7 @@ class RaceBuilder {
 private:
     b2WorldId world;
     std::vector<std::shared_ptr<Car>> cars;
+    std::vector<std::shared_ptr<Car>> staticNpcs;
     float nextSpawnX;
     float nextSpawnY;
     float baseSpawnX = 0.0f; // Punto de referencia (Checkpoint 0)
@@ -59,4 +60,16 @@ public:
     *
     * */
     void addSelectCar(int carType);
+
+    /*
+    * Agrega un auto NPC estático al mundo Box2D
+    *
+    * */
+    void addStaticNpcCar(int carType, Vector2D<float> basePosition);
+
+    /*
+    * Devuelve los NPCs estáticos
+    *
+    * */
+    std::vector<std::shared_ptr<Car>>& getStaticNpcs();
 };

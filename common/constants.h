@@ -129,6 +129,26 @@ namespace  Constants {
     static constexpr int CIVIC = 6;
     static constexpr int TRUCK = 7;
 
+
+    // npcs constantes
+
+    // npc estaticos
+    static constexpr int STATIC_NPC_MAX_SPEED = 0.0f;
+    static constexpr int STATIC_NPC_MAX_REVERSE_SPEED = 0.0f;
+    static constexpr int STATIC_NPC_ACCELERATION = 0.0f;
+    static constexpr int STATIC_NPC_CONTROL = 0.0f;
+    static constexpr int STATIC_NPC_HEALTH = 9999.0f;
+    static constexpr float STATIC_NPC_FRICTION = 0.0f;
+    static constexpr float STATIC_NPC_WEIGHT = 6.0f;
+    
+    // npc dinamicos
+    static constexpr int DYNAMIC_NPC_MAX_SPEED = 40.0f;
+    static constexpr int DYNAMIC_NPC_ACCELERATION = 30.0f;
+    static constexpr int DYNAMIC_NPC_CONTROL = 20.0f;
+    static constexpr int DYNAMIC_NPC_HEALTH = 9999.0f;
+    static constexpr float DYNAMIC_NPC_FRICTION = 0.5f;
+    static constexpr float DYNAMIC_NPC_WEIGHT = 6.0f;
+
     // cuando este el yaml habria que poner ahi los valores de los autos hardcodeados
 
     // renderizado con fisica en metros

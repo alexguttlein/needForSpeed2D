@@ -1,0 +1,50 @@
+npcs:
+
+  - id: 1001 
+    carType: 1
+    position:
+      x: 15.0
+      y: 10.5
+    #angle: 90.0 
+    
+
+  - id: 1002
+    carType: 2
+    position:
+      x: 20.2
+      y: 11.0
+    #angle: 0.0 
+   
+
+  - id: 1003
+    carType: 6  
+    position:
+      x: 35.0
+      y: 5.5
+    #angle: 180.0 
+
+  - id: 1004
+    carType: 3  
+    position:
+      x: 40.0
+      y: 5.0
+    #angle: 180.0 
+
+
+  - id: 1005
+    carType: 1  
+    position:
+      x: 60.0
+      y: 5.5
+    #angle: 180.0     
+    
+
+
+  # # NPC en Movimiento (Para futura implementación)
+  # - id: 2001
+  #   carType: 99
+  #   position:
+  #     x: 4.0
+  #     y: 40.0
+  #   angle: 0.0
+  #   isMoving: true # Flag para distinguir

@@ -82,6 +82,62 @@ void RaceBuilder::addSelectCar(int carType) {
 }
 
 
+// fijarse que aparezcan bien porque creo que esta seteado que aparezcan apanzados
+void RaceBuilder::addStaticNpcCar(int carType, Vector2D<float> basePosition) {
+    std::shared_ptr<Car> car;
+    switch (carType) {
+
+        case Constants::FORD:
+            car =  std::make_shared<Car>(world, basePosition, Constants::STATIC_NPC_ACCELERATION,
+                Constants::STATIC_NPC_CONTROL, Constants::STATIC_NPC_WEIGHT,
+                Constants::STATIC_NPC_MAX_SPEED, Constants::STATIC_NPC_MAX_REVERSE_SPEED,
+                Constants::STATIC_NPC_HEALTH, 1.20f / 2.0f, 1.28f / 2.0f);
+            break;
+        case Constants::MAZDA:
+            car =  std::make_shared<Car>(world, basePosition, Constants::STATIC_NPC_ACCELERATION,
+                Constants::STATIC_NPC_CONTROL, Constants::STATIC_NPC_WEIGHT,
+                Constants::STATIC_NPC_MAX_SPEED, Constants::STATIC_NPC_MAX_REVERSE_SPEED,
+                Constants::STATIC_NPC_HEALTH, 1.55f/2.0f,1.64f/2.0f);
+            break;
+        case Constants::CORROLLA:
+            car =  std::make_shared<Car>(world, basePosition, Constants::STATIC_NPC_ACCELERATION,
+                Constants::STATIC_NPC_CONTROL, Constants::STATIC_NPC_WEIGHT,
+                Constants::STATIC_NPC_MAX_SPEED, Constants::STATIC_NPC_MAX_REVERSE_SPEED,
+                Constants::STATIC_NPC_HEALTH, 1.45f/2.0f,1.64f/2.0f);
+            break;
+        case Constants::BMW:
+            car =  std::make_shared<Car>(world, basePosition, Constants::STATIC_NPC_ACCELERATION,
+                Constants::STATIC_NPC_CONTROL, Constants::STATIC_NPC_WEIGHT,
+                Constants::STATIC_NPC_MAX_SPEED, Constants::STATIC_NPC_MAX_REVERSE_SPEED,
+                Constants::STATIC_NPC_HEALTH, 1.48f/2.0f,1.68f/2.0f);
+            break;
+        case Constants::JEEP:
+            car =  std::make_shared<Car>(world, basePosition, Constants::STATIC_NPC_ACCELERATION,
+                Constants::STATIC_NPC_CONTROL, Constants::STATIC_NPC_WEIGHT,
+                Constants::STATIC_NPC_MAX_SPEED, Constants::STATIC_NPC_MAX_REVERSE_SPEED,
+                Constants::STATIC_NPC_HEALTH, 1.48f/2.0f,1.68f/2.0f);
+            break;
+        case Constants::CIVIC:
+            car =  std::make_shared<Car>(world, basePosition, Constants::STATIC_NPC_ACCELERATION,
+                Constants::STATIC_NPC_CONTROL, Constants::STATIC_NPC_WEIGHT,
+                Constants::STATIC_NPC_MAX_SPEED, Constants::STATIC_NPC_MAX_REVERSE_SPEED,
+                Constants::STATIC_NPC_HEALTH, 1.48f/2.0f,1.64f/2.0f);
+            break;
+        case Constants::TRUCK:
+            car =  std::make_shared<Car>(world, basePosition, Constants::STATIC_NPC_ACCELERATION,
+                Constants::STATIC_NPC_CONTROL, Constants::STATIC_NPC_WEIGHT,
+                Constants::STATIC_NPC_MAX_SPEED, Constants::STATIC_NPC_MAX_REVERSE_SPEED,
+                Constants::STATIC_NPC_HEALTH, 1.77f/2.0f,2.04f/2.0f);
+            break;    
+        default:
+            std::cerr << "Tipo de auto desconocido para NPC estático: " << carType << std::endl;
+            return;
+    }
+    std::cout << "Auto NPC estático agregado de tipo: " << carType << std::endl;
+    staticNpcs.push_back(car);
+}
+
+
 b2WorldId RaceBuilder::getWorld() const {
     return world;
 }
@@ -89,4 +145,9 @@ b2WorldId RaceBuilder::getWorld() const {
 
 std::vector<std::shared_ptr<Car>>& RaceBuilder::getCars() {
     return cars;
+}
+
+
+std::vector<std::shared_ptr<Car>>& RaceBuilder::getStaticNpcs() {
+    return staticNpcs;
 }

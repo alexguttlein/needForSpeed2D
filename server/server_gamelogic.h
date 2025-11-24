@@ -14,6 +14,7 @@
 #include "server_racelogic.h"
 #include "box2d/box2d.h"
 #include "mapSetObjects.h"
+#include "npcData.h"
 
 
 #include <map> 
@@ -42,7 +43,11 @@ private:
     MapSetObjects mapSetObjects;
     RaceLogic raceLogic;
     b2WorldId world;
+
     std::map<int, std::shared_ptr<Car>> cars;
+    std::map<int ,std::shared_ptr<Car>> staticNpcs; // NPCs estáticos en el mapa
+    std::vector<NPCData> npcsData;
+    
     int lastCommandPlayerId = 0;
 
     std::map<int, bool> hasSelectedUpgrade;
@@ -87,6 +92,12 @@ public:
     void addCar(int playerId, int carType);
 
     /*
+    * Carga los NPCs estáticos definidos en el mapa
+    *
+    * */
+    void loadStaticNpcs();
+
+    /*
     * Verifica y maneja las colisiones entre autos
     *
     * */
@@ -127,6 +138,12 @@ public:
     *
     * */
     void resetFinishRace();
+
+    /*
+    * Resetea la posición de los NPCs estáticos para la siguiente carrera
+    *
+    * */
+    void resetNpcs();
 
     /*
     * Simula la lógica de la carrera cuando está en progreso

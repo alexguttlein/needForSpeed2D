@@ -5,6 +5,7 @@ GameLogic::GameLogic(){
     world = raceBuilder.getWorld();
     auto objects = mapLoader.loadCollidersFromYaml("server/Mapa1-nfs.yaml");
     mapSetObjects.createBodiesFromObjects(world, objects);
+    loadStaticNpcs();
 }
 
 
@@ -143,6 +144,16 @@ void GameLogic::addCar(int playerId, int carType) {
     std::shared_ptr<Car> newCar = raceBuilder.getCars().back();
     cars[playerId] = newCar;
    
+}
+
+
+void GameLogic::loadStaticNpcs() {
+    npcsData = YamlLoader::loadNPCsFromYaml("server/npcs.yaml"); 
+    for (const auto& npc : npcsData) {
+        raceBuilder.addStaticNpcCar(npc.carType, Vector2D<float>{npc.x, npc.y}); // podriamos pasar el angulo? ver despues
+         std::shared_ptr<Car> npcCar = raceBuilder.getStaticNpcs().back();
+        staticNpcs[npc.id] = npcCar;
+    }
 }
 
 
@@ -302,6 +313,20 @@ void GameLogic::resetFinishRace(){
                 car->clearUpgradeEffects();
                 raceLogic.addPlayer(playerId); 
             }
+        }
+        resetNpcs();
+    }
+}
+
+
+void GameLogic::resetNpcs(){
+    for (const auto& npc : npcsData) {
+        auto it = staticNpcs.find(npc.id);
+        if (it != staticNpcs.end()) {
+            std::shared_ptr<Car> npcCar = it->second;
+            Vector2D<float> spawnPos{npc.x, npc.y};
+            npcCar->setPosition(spawnPos); 
+            npcCar->resetVelocity(); 
         }
     }
 }

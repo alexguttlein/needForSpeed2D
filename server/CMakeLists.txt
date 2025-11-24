@@ -38,4 +38,5 @@ target_sources(taller_server
     mapSetObjects.h
     yamlLoader.h
     leaderBoard.h
+    npcData.h
     )
