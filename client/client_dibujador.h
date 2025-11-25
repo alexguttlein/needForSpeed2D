@@ -24,7 +24,7 @@ public:
     ClientDibujador(SDL_Renderer* r, int winW, int winH);
     ~ClientDibujador();
 
-    bool loadMap(const std::string& pathPng, const std::string& pathOverPng);
+    bool loadMap(const std::string& pathPng, const std::string& pathPngOver);
     bool setUIFont(const std::string& ttfPath, int size = 16);
 
     void setFacingDeg(float deg) { facingDeg = deg; }

@@ -191,7 +191,7 @@ bool Client::sendLobbyOption(const std::string& option, const std::string& name,
 }
 
 void Client::loadTexturesAndAssets_(ClientDibujador& dib) {
-    if (!dib.loadMap("assets/need-for-speed/cities/Liberty.png")) {
+    if (!dib.loadMap("assets/need-for-speed/cities/Liberty.png", "assets/need-for-speed/cities/Liberty_BRIDGES.png")) {
         std::fprintf(stderr, "No pude cargar assets/maps/iberty.png\n");
     }
     for(int i = 1; i <=7; ++i) {
