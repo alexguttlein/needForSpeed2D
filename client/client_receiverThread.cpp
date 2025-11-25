@@ -13,6 +13,7 @@ void ReceiverThread::run() {
             // EventType eventType = snapshot.controlEvent;
             switch (snapshot.controlEvent) {
                 case EventType::CREATE_JOIN_ACCEPTED: {
+                    std::cout << "debug: client push accepted" << std::endl;
                     eventQueue.push(Event(EventType::CREATE_JOIN_ACCEPTED,
                     std::to_string(snapshot.playerId)));
                     continue;
@@ -26,6 +27,12 @@ void ReceiverThread::run() {
                 //     eventQueue.push(Event(EventType::GAME_LIST_RECEIVED,""));
                 //     continue;
                 // }
+                case EventType::GAME_START: {
+                    std::cout << "debug: client push start" << std::endl;
+                    eventQueue.push(Event(EventType::GAME_START,
+                    "Iniciando partida..."));
+                    continue;
+                }
                 default: snapshotQueue.push(snapshot);
             }
         }

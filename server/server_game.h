@@ -16,12 +16,12 @@ class Game {
 public:
     explicit Game(int gameId, std::string& gameCreator);
     Queue<std::shared_ptr<Message>>& getSharedQueue();
-
     int totalPlayers;
     void addClientHandler(ClientHandler* client);
     void removeClientHandler(ClientHandler* client);
     ~Game();
     std::string getCreatorsName();
+    void checkGameStart();
 private:
     int gameId;
     Queue<std::shared_ptr<Message>> sharedQueue;

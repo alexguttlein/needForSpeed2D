@@ -171,7 +171,7 @@ void ClientQtManager::setupCreateButton(LobbyMenuWindow* lobby) {
             return;
         }
 
-        auto* waiting = new WaitingWindow(client->getEventQueue());
+        auto* waiting = new WaitingWindow();
         waiting->show();
         lobby->hide();
 
@@ -179,13 +179,16 @@ void ClientQtManager::setupCreateButton(LobbyMenuWindow* lobby) {
             Event event = client->getEventQueue().pop();
 
             QMetaObject::invokeMethod(waiting, [lobby, waiting, event, this]() {
-                waiting->close();
                 if (event.type == EventType::CREATE_JOIN_ACCEPTED) {
                     if (!event.message.empty()) {
                         client->setSelfId(std::stoi(event.message));
                         qDebug() << "Client selfId set to:" << std::stoi(event.message);
                     }
                     lobby->close();
+                } else if (event.type == EventType::GAME_START) {
+                    waiting->close();
+                    lobby->close();
+                    client->changePlayingStatus();
                 } else {
                     QMessageBox::information(lobby, Constants::ERROR_TXT.data(),
                         Constants::NO_PUDO_CREAR_PARTIDA.data());
@@ -240,13 +243,20 @@ void ClientQtManager::setupJoinButton(LobbyMenuWindow* lobby) {
                 (void)QtConcurrent::run([this, lobby, waiting]() {
                     Event event = client->getEventQueue().pop();
                     QMetaObject::invokeMethod(waiting, [lobby, waiting, event, this]() {
-                        waiting->close();
+                        // waiting->close();
                         if (event.type == EventType::CREATE_JOIN_ACCEPTED) {
                             if (!event.message.empty()) {
                                 client->setSelfId(std::stoi(event.message));
                                 qDebug() << "Client selfId set to:" << std::stoi(event.message);
                             }
+                            // lobby->close();
+                        } else if (event.type == EventType::GAME_START) {
+                            std::cout << "debug: se cierra waiting" << std::endl;
+                            waiting->close();
+                            std::cout << "debug: se cierra lobby" << std::endl;
                             lobby->close();
+                            std::cout << "debug: se cambia playing" << std::endl;
+                            client->changePlayingStatus();
                         } else {
                             QMessageBox::warning(lobby, Constants::ERROR_TXT.data(),
                                 Constants::NO_PUDO_UNIR_PARTIDA.data());

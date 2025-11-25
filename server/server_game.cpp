@@ -14,6 +14,17 @@ Queue<std::shared_ptr<Message>>& Game::getSharedQueue() {
     return sharedQueue;
 }
 
+void Game::checkGameStart() {
+    // se informa a los clientes que va a comenzar la partida
+    std::cout << "debug: checkgamestart en game -> " << gameId << std::endl;
+    for (auto* q : clientQueues) {
+        auto snapshot = std::make_shared<Snapshot>();
+        snapshot->controlEvent = EventType::GAME_START;
+        std::cout << "debug: enviando start a queue: " << q << std::endl;
+        q->push(snapshot);
+    }
+}
+
 void Game::addClientHandler(ClientHandler* client) {
     std::lock_guard<std::mutex> lock(mtx);
     clientHandlers.push_back(client);
@@ -25,12 +36,15 @@ void Game::addClientHandler(ClientHandler* client) {
 
     // si alcanzamos el número de jugadores, arrancamos GameLoop si aún no arrancó
     if ((int)clientQueues.size() >= Constants::MAX_PLAYERS_IN_GAME && !gameloop) {
+        std::cout << "debug: se conectaron todos" << std::endl;
+
         // como se conectaron todos los usuarios,
         // gameLoop acepta la queue compartida, el vector de queues privadas y el mutex de clientes
         gameloop = std::make_unique<GameLoop>(sharedQueue, clientQueues, clientHandlers, mtx, this);
 
         for (auto* handler : clientHandlers)
             gameloop->addPlayer(handler->getId());
+
         gameloop->start();
     }
 }

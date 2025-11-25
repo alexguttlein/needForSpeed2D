@@ -90,6 +90,7 @@ void ReceiverThread::lobbyCommands(Message msg) {
 
         // registrar Cliente en la partida para que Game conozca su queue privada
         bool regOk = gameMonitor.registerClientToGame(joinId, &clientHandler);
+        gameMonitor.checkGameStart(joinId);
         if (!regOk) {
             std::cerr << "Error: no se pudo registrar client en game " << joinId << std::endl;
             protocol.sendControl(Constants::JOIN_REJECTED);

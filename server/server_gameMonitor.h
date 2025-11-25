@@ -26,6 +26,7 @@ public:
     std::vector<std::pair<int,int>> listGames();
     void unregisterClientFromGame(int id, ClientHandler* client);
     std::string getGameCreator(int gameId);
+    void checkGameStart(int gameId);
 };
 
 #endif //SERVER_GAMEMONITOR_H

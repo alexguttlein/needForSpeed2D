@@ -29,6 +29,7 @@
         std::atomic<bool> shuttingDown{false};
         std::string playerName;
         int carId;
+        bool isPlaying;
 
     public:
         /*
@@ -63,5 +64,6 @@
         Queue<std::shared_ptr<Snapshot>>& getClientQueue();
         void setPlayerName(const std::string& string);
         void setCarId(int carId);
+        void startGame();
     };
     #endif //CLIENTHANDLER_H

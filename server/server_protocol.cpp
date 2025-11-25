@@ -1,12 +1,9 @@
 #include "server_protocol.h"
-
 #include "common/constants.h"
 #include "common/eventType.h"
 
-
 ServerProtocol::ServerProtocol(Socket socket) :
     socket(std::move(socket)) , isClosed(false) {}
-
 
 void ServerProtocol::closeSocket() {
     if (isConnectionClosed()) return;
@@ -14,11 +11,9 @@ void ServerProtocol::closeSocket() {
     socket.close();
 }
 
-
 bool ServerProtocol::isConnectionClosed() const {
     return socket.is_stream_send_closed() || socket.is_stream_recv_closed();
 }
-
 
 Message ServerProtocol::receiveMessage() {
     Message message;
@@ -81,7 +76,6 @@ void ServerProtocol::appendUInt32(std::vector<uint8_t>& buffer, uint32_t value) 
     buffer.insert(buffer.end(), bytes, bytes + sizeof(be_value));
 }
 
-
 char ServerProtocol::commandToKey(const uint8_t& command) {
     const uint8_t KEY_BITS = command & 0x7F; // Mask to get the lower 7 bits
     try {
@@ -95,12 +89,10 @@ char ServerProtocol::commandToKey(const uint8_t& command) {
     }
 }
 
-
 void ServerProtocol::addIntToUint8tVector(std::vector<uint8_t>& buffer, int value) {
     uint32_t num = static_cast<uint32_t>(value);
     appendBigEndian(buffer, num);
 }
-
 
 template<typename T>
 void ServerProtocol::appendBigEndian(std::vector<uint8_t>& buffer, T value) {
@@ -108,7 +100,6 @@ void ServerProtocol::appendBigEndian(std::vector<uint8_t>& buffer, T value) {
         buffer.push_back(static_cast<uint8_t>((value >> (8 * i)) & 0xFF));
     }
 }
-
 
 void ServerProtocol::sendSnapshot(std::shared_ptr<Snapshot>& snapshot) {
     if (isConnectionClosed()) return;
@@ -188,7 +179,6 @@ void ServerProtocol::sendSnapshot(std::shared_ptr<Snapshot>& snapshot) {
     socket.sendall(buffer.data(), buffer.size());
 }
 
-
 void ServerProtocol::sendControl(uint8_t code) {
     if (isConnectionClosed()) return;
     std::vector<uint8_t> buffer;
@@ -197,7 +187,6 @@ void ServerProtocol::sendControl(uint8_t code) {
     buffer.push_back(code); //se agrega el codigo de control
     socket.sendall(buffer.data(), buffer.size());
 }
-
 
 void ServerProtocol::sendGamesList(uint8_t& type, const std::vector<unsigned char>& vector) {
     if (socket.is_stream_send_closed()) return;
@@ -213,8 +202,13 @@ void ServerProtocol::sendGamesList(uint8_t& type, const std::vector<unsigned cha
     socket.sendall(buffer.data(), buffer.size());
 }
 
-
 void ServerProtocol::sendCreateJoinAccepted(std::vector<uint8_t>& buffer) {
+    if (isConnectionClosed()) return;
+    socket.sendall(buffer.data(), buffer.size());
+}
+
+void ServerProtocol::sendGameStart(const std::vector<uint8_t>& buffer) {
+    std::cout << "debug: se envia game start desde server" << std::endl;
     if (isConnectionClosed()) return;
     socket.sendall(buffer.data(), buffer.size());
 }

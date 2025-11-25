@@ -11,7 +11,7 @@ WaitingWindow::WaitingWindow(QWidget* parent)
     setWindowTitle("Waiting for Players...");
     resize(800, 600);
 
-    QPixmap bg("/home/alex/Documents/TP-Final-Taller_2C2025/v2.1/TP-Taller-G7/assets/need-for-speed/lobbyImg/wall3.jpg");
+    QPixmap bg("assets/need-for-speed/lobbyImg/wall3.jpg");
     if (!bg.isNull()) {
         bg = bg.scaled(size(), Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
         QPalette pal;

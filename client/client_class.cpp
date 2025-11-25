@@ -25,6 +25,9 @@ void Client::run() {
 
     std::cout << "debug: auto elegido = " << selectedCarId << std::endl;
 
+    // si no se inicio una partida, no abre SDL
+    if (!playing) return;
+
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         std::fprintf(stderr, "SDL_Init error: %s\n", SDL_GetError());
         return;
@@ -171,4 +174,8 @@ int Client::getSelfId() const {
 
 bool Client::sendLobbyOption(const std::string& option, const std::string& name, const int& carId) {
     return protocol.sendLobbyOption(option, name, carId);
+}
+
+void Client::changePlayingStatus() {
+    playing = !playing;
 }
