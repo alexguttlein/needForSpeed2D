@@ -327,6 +327,8 @@ std::vector<NPCData> YamlLoader::loadNPCsFromYaml(const std::string& filepath) {
     std::cout << "[NPCLoader] Total de NPCs cargados y válidos: " << npcs.size() << std::endl;
     return npcs;
 }
+
+
 std::unordered_map<int, RaceSpawnData> YamlLoader::loadRaceSpawnPositions(const std::string& filepath) {
 
     std::unordered_map<int, RaceSpawnData> result;

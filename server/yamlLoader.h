@@ -45,11 +45,13 @@ public:
     * Carga colisionadores desde un archivo YAML y devuelve un vector de MapObject.
     *
     * */
-    //static std::vector<MapObject> loadCollidersFromYaml(const std::string& filepath);
     static std::vector<MapObject> loadCollidersFromYaml(const std::string& filepath);
+    
+    /*
+    * Carga posiciones de spawn para carreras desde un archivo YAML y devuelve un mapa de RaceSpawnData.
+    *
+    * */
     std::unordered_map<int, RaceSpawnData> loadRaceSpawnPositions(const std::string& filepath);
-
-
 
     /*
     * Carga NPCs desde un archivo YAML y devuelve un vector de NPCData.

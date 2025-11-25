@@ -171,6 +171,11 @@ public:
     * 
     * */
     Leaderboard getLeaderBoard() const;
+
+    /*
+    * Devuelve la posición de spawn para un jugador según su índice
+    *
+    * */
     Vector2D<float> getSpawnPositionForPlayer(int playerIndex);
 };
 #endif // SERVER_RACELOGIC_H

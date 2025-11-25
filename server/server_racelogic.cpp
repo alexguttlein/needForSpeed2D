@@ -295,6 +295,8 @@ Leaderboard RaceLogic::getLeaderBoard() const {
     std::sort(leaderboard.begin(), leaderboard.end(), compareByTime);
     return leaderboard;
 }
+
+
 Vector2D<float> RaceLogic::getSpawnPositionForPlayer(int playerIndex) {
     auto it = spawnData.find(currentRaceId);
 
