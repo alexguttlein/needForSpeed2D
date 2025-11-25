@@ -22,18 +22,37 @@ ClientDibujador::~ClientDibujador() {
 }
 
 SDL_Texture* ClientDibujador::loadTexture_(const std::string& path) {
-    SDL_Texture* tex = IMG_LoadTexture(ren, path.c_str());
-    if (!tex) {
-        SDL_Log("IMG_LoadTexture('%s'): %s", path.c_str(), IMG_GetError());
-        return nullptr;
-    }
+
+    SDL_Surface* surf = IMG_Load(path.c_str());
+    if (!surf) return nullptr;
+
+    SDL_Texture* tex = SDL_CreateTextureFromSurface(ren, surf);
+    SDL_FreeSurface(surf);
+
+    // 🔥 Esto es lo que habilita el canal alfa del PNG
+    SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
+
     return tex;
 }
 
-bool ClientDibujador::loadMap(const std::string& pathPng) {
+bool ClientDibujador::loadMap(const std::string& pathPng, const std::string& pathPngOver) {
+
+    // Cargar mapa base
     mapTex = loadTexture_(pathPng);
     if (!mapTex) return false;
+
+    mapOverTex = loadTexture_(pathPngOver);
+    if (!mapTex) return false;
+
     SDL_QueryTexture(mapTex, nullptr, nullptr, &mapW, &mapH);
+
+    // Cargar capa superior (puentes)
+    if (!pathPngOver.empty()) {
+        mapOverTex = loadTexture_(pathPngOver);
+        // mapOverTex puede ser null si no existe,
+        // no hacemos return false para que sea opcional.
+    }
+
     return true;
 }
 
@@ -176,6 +195,16 @@ void ClientDibujador::renderFrame(int playerX, int playerY) {
         SDL_RenderCopy(ren, carTex, &s, &d);
     }
 
+    if (mapOverTex) {
+        SDL_Rect src{ camX, camY, winW, winH };
+        SDL_Rect dst{ 0, 0, winW, winH };
+
+        SDL_SetTextureBlendMode(mapOverTex, SDL_BLENDMODE_BLEND);
+        SDL_SetTextureAlphaMod(mapOverTex, 255);   // Cambiá este valor a gusto (0-255)
+
+        SDL_RenderCopy(ren, mapOverTex, &src, &dst);
+    }
+
     SDL_RenderPresent(ren);
 }
 
@@ -246,6 +275,16 @@ void ClientDibujador::renderAll(const std::vector<CarStateDTO>& cars, int selfId
             };
             SDL_RenderCopy(ren, carTex, &s, &d);
         }
+    }
+
+    if (mapOverTex) {
+        SDL_Rect src{ camX, camY, winW, winH };
+        SDL_Rect dst{ 0, 0, winW, winH };
+
+        SDL_SetTextureBlendMode(mapOverTex, SDL_BLENDMODE_BLEND);
+        SDL_SetTextureAlphaMod(mapOverTex, 255);   // Cambiá este valor a gusto (0-255)
+
+        SDL_RenderCopy(ren, mapOverTex, &src, &dst);
     }
 
     drawCheckpoint_();

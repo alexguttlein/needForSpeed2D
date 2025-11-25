@@ -15,6 +15,7 @@
 #include <sstream>
 #include <algorithm>
 #include <cctype>
+#include "server/raceSpawnData.h"
 
 
 class YamlLoader {
@@ -44,7 +45,11 @@ public:
     * Carga colisionadores desde un archivo YAML y devuelve un vector de MapObject.
     *
     * */
+    //static std::vector<MapObject> loadCollidersFromYaml(const std::string& filepath);
     static std::vector<MapObject> loadCollidersFromYaml(const std::string& filepath);
+    std::unordered_map<int, RaceSpawnData> loadRaceSpawnPositions(const std::string& filepath);
+
+
 
     /*
     * Carga NPCs desde un archivo YAML y devuelve un vector de NPCData.
