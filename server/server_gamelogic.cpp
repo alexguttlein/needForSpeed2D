@@ -5,7 +5,7 @@ GameLogic::GameLogic(){
     world = raceBuilder.getWorld();
     auto objects = mapLoader.loadCollidersFromYaml("server/Mapa1-nfs.yaml");
     mapSetObjects.createBodiesFromObjects(world, objects);
-    loadStaticNpcs();
+    //loadStaticNpcs();
 }
 
 
@@ -315,6 +315,7 @@ void GameLogic::resetFinishRace(){
             }
         }
         resetNpcs();
+        resetRaceTemporizer(); // Resetea el temporizador para la siguiente carrera
     }
 }
 
@@ -363,7 +364,7 @@ void GameLogic::simulateRacePhysics(const float dt, int currentTick) {
         car->applyMovement();
         car->applyFriction(); 
     }
-    checkFinishGameByTime(currentTick);
+    checkFinishRaceByTime(currentTick);
     b2World_Step(world, dt, 4);
     checkCollisions(); // Verificar colisiones después de actualizar la física
 }
@@ -397,11 +398,30 @@ void GameLogic::finishGame() {
 }
 
 
-void GameLogic::checkFinishGameByTime(int currentTick) {
-    if (currentTick >= Constants::MAX_TICKS) {
-        std::cout << "Tiempo máximo de la partida alcanzado. Finalizando juego..." << std::endl;
-        finishGame();
+void GameLogic::checkFinishRaceByTime(int currentTick) {
+    
+    if (lastTickChecked == 0 || currentTick < lastTickChecked) {
+        lastTickChecked = currentTick;
+        return; 
     }
+
+    int ticksPassed = currentTick - lastTickChecked;
+    lastTickChecked = currentTick;
+
+    if (remainingFinishTicks > 0) {
+        remainingFinishTicks -= ticksPassed;
+    }
+    
+    if(remainingFinishTicks <= 0){
+        std::cout << "Tiempo máximo de la carrera alcanzado. Finalizando la carrera..." << std::endl;
+        finishGame(); 
+    }
+}
+
+
+void GameLogic::resetRaceTemporizer() {
+    remainingFinishTicks = Constants::MAX_TICKS;
+    lastTickChecked = 0;
 }
 
 

@@ -35,6 +35,10 @@ private:
     
     int raceStartTick = 0;
     int transitionStartTick = 0;
+    int remainingFinishTicks = Constants::MAX_TICKS;
+    int lastTickChecked = 0;
+
+
     RaceState raceState = IN_PROGRESS;
 
     YamlLoader mapLoader;
@@ -176,10 +180,16 @@ public:
     void finishGame();
 
     /*
-    * Verifica si se debe finalizar el juego por tiempo y actualiza el estado
+    * Verifica si se debe finalizar una carrera por tiempo y actualiza el estado
     * si en 10 minutos no se han terminado una carrera finaliza el game.
     * */
-    void checkFinishGameByTime(int currentTick);
+    void checkFinishRaceByTime(int currentTick);
+
+    /*
+    * Resetea el temporizador para la siguiente carrera
+    *
+    * */
+    void resetRaceTemporizer();
 
     ~GameLogic();
 };
