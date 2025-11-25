@@ -119,14 +119,15 @@ std::shared_ptr<Snapshot> GameLogic::getSnapshot(EventType controlEvent) const {
     for (auto const& [id, car] : cars) {
         CarStateDTO dto;
         dto.car_id   = id;
+        dto.car_type_id = car->getCarType();
         dto.currentUpgradeId = car->getCurrentUpgradeId();
         dto.health   = car->getHealth();
         dto.position = car->getPosition();
         dto.angle    = car->getDirection();
-        dto.speed    = car->getSpeed();
+        dto.speed    = car->getSpeed();       
         snapshot->cars.push_back(dto);
     }
-
+    
     snapshot->raceFinished = allFinished;
 
     if(raceState == GAME_OVER){

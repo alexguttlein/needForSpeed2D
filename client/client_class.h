@@ -11,6 +11,7 @@
 #include "client_protocol.h"
 #include "client_receiverThread.h"
 #include "client_senderThread.h"
+#include "client_dibujador.h"
 #include <SDL.h>
 #include "../common/eventType.h"
 #include "commandMessage.h"
@@ -40,6 +41,8 @@ private:
     std::atomic<int> selfId{-1};
     int selectedCarId = -1;
     std::string playerName;
+
+    void loadTexturesAndAssets_(ClientDibujador& dib);
 };
 
 #endif //CLIENT_H

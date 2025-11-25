@@ -133,6 +133,9 @@ void ServerProtocol::sendSnapshot(std::shared_ptr<Snapshot>& snapshot) {
         // car_id (int, típicamente 4 bytes)
         addIntToUint8tVector(buffer, carState.car_id);
 
+        // car_type_id (int, típicamente 4 bytes)
+        addIntToUint8tVector(buffer, carState.car_type_id);
+
         // currentUpgradeId (int, típicamente 4 bytes)
         addIntToUint8tVector(buffer, carState.currentUpgradeId);
         

@@ -8,6 +8,16 @@
 #include "../common/carStateDTO.h"
 #include "../common/constants.h"
 #include "../common/raceStateDTO.h"
+#include "../server/leaderBoard.h"
+#include <unordered_map>
+
+struct CarAtlas {
+    SDL_Texture* tex = nullptr;
+    int cols = 0, rows = 0;
+    int cellW = 0, cellH = 0;
+    float angle0 = 0.f;
+    bool clockwise = true;
+};
 
 class ClientDibujador {
 public:
@@ -15,18 +25,15 @@ public:
     ~ClientDibujador();
 
     bool loadMap(const std::string& pathPng);
-    bool loadCarAtlas(const std::string& pathPng, int cols = 8, int rows = 2,
-                      float angle0Deg = 0.f, bool clockwise = true);
-
     bool setUIFont(const std::string& ttfPath, int size = 16);
 
-    void renderFrame(int playerX, int playerY);
     void setFacingDeg(float deg) { facingDeg = deg; }
 
     void renderAll(const std::vector<CarStateDTO>& cars, int selfId);
     void updateRaceState(const RaceStateDTO& raceState);
+    bool loadCarAtlasForId(int carTypeId, const std::string& pathPng,
+                           int cols, int rows, float angle0Deg, bool cw);
 
-    void setHUDPosition(int pos)            { hudPos_ = pos; }
     void setHUDSpeedKph(float kph)          { hudSpeedKph_ = kph; }
     void setHUDHp(int hp, int maxHp)        { hudHp_ = hp; hudMaxHp_ = maxHp; }
 
@@ -34,13 +41,19 @@ public:
     bool loadHint(const std::string& pathPng);
 
     void setRaceFinished(bool finished, const std::vector<RaceStateDTO>& standings);
+    
+    void showUpgradePopup(int upgradeId);
+    void hideUpgradePopup();
+    bool isUpgradePopupVisible() const { return showUpgradePopup_; }
+    
+    void setGameFinished(bool finished, const std::vector<PlayerTime>& leaderboard);
+    bool isGameFinished() const { return gameFinished_; }
 
     Vector2D<float> hudNextCheckpoint_{};               
     std::vector<Vector2D<float>> hudHints_{};
 
 private:
     SDL_Texture* loadTexture_(const std::string& path);
-    int frameForAngle_(float angleDeg) const;
     void updateCamera_(int playerX, int playerY);
 
     void drawHUD_();
@@ -63,7 +76,16 @@ private:
     void renderResultsBackground_();
     void renderResultsTablePanel_(const SDL_Rect& tableRect);
     void renderResultsUpgradesPanel_(const SDL_Rect& panelRect);
+    
+    void renderUpgradePopup_();
+    std::string getUpgradeName_(int upgradeId) const;
+    std::string getUpgradeDescription_(int upgradeId) const;
+    
+    void renderGameOver_();
 
+    const CarAtlas* atlasFor(int carTypeId) const;
+
+    int frameForAngle_(float angleDeg, const CarAtlas& atlas) const;
 
     SDL_Renderer* ren;
     int winW, winH;
@@ -82,8 +104,8 @@ private:
     float facingDeg = 0.0f;
     int lastX = -1, lastY = -1;
 
-    int   hudPos_       = 1;      
-    int   hudPlayers_   = 2; 
+    int   currentRace = 1;      
+    int   raceMax   = 2; 
     int   hudHp_        = 100;     // vida actual
     int   hudMaxHp_     = 100;    // vida máxima
     float hudSpeedKph_  = 128.f;  // velocidad simulada (km/h)
@@ -105,7 +127,15 @@ private:
     bool raceFinished_ = false;
     std::vector<RaceStateDTO> finalStandings_; 
     Uint32 resultsStartTicks_ = 0;
+    
+    bool showUpgradePopup_ = false;
+    int selectedUpgradeId_ = 0;
+    Uint32 upgradePopupStartTicks_ = 0;
+    
+    bool gameFinished_ = false;
+    std::vector<PlayerTime> finalLeaderboard_;
 
+    std::unordered_map<int, CarAtlas> carAtlases_;
 };
 
 #endif // TP_TALLER_G7_CLIENT_DIBUJADOR_H

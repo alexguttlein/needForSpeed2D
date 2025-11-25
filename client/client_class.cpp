@@ -56,20 +56,7 @@ void Client::run() {
 
     ClientDibujador dib(ren, W, H);
 
-    if (!dib.loadMap("assets/need-for-speed/cities/Liberty.png")) {
-        std::fprintf(stderr, "No pude cargar assets/maps/iberty.png\n");
-    }
-
-    char carPath[256];
-    std::sprintf(carPath, "assets/need-for-speed/cars/auto-%d.png", selectedCarId+1);
-
-    if (!dib.loadCarAtlas(carPath, 8, 2, 0.0f, true)) {
-        std::fprintf(stderr, "No pude cargar atlas del auto\n");
-    }
-
-    dib.setUIFont("assets/ui/FreeSans.ttf", 16);
-    dib.loadCheckpoint("assets/ui/checkpoint.png");
-    dib.loadHint("assets/ui/hint.png");
+    loadTexturesAndAssets_(dib);
     dib.setFacingDeg(0.0f);
     bool running = true;
     //CAMBIAR
@@ -94,10 +81,22 @@ void Client::run() {
                     case SDLK_s: commandQueue.push({ SDLK_s, true }); break;
                     case SDLK_a: commandQueue.push({ SDLK_a, true }); break;
                     case SDLK_d: commandQueue.push({ SDLK_d, true }); break;
-                    case SDLK_1: commandQueue.push({ SDLK_1, true }); break;
-                    case SDLK_2: commandQueue.push({ SDLK_2, true }); break;
-                    case SDLK_3: commandQueue.push({ SDLK_3, true }); break;
-                    case SDLK_4: commandQueue.push({ SDLK_4, true }); break;
+                    case SDLK_1: 
+                        commandQueue.push({ SDLK_1, true });
+                        dib.showUpgradePopup(1);
+                        break;
+                    case SDLK_2: 
+                        commandQueue.push({ SDLK_2, true });
+                        dib.showUpgradePopup(2);
+                        break;
+                    case SDLK_3: 
+                        commandQueue.push({ SDLK_3, true });
+                        dib.showUpgradePopup(3);
+                        break;
+                    case SDLK_4: 
+                        commandQueue.push({ SDLK_4, true });
+                        dib.showUpgradePopup(4);
+                        break;
                 }
             }
             else if (e.type == SDL_KEYUP) {
@@ -137,11 +136,18 @@ void Client::run() {
                 dib.updateRaceState(*myRace);
             }
 
+            if (snapshot.gameFinished) {
+                dib.setGameFinished(true, snapshot.leaderboards);
+            }
+            
             if (snapshot.raceFinished && !lastRaceFinished) {
                 dib.setRaceFinished(true, snapshot.raceStates);
             }
             if (!snapshot.raceFinished && lastRaceFinished) {
                 dib.setRaceFinished(false, {});
+                if (dib.isUpgradePopupVisible()) {
+                    dib.hideUpgradePopup();
+                }
             }
             lastRaceFinished = snapshot.raceFinished;
             dib.renderAll(snapshot.cars, selfId.load());
@@ -182,4 +188,19 @@ int Client::getSelfId() const {
 
 bool Client::sendLobbyOption(const std::string& option, const std::string& name, const int& carId) {
     return protocol.sendLobbyOption(option, name, carId);
+}
+
+void Client::loadTexturesAndAssets_(ClientDibujador& dib) {
+    if (!dib.loadMap("assets/need-for-speed/cities/Liberty.png")) {
+        std::fprintf(stderr, "No pude cargar assets/maps/iberty.png\n");
+    }
+    for(int i = 1; i <=7; ++i) {
+        std::string path = "assets/need-for-speed/cars/auto-" + std::to_string(i) + ".png";
+        if (!dib.loadCarAtlasForId(i, path, 8, 2, 0.0f, true)) {
+            std::fprintf(stderr, "No pude cargar auto %d desde %s\n", i, path.c_str());
+        }
+    }
+    dib.setUIFont("assets/ui/FreeSans.ttf", 16);
+    dib.loadCheckpoint("assets/ui/checkpoint.png");
+    dib.loadHint("assets/ui/hint.png");
 }

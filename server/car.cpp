@@ -1,11 +1,12 @@
 #include "car.h"
 #include <iostream>
 
-Car::Car(b2WorldId world,Vector2D<float> position, float acceleration, float control,
+Car::Car(b2WorldId world,Vector2D<float> position, int carType, float acceleration, float control,
     float weight, float maxSpeed, float maxReverseSpeed, 
     float health, float height, float width)
     : world(world) 
     , position(position)
+    , carType(carType)
     , acceleration(acceleration)
     , control(control)
     , weight(weight)
@@ -286,4 +287,8 @@ void Car::clearUpgradeEffects() {
 
 int Car::getCurrentUpgradeId() {
     return currentUpgradeId;
+}
+
+int Car::getCarType() const {
+    return carType;
 }
