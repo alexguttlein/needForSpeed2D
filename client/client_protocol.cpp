@@ -172,6 +172,13 @@ std::optional<Snapshot> ClientProtocol::receiveSnapshotFromServer() {
         for (uint32_t r = 0; r < raceCount; ++r) {
             RaceStateDTO rs{};
 
+            // playerName
+            uint16_t nameLenBE = 0;
+            socket.recvall(&nameLenBE, sizeof(nameLenBE));
+            uint16_t nameLen = ntohs(nameLenBE);
+            rs.playerName.resize(nameLen);
+            socket.recvall(rs.playerName.data(), nameLen);
+
             // playerId
             uint32_t playerIdBE = 0;
             socket.recvall(&playerIdBE, sizeof(playerIdBE));

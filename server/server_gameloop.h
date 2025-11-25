@@ -74,7 +74,7 @@ public:
     * Agrega un nuevo jugador al GameLoop
     *
     * */
-    void addPlayer(int playerId, int carId);
+    void addPlayer(int playerId, int carId, const std::string& playerName);
 
     /*
     * Llama a las funciones que simulan el juego

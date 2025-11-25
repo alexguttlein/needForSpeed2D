@@ -59,6 +59,7 @@
         void killClient();
         void assignGameQueue(Queue<std::shared_ptr<Message>>& queue, int gameId);
         int getId() const;
+        std::string getPlayerName() const;
         int getCurrentGameId() const;
         Queue<std::shared_ptr<Snapshot>>& getClientQueue();
         void setPlayerName(const std::string& string);

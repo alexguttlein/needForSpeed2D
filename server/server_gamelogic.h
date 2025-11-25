@@ -93,7 +93,7 @@ public:
     * Agrega un auto al juego para un jugador específico
     *
     * */
-    void addCar(int playerId, int carType);
+    void addCar(int playerId, int carType, const std::string& playerName);
 
     /*
     * Carga los NPCs estáticos definidos en el mapa

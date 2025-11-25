@@ -25,6 +25,7 @@ private:
     std::mutex finishMutex;
     std::map<int, float> finishTimes;
     std::map<int, float> allTimeFinishTimes;
+    std::map<int, std::string> playerNames;
 
     std::vector<Vector2D<float>> actualRaceCheckpoints;
     std::string actualRaceId; // ID del circuito actual
@@ -72,6 +73,18 @@ public:
     *
     * */
     void addPlayer(int playerId);
+
+    /*
+    * Agrega un jugador con su nombre 
+    *
+    * */
+    void addPlayerWithName(int playerId, const std::string& playerName);
+
+    /*
+    * Devuelve el nombre del jugador por su ID
+    *
+    * */
+    std::string getPlayerName(int playerId) const;
 
     /*
     * Remueve un jugador de la partida

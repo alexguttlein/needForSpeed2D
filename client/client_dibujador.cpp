@@ -393,16 +393,17 @@ void ClientDibujador::renderResultsTablePanel_(const SDL_Rect& tableRect) {
         const auto& rs = ordered[i];
         int   pos  = rs.finishPosition;
         float time = rs.finishTimeSeconds;
+        std::string playerName = rs.playerName;
 
         char buffer[128];
         if (time >= 0.0f) {
             std::snprintf(buffer, sizeof(buffer),
-                          "%d) Jugador %d - %.2f s",
-                          pos, rs.playerId, time);
+                          "%d) %s - %.2f s",
+                          pos, playerName.c_str(), time);
         } else {
             std::snprintf(buffer, sizeof(buffer),
-                          "%d) Jugador %d - DNF",
-                          pos, rs.playerId);
+                          "%d) %s - DNF",
+                          pos, playerName.c_str());
         }
         int textX = tableRect.x + 40;
         int textY = startY + static_cast<int>(i) * lineH;

@@ -92,6 +92,10 @@ int ClientHandler::getCarId() const {
     return carId;
 }
 
+std::string ClientHandler::getPlayerName() const {
+    return playerName;
+}
+
 ClientHandler::~ClientHandler() {
     std::cout << "debug: destruyendo clientHandler" << std::endl;
 };

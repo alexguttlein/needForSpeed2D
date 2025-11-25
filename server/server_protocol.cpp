@@ -160,6 +160,14 @@ void ServerProtocol::sendSnapshot(std::shared_ptr<Snapshot>& snapshot) {
     appendUInt32(buffer, raceCount);
 
     for (const auto& rs : snapshot->raceStates) {
+        
+        // playerName (string: uint16_t length + chars)
+        uint16_t nameLen = static_cast<uint16_t>(rs.playerName.size());
+        uint16_t nameLenBE = htons(nameLen);
+        const uint8_t* nameLenBytes = reinterpret_cast<const uint8_t*>(&nameLenBE);
+        buffer.insert(buffer.end(), nameLenBytes, nameLenBytes + sizeof(nameLenBE));
+        buffer.insert(buffer.end(), reinterpret_cast<const uint8_t*>(rs.playerName.data()), reinterpret_cast<const uint8_t*>(rs.playerName.data()) + nameLen);
+        
         // playerId
         addIntToUint8tVector(buffer, rs.playerId);
 

@@ -3,12 +3,14 @@
 
 #include "vector2D.h"
 #include <vector>
+#include <string>
 
 /*
 * Data Transfer Object (DTO) para el estado de la carrera
 *
 * */
 struct RaceStateDTO {
+    std::string playerName;
     int playerId;
     int currentRaceId;
     Vector2D<float> nextCheckpoint;

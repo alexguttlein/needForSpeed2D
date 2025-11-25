@@ -64,8 +64,8 @@ void GameLoop::processCommandQueue() {
 }
 
 
-void GameLoop::addPlayer(int playerId, int carId) {
-    gameLogic.addCar(playerId, carId);
+void GameLoop::addPlayer(int playerId, int carId, const std::string& playerName) {
+    gameLogic.addCar(playerId, carId, playerName);
 }
 
 

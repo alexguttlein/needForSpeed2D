@@ -71,8 +71,23 @@ void RaceLogic::addPlayer(int playerId) {
 }
 
 
+void RaceLogic::addPlayerWithName(int playerId, const std::string& playerName) {
+    this->playerNames[playerId] = playerName;
+}
+
+
+std::string RaceLogic::getPlayerName(int playerId) const {
+    auto it = playerNames.find(playerId);
+    if (it != playerNames.end()) {
+        return it->second;
+    }
+    return "Unknown";
+}
+
+
 void RaceLogic::removePlayer(int playerId) {
     nextCheckpointIndex.erase(playerId);
+    playerNames.erase(playerId);
 }
 
 

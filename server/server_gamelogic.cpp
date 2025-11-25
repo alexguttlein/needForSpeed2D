@@ -92,6 +92,7 @@ std::shared_ptr<Snapshot> GameLogic::getSnapshot(EventType controlEvent) const {
 
     for (const auto& [id, car] : cars) {
         RaceStateDTO raceState{};
+        raceState.playerName   = raceLogic.getPlayerName(id);
         raceState.playerId      = id;
         raceState.currentRaceId = raceLogic.getCurrentRaceId();
         raceState.nextCheckpoint = raceLogic.getNextCheckpointPosition(id);
@@ -139,8 +140,9 @@ std::shared_ptr<Snapshot> GameLogic::getSnapshot(EventType controlEvent) const {
 }
 
 
-void GameLogic::addCar(int playerId, int carType) {
+void GameLogic::addCar(int playerId, int carType, const std::string& playerName) {
     raceLogic.addPlayer(playerId); // Agregar jugador a RaceLogic
+    raceLogic.addPlayerWithName(playerId, playerName); // Agregar nombre del jugador
     raceBuilder.addSelectCar(carType);
     std::shared_ptr<Car> newCar = raceBuilder.getCars().back();
     cars[playerId] = newCar;
