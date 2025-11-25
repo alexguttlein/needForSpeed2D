@@ -306,9 +306,10 @@ void GameLogic::resetFinishRace(){
             if (carIt != cars.end()) {
                 std::shared_ptr<Car> car = carIt->second;
                 
-                Vector2D<float> spawnPos = raceBuilder.getSpawnPosition(); 
+                Vector2D<float> spawnPos = raceLogic.getSpawnPositionForPlayer(playerId);
                 car->resetMovementStates();
                 car->setPosition(spawnPos); 
+                car->setRotationToRight();
                 car->resetVelocity(); 
                 car->clearUpgradeEffects();
                 raceLogic.addPlayer(playerId); 

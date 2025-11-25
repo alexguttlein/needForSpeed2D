@@ -76,6 +76,19 @@ public:
     void setPosition(const Vector2D<float>& newPosition);
     
     /*
+    * Establece la rotación del auto en grados
+    * al inicializar la posición
+    * 
+    * */
+    void setRotation(float angleDegrees);
+
+    /*
+    * Establece la rotación del auto hacia la derecha
+    *
+    * */    
+    void setRotationToRight();
+    
+    /*
     * Obtiene la dirección del auto como un vector normalizado
     *
     * */

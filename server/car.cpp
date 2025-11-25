@@ -65,6 +65,19 @@ void Car::setPosition(const Vector2D<float>& newPosition) {
 }
 
 
+void Car::setRotation(float angleDegrees) {
+    const float PI = 3.14159265359f; 
+    float angleRadians = angleDegrees * (PI / 180.0f);
+    b2Rot angle = b2MakeRot(angleRadians);
+    b2Body_SetTransform(body, b2Body_GetPosition(body), angle);
+}
+
+
+void Car::setRotationToRight() {
+   setRotation(0.0f);
+}
+
+
 Vector2D<float> Car::getDirection() const {
     b2Rot angle = b2Body_GetRotation(body);
     return Vector2D<float>(angle.c, angle.s);
