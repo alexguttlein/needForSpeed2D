@@ -48,6 +48,8 @@ public:
     
     void setGameFinished(bool finished, const std::vector<PlayerTime>& leaderboard);
     bool isGameFinished() const { return gameFinished_; }
+    
+    bool hasPlayerFinishedRace() const { return playerFinishedRace_; }
 
     Vector2D<float> hudNextCheckpoint_{};               
     std::vector<Vector2D<float>> hudHints_{};
@@ -82,6 +84,7 @@ private:
     std::string getUpgradeDescription_(int upgradeId) const;
     
     void renderGameOver_();
+    void renderWaitingForPlayers_();
 
     const CarAtlas* atlasFor(int carTypeId) const;
 
@@ -135,6 +138,8 @@ private:
     
     bool gameFinished_ = false;
     std::vector<PlayerTime> finalLeaderboard_;
+    
+    bool playerFinishedRace_ = false;
 
     std::unordered_map<int, CarAtlas> carAtlases_;
 };

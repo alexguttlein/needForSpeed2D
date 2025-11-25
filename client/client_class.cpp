@@ -77,10 +77,22 @@ void Client::run() {
                 switch (e.key.keysym.sym) {
                     case SDLK_ESCAPE: running = false; break;
                     case SDLK_q: running = false; break;
-                    case SDLK_w: commandQueue.push({ SDLK_w, true }); break;
-                    case SDLK_s: commandQueue.push({ SDLK_s, true }); break;
-                    case SDLK_a: commandQueue.push({ SDLK_a, true }); break;
-                    case SDLK_d: commandQueue.push({ SDLK_d, true }); break;
+                    case SDLK_w: 
+                        if (!dib.hasPlayerFinishedRace()) 
+                            commandQueue.push({ SDLK_w, true }); 
+                        break;
+                    case SDLK_s: 
+                        if (!dib.hasPlayerFinishedRace()) 
+                            commandQueue.push({ SDLK_s, true }); 
+                        break;
+                    case SDLK_a: 
+                        if (!dib.hasPlayerFinishedRace()) 
+                            commandQueue.push({ SDLK_a, true }); 
+                        break;
+                    case SDLK_d: 
+                        if (!dib.hasPlayerFinishedRace()) 
+                            commandQueue.push({ SDLK_d, true }); 
+                        break;
                     case SDLK_1: 
                         commandQueue.push({ SDLK_1, true });
                         dib.showUpgradePopup(1);
@@ -100,14 +112,25 @@ void Client::run() {
                 }
             }
             else if (e.type == SDL_KEYUP) {
-            switch (e.key.keysym.sym) {
-
-                case SDLK_w: commandQueue.push({ SDLK_w, false }); break;
-                case SDLK_s: commandQueue.push({ SDLK_s, false }); break;
-                case SDLK_a: commandQueue.push({ SDLK_a, false }); break;
-                case SDLK_d: commandQueue.push({ SDLK_d, false }); break;
+                switch (e.key.keysym.sym) {
+                    case SDLK_w: 
+                        if (!dib.hasPlayerFinishedRace()) 
+                            commandQueue.push({ SDLK_w, false }); 
+                        break;
+                    case SDLK_s: 
+                        if (!dib.hasPlayerFinishedRace()) 
+                            commandQueue.push({ SDLK_s, false }); 
+                        break;
+                    case SDLK_a: 
+                        if (!dib.hasPlayerFinishedRace()) 
+                            commandQueue.push({ SDLK_a, false }); 
+                        break;
+                    case SDLK_d: 
+                        if (!dib.hasPlayerFinishedRace()) 
+                            commandQueue.push({ SDLK_d, false }); 
+                        break;
+                }
             }
-        }
         }
 
        

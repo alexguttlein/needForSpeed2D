@@ -223,6 +223,7 @@ void ClientDibujador::renderAll(const std::vector<CarStateDTO>& cars, int selfId
 
             raceStarted_ = false;
             raceStartTicks_ = 0;
+            playerFinishedRace_ = false;
         }
     }
 
@@ -309,6 +310,12 @@ void ClientDibujador::renderAll(const std::vector<CarStateDTO>& cars, int selfId
 
     drawHUD_();
     drawMinimap_(cars, selfId);
+    
+    // Mostrar popup si el jugador terminó pero la carrera no ha finalizado
+    if (playerFinishedRace_ && !raceFinished_) {
+        renderWaitingForPlayers_();
+    }
+    
     SDL_RenderPresent(ren);
 }
 
@@ -592,6 +599,8 @@ void ClientDibujador::updateRaceState(const RaceStateDTO& raceState) {
     }
     
     currentRace = raceState.currentRaceId;
+    
+    playerFinishedRace_ = raceState.hasFinished;
 }
 
 void ClientDibujador::drawHudTime_(int panelX, int panelY, int panelW) {
@@ -619,6 +628,10 @@ void ClientDibujador::drawHudTime_(int panelX, int panelY, int panelW) {
 }
 
 void ClientDibujador::drawCheckpoint_() {
+    if (playerFinishedRace_) {
+        return;
+    }
+    
     int screenX = static_cast<int>(hudNextCheckpoint_.x) - camX;
     int screenY = static_cast<int>(hudNextCheckpoint_.y) - camY;
 
@@ -841,8 +854,6 @@ void ClientDibujador::renderUpgradePopup_() {
     SDL_SetRenderDrawBlendMode(ren, SDL_BLENDMODE_NONE);
 }
 
-// ========== PANTALLA DE GAME OVER ==========
-
 void ClientDibujador::setGameFinished(bool finished, const std::vector<PlayerTime>& leaderboard) {
     gameFinished_ = finished;
     if (finished) {
@@ -936,5 +947,45 @@ void ClientDibujador::renderGameOver_() {
 
     SDL_SetRenderDrawBlendMode(ren, SDL_BLENDMODE_NONE);
     SDL_RenderPresent(ren);
+}
+
+void ClientDibujador::renderWaitingForPlayers_() {
+    if (!uiFont) return;
+
+    SDL_SetRenderDrawBlendMode(ren, SDL_BLENDMODE_BLEND);
+
+    int panelW = 500;
+    int panelH = 180;
+    int panelX = (winW - panelW) / 2;
+    int panelY = (winH - panelH) / 2;
+
+    SDL_Rect panelRect = {panelX, panelY, panelW, panelH};
+    SDL_SetRenderDrawColor(ren, 40, 40, 50, 230);
+    SDL_RenderFillRect(ren, &panelRect);
+
+    SDL_SetRenderDrawColor(ren, 255, 215, 0, 255);
+    for (int i = 0; i < 3; ++i) {
+        SDL_Rect borderRect = {panelX - i, panelY - i, panelW + 2 * i, panelH + 2 * i};
+        SDL_RenderDrawRect(ren, &borderRect);
+    }
+
+    std::string title = "CARRERA COMPLETADA!";
+    int titleX = panelX + panelW / 2 - 120;
+    int titleY = panelY + 30;
+    drawText_(title, titleX, titleY, {100, 255, 100, 255}, true);
+
+    std::string waitMsg = "Esperando a los demas jugadores...";
+    int msgX = panelX + panelW / 2 - 140;
+    int msgY = panelY + 90;
+    drawText_(waitMsg, msgX, msgY, {220, 220, 220, 255}, true);
+
+    Uint32 now = SDL_GetTicks();
+    int dotCount = (now / 500) % 4;
+    std::string dots(dotCount, '.');
+    int dotsX = panelX + panelW / 2 - 10;
+    int dotsY = panelY + 125;
+    drawText_(dots, dotsX, dotsY, {180, 180, 180, 255}, true);
+
+    SDL_SetRenderDrawBlendMode(ren, SDL_BLENDMODE_NONE);
 }
 
