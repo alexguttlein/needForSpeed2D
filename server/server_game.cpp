@@ -20,7 +20,7 @@ void Game::addClientHandler(ClientHandler* client) {
     clientQueues.push_back(&client->getClientQueue());
 
     if (gameloop) {
-        gameloop->addPlayer(client->getId(), client->getCarId());
+        gameloop->addPlayer(client->getId(), client->getCarId() + 1);
     }
 
     // si alcanzamos el número de jugadores, arrancamos GameLoop si aún no arrancó

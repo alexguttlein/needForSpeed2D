@@ -63,7 +63,7 @@ circuitos:
       - x: 71.2
         y: 181.6
     
-    checkpoints:  
+    #checkpoints:  
       # 1
       - x: 44.32
         y: 180.8

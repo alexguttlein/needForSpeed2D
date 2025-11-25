@@ -4,6 +4,8 @@
 #include <algorithm>
 #include <cstdio>
 
+static inline float norm360(float a);
+
 ClientDibujador::ClientDibujador(SDL_Renderer* r, int w, int h)
     : ren(r), winW(w), winH(h) {
     if (TTF_WasInit() == 0) {
@@ -15,11 +17,18 @@ ClientDibujador::ClientDibujador(SDL_Renderer* r, int w, int h)
 
 ClientDibujador::~ClientDibujador() {
     if (uiFont) { TTF_CloseFont(uiFont); uiFont = nullptr; }
-    if (carTex) SDL_DestroyTexture(carTex);
+
+    for (auto& [id, atlas] : carAtlases_) {
+        if (atlas.tex) SDL_DestroyTexture(atlas.tex);
+        atlas.tex = nullptr;
+    }
+    carAtlases_.clear();
+
     if (mapTex) SDL_DestroyTexture(mapTex);
     if (checkpointTex) SDL_DestroyTexture(checkpointTex);
     if (hintTex) SDL_DestroyTexture(hintTex);
 }
+
 
 SDL_Texture* ClientDibujador::loadTexture_(const std::string& path) {
 
@@ -56,19 +65,65 @@ bool ClientDibujador::loadMap(const std::string& pathPng, const std::string& pat
     return true;
 }
 
-bool ClientDibujador::loadCarAtlas(const std::string& pathPng, int cols, int rows,
-                                   float angle0Deg, bool cw) {
-    carTex = loadTexture_(pathPng);
-    if (!carTex) return false;
-    atlasCols = cols; atlasRows = rows;
-    angle0 = angle0Deg; clockwise = cw;
+bool ClientDibujador::loadCarAtlasForId(int carTypeId, const std::string& path,
+                                       int cols, int rows, float angle0Deg, bool cw) {
+    CarAtlas atlas;
+    atlas.tex = loadTexture_(path);
+    if (!atlas.tex) {
+        std::fprintf(stderr, "No pude cargar auto %d: %s (IMG err=%s)\n",
+                     carTypeId, path.c_str(), IMG_GetError());
+        return false;
+    }
+
+    atlas.cols = cols;
+    atlas.rows = rows;
+    atlas.angle0 = angle0Deg;
+    atlas.clockwise = cw;
 
     int w, h;
-    SDL_QueryTexture(carTex, nullptr, nullptr, &w, &h);
-    cellW = w / atlasCols;
-    cellH = h / atlasRows;
+    SDL_QueryTexture(atlas.tex, nullptr, nullptr, &w, &h);
+    atlas.cellW = w / cols;
+    atlas.cellH = h / rows;
+
+    carAtlases_[carTypeId] = atlas;
+    std::fprintf(stderr, "[DEBUG] Atlas cargado para carTypeId=%d: cellW=%d cellH=%d\n", 
+                carTypeId, atlas.cellW, atlas.cellH);
+
+    // IMPORTANTÍSIMO: si es el default (0), también seteá los miembros viejos
+    if (carTypeId == 0) {
+        carTex = atlas.tex;
+        atlasCols = cols;
+        atlasRows = rows;
+        cellW = atlas.cellW;
+        cellH = atlas.cellH;
+        angle0 = angle0Deg;
+    }
+
     return true;
 }
+
+const CarAtlas* ClientDibujador::atlasFor(int carTypeId) const {
+    auto it = carAtlases_.find(carTypeId);
+    if (it != carAtlases_.end()) return &it->second;
+
+    // fallback: default
+    it = carAtlases_.find(0);
+    if (it != carAtlases_.end()) return &it->second;
+
+    return nullptr;
+}
+
+int ClientDibujador::frameForAngle_(float angleDeg, const CarAtlas& atlas) const {
+    const int total = atlas.cols * atlas.rows;
+    const float step = 360.0f / float(total);
+
+    float rel = atlas.clockwise ? (angleDeg - atlas.angle0) : (atlas.angle0 - angleDeg);
+    rel = norm360(rel);
+
+    int idx = int(std::floor((rel + step * 0.5f) / step)) % total;
+    return idx;
+}
+
 
 bool ClientDibujador::loadCheckpoint(const std::string& pathPng) {
     checkpointTex = loadTexture_(pathPng);
@@ -107,15 +162,6 @@ static inline float approachAngle(float curDeg, float targetDeg, float maxStepDe
     float d = shortestsDelta(curDeg, targetDeg);
     if (std::fabs(d) <= maxStepDeg) return norm360(targetDeg);
     return norm360(curDeg + (d > 0 ? maxStepDeg : -maxStepDeg));
-}
-
-int ClientDibujador::frameForAngle_(float angleDeg) const {
-    const int total = atlasCols * atlasRows;
-    const float step = 360.0f / static_cast<float>(total);
-    float rel = clockwise ? (angleDeg - angle0) : (angle0 - angleDeg);
-    rel = norm360(rel);
-    const int idx = static_cast<int>(std::floor((rel + step * 0.5f) / step)) % total;
-    return idx;
 }
 
 void ClientDibujador::updateCamera_(int px, int py) {
@@ -157,59 +203,13 @@ void ClientDibujador::setRaceFinished(bool finished, const std::vector<RaceState
     }
 }
 
-void ClientDibujador::renderFrame(int playerX, int playerY) {
-    int px = playerX;
-    int py = playerY;
-
-    static float target = 0.0f;
-    if (lastX >= 0 && lastY >= 0) {
-        int dx = px - lastX, dy = py - lastY;
-        if (dx || dy) {
-            float hd = std::atan2(float(dy), float(dx)) * 180.0f / float(M_PI);
-            if (hd < 0.f) hd += 360.f;
-            target = hd;
-        }
-    }
-    lastX = px; lastY = py;
-
-    const int totalDirs = atlasCols * atlasRows;
-    const float stepDEg = 360.0f / float(totalDirs);
-    facingDeg = approachAngle(facingDeg, target, stepDEg);
-
-    updateCamera_(px, py);
-
-    SDL_SetRenderDrawColor(ren, 20,20,20,255);
-    SDL_RenderClear(ren);
-
-    if (mapTex) {
-        SDL_Rect src{ camX, camY, winW, winH };
-        SDL_Rect dst{ 0, 0, winW, winH };
-        SDL_RenderCopy(ren, mapTex, &src, &dst);
-    }
-
-    if (carTex && cellW > 0 && cellH > 0) {
-        int frame = frameForAngle_(facingDeg);
-        int col = frame % atlasCols, row = frame / atlasCols;
-        SDL_Rect s{ col * cellW, row * cellH, cellW, cellH };
-        SDL_Rect d{ px - camX - cellW/2, py - camY - cellH/2, cellW, cellH };
-        SDL_RenderCopy(ren, carTex, &s, &d);
-    }
-
-    if (mapOverTex) {
-        SDL_Rect src{ camX, camY, winW, winH };
-        SDL_Rect dst{ 0, 0, winW, winH };
-
-        SDL_SetTextureBlendMode(mapOverTex, SDL_BLENDMODE_BLEND);
-        SDL_SetTextureAlphaMod(mapOverTex, 255);   // Cambiá este valor a gusto (0-255)
-
-        SDL_RenderCopy(ren, mapOverTex, &src, &dst);
-    }
-
-    SDL_RenderPresent(ren);
-}
-
 void ClientDibujador::renderAll(const std::vector<CarStateDTO>& cars, int selfId) {
-     if (raceFinished_) {
+    if (gameFinished_) {
+        renderGameOver_();
+        return;
+    }
+    
+    if (raceFinished_) {
         Uint32 now = SDL_GetTicks();
         const Uint32 SHOW_RESULTS_MS = 10000;
 
@@ -257,23 +257,40 @@ void ClientDibujador::renderAll(const std::vector<CarStateDTO>& cars, int selfId
 
     // Autos
     for (const auto& carState : cars) {
-        int px = static_cast<int>(carState.position.x * Constants::SCALE_METER_TO_PIXEL);
-        int py = static_cast<int>(carState.position.y * Constants::SCALE_METER_TO_PIXEL);
+        int px = int(carState.position.x * Constants::SCALE_METER_TO_PIXEL);
+        int py = int(carState.position.y * Constants::SCALE_METER_TO_PIXEL);
+
         float angleRad = std::atan2(carState.angle.y, carState.angle.x);
-        float currentAngleDeg = angleRad * 180.0f / static_cast<float>(M_PI);
+        float currentAngleDeg = angleRad * 180.0f / float(M_PI);
 
-        if (carTex && cellW > 0 && cellH > 0) {
-            int frame = frameForAngle_(currentAngleDeg);
-            int col   = frame % atlasCols;
-            int row   = frame / atlasCols;
+        // Usar el car_type_id del snapshot, con fallback si es 0
+        int typeId = carState.car_type_id;
+        if (typeId == 0) {
+            // Fallback: usar car_id + 1 para asignar un tipo visual
+            typeId = (carState.car_id % 7) + 1;
+            static bool warned = false;
+            if (!warned) {
+                std::fprintf(stderr, "[WARN] car_type_id es 0, usando fallback: car_id=%d -> typeId=%d\n", 
+                            carState.car_id, typeId);
+                warned = true;
+            }
+        }
 
-            SDL_Rect s{ col * cellW, row * cellH, cellW, cellH };
-            SDL_Rect d{
-                px - camX - cellW / 2,
-                py - camY - cellH / 2,
-                cellW, cellH
-            };
-            SDL_RenderCopy(ren, carTex, &s, &d);
+        const CarAtlas* atlas = atlasFor(typeId);
+
+        if (atlas && atlas->tex && atlas->cellW > 0 && atlas->cellH > 0) {
+            int frame = frameForAngle_(currentAngleDeg, *atlas);
+            int col = frame % atlas->cols;
+            int row = frame / atlas->cols;
+
+            SDL_Rect s{ col * atlas->cellW, row * atlas->cellH, atlas->cellW, atlas->cellH };
+            SDL_Rect d{ px - camX - atlas->cellW/2, py - camY - atlas->cellH/2,
+                        atlas->cellW, atlas->cellH };
+
+            SDL_RenderCopy(ren, atlas->tex, &s, &d);
+        } else {
+            std::fprintf(stderr, "[ERROR] No se encontró atlas para typeId=%d (car_id=%d)\n", 
+                        typeId, carState.car_id);
         }
     }
 
@@ -292,7 +309,6 @@ void ClientDibujador::renderAll(const std::vector<CarStateDTO>& cars, int selfId
 
     drawHUD_();
     drawMinimap_(cars, selfId);
-
     SDL_RenderPresent(ren);
 }
 
@@ -320,6 +336,11 @@ void ClientDibujador::renderResultsTable() {
 
     renderResultsTablePanel_(tableRect);
     renderResultsUpgradesPanel_(upgradesRect);
+    
+    if (showUpgradePopup_) {
+        renderUpgradePopup_();
+    }
+    
     SDL_RenderPresent(ren);
 }
 
@@ -390,42 +411,46 @@ void ClientDibujador::renderResultsTablePanel_(const SDL_Rect& tableRect) {
 void ClientDibujador::renderResultsUpgradesPanel_(const SDL_Rect& panelRect) {
     drawPanel_(panelRect.x, panelRect.y, panelRect.w, panelRect.h, 180);
 
-    drawText_("Mejoras",
-              panelRect.x + 20,
-              panelRect.y + 16,
-              {255, 255, 255, 255},
-              false);
+    SDL_Color titleColor{255, 255, 255, 255};
+    SDL_Color nameColor{230, 230, 230, 255};
+    SDL_Color costColor{190, 190, 190, 255};
 
-    int y  = panelRect.y + 60;
-    int dy = uiFontSize + 14;
+    const int marginX   = 18;
+    const int titleY    = panelRect.y + 18;
+    const int startY    = panelRect.y + 55;
+    const int lineGap   = uiFontSize + 4;
+    const int blockGap  = uiFontSize + 10;
 
-    drawText_("[Q] + Vida",
-              panelRect.x + 20,
-              y,
-              {220, 220, 220, 255},
-              false);
-    y += dy;
+    int x = panelRect.x + marginX;
+    int y = startY;
 
-    drawText_("[E] + Aceleracion",
-              panelRect.x + 20,
-              y,
-              {220, 220, 220, 255},
-              false);
-    y += dy;
+    // Título
+    drawText_("Mejoras", x, titleY, titleColor, false);
 
-    drawText_("[V] + Velocidad",
-              panelRect.x + 20,
-              y,
-              {220, 220, 220, 255},
-              false);
-    y += dy;
+    drawText_("[1] + Vida", x, y, nameColor, false);
+    y += lineGap;
 
-    drawText_("[C] + Control",
-              panelRect.x + 20,
-              y,
-              {220, 220, 220, 255},
-              false);
+    drawText_("Costo: 8 s", x + 10, y, costColor, false);
+    y += blockGap;
+
+    drawText_("[2] + Ultima Chance", x, y, nameColor, false);
+    y += lineGap;
+
+    drawText_("Costo: 6 s", x + 10, y, costColor, false);
+    y += blockGap;
+
+    drawText_("[3] + Control", x, y, nameColor, false);
+    y += lineGap;
+
+    drawText_("Costo: 10 s", x + 10, y, costColor, false);
+    y += blockGap;
+
+    drawText_("[4] + Velcoidad", x, y, nameColor, false);
+    y += lineGap;
+
+    drawText_("Costo: 12 s", x + 10, y, costColor, false);
 }
+
 
 void ClientDibujador::drawPanel_(int x, int y, int w, int h, Uint8 a) {
     SDL_SetRenderDrawBlendMode(ren, SDL_BLENDMODE_BLEND);
@@ -543,8 +568,8 @@ void ClientDibujador::drawHudRace_(int panelX, int panelY) {
         value,
         sizeof(value),
         "%d/%d",
-        std::max(1, hudPos_),
-        std::max(1, hudPlayers_)
+        currentRace,
+        raceMax
     );
 
     int x = panelX + 12;
@@ -565,6 +590,8 @@ void ClientDibujador::updateRaceState(const RaceStateDTO& raceState) {
         p.y = h.y * Constants::SCALE_METER_TO_PIXEL;
         hudHints_.push_back(p);
     }
+    
+    currentRace = raceState.currentRaceId;
 }
 
 void ClientDibujador::drawHudTime_(int panelX, int panelY, int panelW) {
@@ -743,5 +770,171 @@ void ClientDibujador::drawMinimap_(const std::vector<CarStateDTO>& cars, int sel
         SDL_Rect r{ dotX - 2, dotY - 2, 5, 5 };
         SDL_RenderFillRect(ren, &r);
     }
+}
+
+void ClientDibujador::showUpgradePopup(int upgradeId) {
+    showUpgradePopup_ = true;
+    selectedUpgradeId_ = upgradeId;
+    upgradePopupStartTicks_ = SDL_GetTicks();
+}
+
+void ClientDibujador::hideUpgradePopup() {
+    showUpgradePopup_ = false;
+    selectedUpgradeId_ = 0;
+}
+
+std::string ClientDibujador::getUpgradeName_(int upgradeId) const {
+    switch (upgradeId) {
+        case 1: return "Vida";
+        case 2: return "Ultima Chance";
+        case 3: return "Control";
+        case 4: return "Velocidad";
+        default: return "Mejora Desconocida";
+    }
+}
+
+std::string ClientDibujador::getUpgradeDescription_(int upgradeId) const {
+    switch (upgradeId) {
+        case 1: return "Mejora la vida del vehiculo";
+        case 2: return "Repara el vehiculo";
+        case 3: return "Mejora el manejo del vehiculo";
+        case 4: return "Aumenta la velocidad maxima";
+        default: return "";
+    }
+}
+
+void ClientDibujador::renderUpgradePopup_() {
+    if (!uiFont) return;
+
+    const int popupW = 400;
+    const int popupH = 200;
+    const int popupX = (winW - popupW) / 2;
+    const int popupY = (winH - popupH) / 2;
+
+    SDL_SetRenderDrawBlendMode(ren, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(ren, 0, 0, 0, 180);
+    SDL_Rect fullScreen{0, 0, winW, winH};
+    SDL_RenderFillRect(ren, &fullScreen);
+
+    SDL_SetRenderDrawColor(ren, 30, 30, 40, 240);
+    SDL_Rect popup{popupX, popupY, popupW, popupH};
+    SDL_RenderFillRect(ren, &popup);
+
+    SDL_SetRenderDrawColor(ren, 100, 200, 255, 255);
+    SDL_RenderDrawRect(ren, &popup);
+    
+    SDL_Rect innerBorder{popupX + 2, popupY + 2, popupW - 4, popupH - 4};
+    SDL_RenderDrawRect(ren, &innerBorder);
+
+    std::string title = "MEJORA SELECCIONADA";
+    drawText_(title, popupX + popupW / 2 - 80, popupY + 30, {100, 200, 255, 255}, true);
+
+    std::string upgradeName = getUpgradeName_(selectedUpgradeId_);
+    drawText_(upgradeName, popupX + popupW / 2 - 50, popupY + 80, {255, 255, 100, 255}, true);
+
+    std::string description = getUpgradeDescription_(selectedUpgradeId_);
+    drawText_(description, popupX + popupW / 2 - 120, popupY + 120, {200, 200, 200, 255}, true);
+
+    std::string waitMsg = "Esperando proxima carrera...";
+    drawText_(waitMsg, popupX + popupW / 2 - 100, popupY + 160, {150, 150, 150, 255}, true);
+    
+    SDL_SetRenderDrawBlendMode(ren, SDL_BLENDMODE_NONE);
+}
+
+// ========== PANTALLA DE GAME OVER ==========
+
+void ClientDibujador::setGameFinished(bool finished, const std::vector<PlayerTime>& leaderboard) {
+    gameFinished_ = finished;
+    if (finished) {
+        finalLeaderboard_ = leaderboard;
+    } else {
+        finalLeaderboard_.clear();
+    }
+}
+
+void ClientDibujador::renderGameOver_() {
+    if (!uiFont) {
+        SDL_RenderPresent(ren);
+        return;
+    }
+
+    // Fondo oscuro
+    SDL_SetRenderDrawColor(ren, 10, 10, 15, 255);
+    SDL_RenderClear(ren);
+
+    // Panel principal centrado
+    const int panelW = 600;
+    const int panelH = 500;
+    const int panelX = (winW - panelW) / 2;
+    const int panelY = (winH - panelH) / 2 - 30;
+
+    // Fondo del panel
+    SDL_SetRenderDrawBlendMode(ren, SDL_BLENDMODE_BLEND);
+    drawPanel_(panelX, panelY, panelW, panelH, 230);
+
+    // Borde dorado
+    SDL_SetRenderDrawColor(ren, 255, 215, 0, 255);
+    SDL_Rect border{panelX, panelY, panelW, panelH};
+    SDL_RenderDrawRect(ren, &border);
+    SDL_Rect innerBorder{panelX + 2, panelY + 2, panelW - 4, panelH - 4};
+    SDL_RenderDrawRect(ren, &innerBorder);
+
+    // Título "JUEGO FINALIZADO"
+    std::string title = "JUEGO FINALIZADO";
+    int titleX = panelX + panelW / 2 - 90;
+    int titleY = panelY + 30;
+    drawText_(title, titleX, titleY, {255, 215, 0, 255}, true);
+
+    // Subtítulo
+    std::string subtitle = "Clasificacion Final";
+    int subtitleX = panelX + panelW / 2 - 80;
+    int subtitleY = panelY + 70;
+    drawText_(subtitle, subtitleX, subtitleY, {200, 200, 200, 255}, true);
+
+    // Leaderboard
+    std::vector<PlayerTime> sortedLeaderboard = finalLeaderboard_;
+    std::sort(sortedLeaderboard.begin(), sortedLeaderboard.end(),
+              [](const PlayerTime& a, const PlayerTime& b) {
+                  return a.finishTime < b.finishTime;
+              });
+
+    int startY = panelY + 120;
+    int lineHeight = 40;
+    int position = 1;
+
+    for (const auto& entry : sortedLeaderboard) {
+        if (position > 8) break; // Máximo 8 posiciones
+
+        int y = startY + (position - 1) * lineHeight;
+
+        // Posición
+        std::string posStr = std::to_string(position) + ".";
+        SDL_Color posColor = {255, 255, 255, 255};
+        if (position == 1) posColor = {255, 215, 0, 255}; // Oro
+        else if (position == 2) posColor = {192, 192, 192, 255}; // Plata
+        else if (position == 3) posColor = {205, 127, 50, 255}; // Bronce
+        
+        drawText_(posStr, panelX + 50, y, posColor, true);
+
+        // Player ID
+        std::string playerStr = "Jugador " + std::to_string(entry.playerId);
+        drawText_(playerStr, panelX + 120, y, {220, 220, 220, 255}, true);
+
+        // Tiempo
+        int minutes = static_cast<int>(entry.finishTime) / 60;
+        int seconds = static_cast<int>(entry.finishTime) % 60;
+        int millis = static_cast<int>((entry.finishTime - static_cast<int>(entry.finishTime)) * 1000);
+        
+        char timeBuffer[32];
+        std::snprintf(timeBuffer, sizeof(timeBuffer), "%02d:%02d.%03d", minutes, seconds, millis);
+        std::string timeStr(timeBuffer);
+        
+        drawText_(timeStr, panelX + panelW - 150, y, {100, 200, 255, 255}, true);
+
+        position++;
+    }
+
+    SDL_SetRenderDrawBlendMode(ren, SDL_BLENDMODE_NONE);
+    SDL_RenderPresent(ren);
 }
 

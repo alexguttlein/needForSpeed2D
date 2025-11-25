@@ -114,6 +114,10 @@ std::optional<Snapshot> ClientProtocol::receiveSnapshotFromServer() {
         socket.recvall(&idBE, sizeof(idBE));
         dto.car_id = static_cast<int>(ntohl(idBE));
 
+        uint32_t carTypeIdBE = 0;
+        socket.recvall(&carTypeIdBE, sizeof(carTypeIdBE));
+        dto.car_type_id = static_cast<int>(ntohl(carTypeIdBE));
+
         uint32_t upgradeIdBE = 0;
         socket.recvall(&upgradeIdBE, sizeof(upgradeIdBE));
         dto.currentUpgradeId = static_cast<int>(ntohl(upgradeIdBE));

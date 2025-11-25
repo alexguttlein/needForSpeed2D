@@ -17,6 +17,9 @@ private:
     Vector2D<float> position;  
     Vector2D<float> direction;
     
+    // tipo de auto
+    int carType = 1; // Tipo de auto (1-7)
+    
     // fisica del auto
     float acceleration, control, weight, speed;
     float maxSpeed, maxReverseSpeed;
@@ -48,7 +51,7 @@ public:
     * Constructor de Car.
     * Inicializa los atributos del auto con los valores recibidos por parámetro.
     * */
-    explicit Car(b2WorldId world,Vector2D<float> position, float acceleration, float control,
+    explicit Car(b2WorldId world,Vector2D<float> position, int carType, float acceleration, float control,
         float weight, float maxSpeed, float maxReverseSpeed, float health, float height, float width);
 
     /*
@@ -274,5 +277,11 @@ public:
     *
     * */
     int getCurrentUpgradeId();
+
+    /*
+    * Obtiene el tipo de auto
+    *
+    * */
+    int getCarType() const;
 };
 #endif // CAR_H
