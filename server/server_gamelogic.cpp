@@ -204,8 +204,8 @@ void GameLogic::checkCollisions() {
 
 
 void GameLogic::applyCollisionDamage(Car* carA, Car* carB, b2Vec2 normal, float hitSpeed) {
-    const float DAMAGE_FACTOR = 1.2f; 
-    float damage = hitSpeed * DAMAGE_FACTOR;
+    const float DAMAGE_FACTOR = 0.8f; 
+    float damage = std::pow(hitSpeed, 1.3f) * DAMAGE_FACTOR;
 
     if (carA) {
         Vector2D<float> forwardA = carA->getDirection();
