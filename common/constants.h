@@ -110,7 +110,7 @@ namespace  Constants {
     static constexpr float SPAWN_START_Y = 90.0f;
     static constexpr float SPAWN_OFFSET_X = 50.0f; 
     static constexpr float MAX_ROW_X = 600.0f;
-    static constexpr float CHECKPOINT_RADIUS = 3.0f; 
+    static constexpr float CHECKPOINT_RADIUS = 2.0f; 
     static constexpr float HINT_SPACING = 3.0f; // ver como cambia esto con el mapa
 
     // constante penalizacion por mejora
