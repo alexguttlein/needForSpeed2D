@@ -28,6 +28,13 @@ void ReceiverThread::run() {
                     "Iniciando partida..."));
                     continue;
                 }
+                case EventType::SERVER_DISCONNECTED: {
+                    std::cout << "debug: server disconnected detected" << std::endl;
+                    eventQueue.push(Event(EventType::SERVER_DISCONNECTED,
+                    "El servidor se ha desconectado."));
+                    keepRunning = false; // se termina el loop del receiver
+                    continue;
+                }
                 default: snapshotQueue.push(snapshot);
             }
         }

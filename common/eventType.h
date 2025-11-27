@@ -8,7 +8,8 @@ enum class EventType {
     JOIN_REJECTED,
     CREATE_JOIN_ACCEPTED,
     GAME_LIST_RECEIVED,
-    GAME_START
+    GAME_START,
+    SERVER_DISCONNECTED
 };
 
 struct Event {

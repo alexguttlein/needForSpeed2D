@@ -21,7 +21,6 @@ void SenderThread::run() {
         if (snapshot->controlEvent == EventType::JOIN_REJECTED) {
             protocol.sendControl(Constants::JOIN_REJECTED);
         } else if (snapshot->controlEvent == EventType::CREATE_JOIN_ACCEPTED) {
-            // protocol.sendControl(Constants::CREATE_JOIN_ACCEPTED);
             // Enviar CREATE_JOIN_ACCEPTED + playerId
             if (protocol.isConnectionClosed()) continue;
 
@@ -29,30 +28,30 @@ void SenderThread::run() {
             buffer.push_back(Constants::TYPE_CONTROL);
             buffer.push_back(Constants::CREATE_JOIN_ACCEPTED);
             protocol.addIntToUint8tVector(buffer, snapshot->playerId);
-            protocol.sendCreateJoinAccepted(buffer);
+            // protocol.sendCreateJoinAccepted(buffer);
+            protocol.sendControl(buffer);
         } else if (snapshot->controlEvent == EventType::GAME_START) {
             if (protocol.isConnectionClosed()) continue;
             std::vector<uint8_t> buffer;
             buffer.push_back(Constants::TYPE_CONTROL);
             buffer.push_back(Constants::GAME_START);
-            protocol.sendGameStart(buffer);
+            // protocol.sendGameStart(buffer);
+            protocol.sendControl(buffer);
+        } else if (snapshot->controlEvent == EventType::SERVER_DISCONNECTED) {
+            if (protocol.isConnectionClosed()) continue;
+            std::cout << "debug: Disconnected" << std::endl;
+            std::vector<uint8_t> buffer;
+            buffer.push_back(Constants::TYPE_CONTROL);
+            buffer.push_back(Constants::SERVER_DISCONNECTED);
+            protocol.sendControl(buffer);
         } else {
-            // std::cout << "[Sender] aca se deberia enviar snap" << std::endl;
-            // std::cout << "debug: el snap va a ser: " << snapshot->posX << ", " << snapshot->posY << std::endl;
             protocol.sendSnapshot(snapshot);
         }
-
-        // iter++;
-        // if (iter % 10 == 0) {
-        //     std::cout << "[Sender] iteraciones totales: " << iter << std::endl;
-        // }
 
         if (protocol.isConnectionClosed()) {
             keepRunning = false;
             break;
         }
-
-        // std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
 }
 

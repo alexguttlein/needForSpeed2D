@@ -248,6 +248,11 @@ std::optional<Snapshot> ClientProtocol::receiveControlFromServer() {
         Snapshot snapshot{};
         snapshot.controlEvent = EventType::GAME_START;
         return snapshot;
+    } else if (code == Constants::SERVER_DISCONNECTED) {
+        std::cout << "debug: client protocol -> se desconecto el server" << std::endl;
+        Snapshot snapshot{};
+        snapshot.controlEvent = EventType::SERVER_DISCONNECTED;
+        return snapshot;
     } else {
         std::cerr << "Código de control recibido: " << std::hex << (int)code << std::endl;
     }

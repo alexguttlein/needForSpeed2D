@@ -23,8 +23,6 @@ void Client::run() {
     ClientQtManager qt(this);
     qt.start();
 
-    std::cout << "debug: auto elegido = " << selectedCarId << std::endl;
-
     // si no se inicio una partida, no abre SDL
     if (!playing) return;
 
@@ -60,7 +58,7 @@ void Client::run() {
     ClientDibujador dib(ren, W, H);
 
     if (!dib.loadMap("assets/need-for-speed/cities/Liberty.png")) {
-        std::fprintf(stderr, "No pude cargar assets/maps/iberty.png\n");
+        std::fprintf(stderr, "No pude cargar assets/maps/Liberty.png\n");
     }
 
     if (!dib.loadCarAtlas("assets/need-for-speed/cars/auto-1.png", 8, 2, 0.0f, true)) {
@@ -71,12 +69,10 @@ void Client::run() {
     dib.loadCheckpoint("assets/ui/checkpoint.png");
     dib.loadHint("assets/ui/hint.png");
     dib.setFacingDeg(0.0f);
+
     bool running = true;
-    //CAMBIAR
-    // int x = 90, y = 90 ;
     bool havePos = false;
 
-    // bool haveSnapshot = false;
     Snapshot snapshot;
 
     while (running) {
@@ -106,16 +102,19 @@ void Client::run() {
         }
         }
 
-       
         Snapshot snapTmp;
-        // if (snapshotQueue.try_pop(snapTmp)) {
-        //     snapshot = std::move(snapTmp);
-        //     havePos = true;
-        //     if (selfId == -1 && snapshot.playerId) selfId = snapshot.playerId; // solo la primera vez
-        // }
-        while (snapshotQueue.try_pop(snapTmp)) { 
+        while (snapshotQueue.try_pop(snapTmp)) {
             snapshot = std::move(snapTmp); // Siempre guardamos el más reciente
             havePos = true;
+        }
+
+        //se revisa la queue de eventos para ver si el server se desconecto
+        Event evt;
+        while (eventQueue.try_pop(evt)) {
+            if (evt.type == EventType::SERVER_DISCONNECTED) {
+                std::cout << "debug: Servidor desconectado, cerrando cliente..." << std::endl;
+                running = false;
+            }
         }
 
         if (havePos) {

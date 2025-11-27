@@ -202,13 +202,17 @@ void ServerProtocol::sendGamesList(uint8_t& type, const std::vector<unsigned cha
     socket.sendall(buffer.data(), buffer.size());
 }
 
-void ServerProtocol::sendCreateJoinAccepted(std::vector<uint8_t>& buffer) {
+void ServerProtocol::sendControl(std::vector<uint8_t>& buffer) {
     if (isConnectionClosed()) return;
     socket.sendall(buffer.data(), buffer.size());
 }
 
-void ServerProtocol::sendGameStart(const std::vector<uint8_t>& buffer) {
-    std::cout << "debug: se envia game start desde server" << std::endl;
-    if (isConnectionClosed()) return;
-    socket.sendall(buffer.data(), buffer.size());
-}
+// void ServerProtocol::sendCreateJoinAccepted(std::vector<uint8_t>& buffer) {
+//     if (isConnectionClosed()) return;
+//     socket.sendall(buffer.data(), buffer.size());
+// }
+//
+// void ServerProtocol::sendGameStart(const std::vector<uint8_t>& buffer) {
+//     if (isConnectionClosed()) return;
+//     socket.sendall(buffer.data(), buffer.size());
+// }

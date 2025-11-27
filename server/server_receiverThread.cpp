@@ -32,7 +32,8 @@ void ReceiverThread::lobbyCommands(Message msg) {
         buffer.push_back(Constants::TYPE_CONTROL);
         buffer.push_back(Constants::CREATE_JOIN_ACCEPTED);
         protocol.addIntToUint8tVector(buffer, clientHandler.getId());
-        protocol.sendCreateJoinAccepted(buffer);
+        // protocol.sendCreateJoinAccepted(buffer);
+        protocol.sendControl(buffer);
 
         gameMonitor.checkGameStart(newId);
 
@@ -82,7 +83,8 @@ void ReceiverThread::lobbyCommands(Message msg) {
             buffer.push_back(Constants::TYPE_CONTROL);
             buffer.push_back(Constants::CREATE_JOIN_ACCEPTED);
             protocol.addIntToUint8tVector(buffer, clientHandler.getId());
-            protocol.sendCreateJoinAccepted(buffer);
+            // protocol.sendCreateJoinAccepted(buffer);
+            protocol.sendControl(buffer);
         }
 
         // exitoso: asignar queue y marcar currentGameId

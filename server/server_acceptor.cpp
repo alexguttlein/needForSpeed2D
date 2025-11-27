@@ -71,3 +71,16 @@ Acceptor::~Acceptor() {
         socket.close();
     }
 }
+
+void Acceptor::broadcastServerDisconnect() {
+    for (auto& client : clients) {
+        if (client && client->isAlive()) {
+            auto snap = std::make_shared<Snapshot>();
+            snap->controlEvent = EventType::SERVER_DISCONNECTED;
+
+            try {
+                client->getClientQueue().push(snap);
+            } catch(...) {}
+        }
+    }
+}

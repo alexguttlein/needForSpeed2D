@@ -45,5 +45,7 @@ class Acceptor : public Thread {
     *
     * */
     ~Acceptor() override;
+
+    void broadcastServerDisconnect();
 };
 #endif //SERVER_ACCEPTOR_H
