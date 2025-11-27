@@ -34,6 +34,8 @@ void ReceiverThread::lobbyCommands(Message msg) {
         protocol.addIntToUint8tVector(buffer, clientHandler.getId());
         protocol.sendCreateJoinAccepted(buffer);
 
+        gameMonitor.checkGameStart(newId);
+
     } else if (msg.code == Constants::LIST_GAMES) {
         // construir vector de pares (id, totalPlayers)
         std::vector<uint8_t> buffer;

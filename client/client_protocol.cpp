@@ -245,7 +245,6 @@ std::optional<Snapshot> ClientProtocol::receiveControlFromServer() {
         snapshot.controlEvent = EventType::JOIN_REJECTED;
         return snapshot;
     } else if (code == Constants::GAME_START) {
-        std::cout << "debug: recibiendo start en client" << std::endl;
         Snapshot snapshot{};
         snapshot.controlEvent = EventType::GAME_START;
         return snapshot;

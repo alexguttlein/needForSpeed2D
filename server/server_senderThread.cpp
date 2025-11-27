@@ -5,7 +5,6 @@ SenderThread::SenderThread(ServerProtocol& protocol, Queue<std::shared_ptr<Snaps
 }
 
 void SenderThread::run() {
-    std::cout << "debug: SenderThread::run()" << std::endl;
 
     while (keepRunning) {
         std::shared_ptr<Snapshot> snapshot;

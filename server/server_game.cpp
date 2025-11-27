@@ -16,12 +16,12 @@ Queue<std::shared_ptr<Message>>& Game::getSharedQueue() {
 
 void Game::checkGameStart() {
     // se informa a los clientes que va a comenzar la partida
-    std::cout << "debug: checkgamestart en game -> " << gameId << std::endl;
-    for (auto* q : clientQueues) {
-        auto snapshot = std::make_shared<Snapshot>();
-        snapshot->controlEvent = EventType::GAME_START;
-        std::cout << "debug: enviando start a queue: " << q << std::endl;
-        q->push(snapshot);
+    if ((int)clientQueues.size() >= Constants::MAX_PLAYERS_IN_GAME) {
+        for (auto* q : clientQueues) {
+            auto snapshot = std::make_shared<Snapshot>();
+            snapshot->controlEvent = EventType::GAME_START;
+            q->push(snapshot);
+        }
     }
 }
 

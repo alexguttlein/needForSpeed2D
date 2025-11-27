@@ -91,7 +91,6 @@ std::string GameMonitor::getGameCreator(int matchId) {
 }
 
 void GameMonitor::checkGameStart(int matchId) {
-std::cout << "debug: checkgamestart en monitor" << std::endl;
     auto it = games.find(matchId);
     if (it == games.end()) return;
 
