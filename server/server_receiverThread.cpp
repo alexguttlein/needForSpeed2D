@@ -32,7 +32,10 @@ void ReceiverThread::lobbyCommands(Message msg) {
         buffer.push_back(Constants::TYPE_CONTROL);
         buffer.push_back(Constants::CREATE_JOIN_ACCEPTED);
         protocol.addIntToUint8tVector(buffer, clientHandler.getId());
-        protocol.sendCreateJoinAccepted(buffer);
+        // protocol.sendCreateJoinAccepted(buffer);
+        protocol.sendControl(buffer);
+
+        gameMonitor.checkGameStart(newId);
 
     } else if (msg.code == Constants::LIST_GAMES) {
         // construir vector de pares (id, totalPlayers)
@@ -80,7 +83,8 @@ void ReceiverThread::lobbyCommands(Message msg) {
             buffer.push_back(Constants::TYPE_CONTROL);
             buffer.push_back(Constants::CREATE_JOIN_ACCEPTED);
             protocol.addIntToUint8tVector(buffer, clientHandler.getId());
-            protocol.sendCreateJoinAccepted(buffer);
+            // protocol.sendCreateJoinAccepted(buffer);
+            protocol.sendControl(buffer);
         }
 
         // exitoso: asignar queue y marcar currentGameId
@@ -90,6 +94,7 @@ void ReceiverThread::lobbyCommands(Message msg) {
 
         // registrar Cliente en la partida para que Game conozca su queue privada
         bool regOk = gameMonitor.registerClientToGame(joinId, &clientHandler);
+        gameMonitor.checkGameStart(joinId);
         if (!regOk) {
             std::cerr << "Error: no se pudo registrar client en game " << joinId << std::endl;
             protocol.sendControl(Constants::JOIN_REJECTED);

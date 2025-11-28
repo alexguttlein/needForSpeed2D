@@ -29,6 +29,7 @@
         std::atomic<bool> shuttingDown{false};
         std::string playerName;
         int carId;
+        bool isPlaying;
 
     public:
         /*
@@ -65,5 +66,6 @@
         void setPlayerName(const std::string& string);
         void setCarId(int carId);
         int getCarId() const;
+        void startGame();
     };
     #endif //CLIENTHANDLER_H

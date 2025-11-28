@@ -23,6 +23,12 @@ public:
     ~ClientQtManager();
     void start();
 
+signals:
+    void startGameRequested(); // se conecta al cliente SDL
+
+private slots:
+    void onStartGameReceived();
+
 private:
     Client* client;
     std::unique_ptr<QApplication> app;
@@ -32,6 +38,7 @@ private:
     void setupCreateButton(LobbyMenuWindow* lobby);
     void setupJoinButton(LobbyMenuWindow* lobby);
     void setupSelectCarButton(LobbyMenuWindow* lobby);
+    void waitForGameEvents(WaitingWindow* waiting, LobbyMenuWindow* lobby);
 };
 
 #endif //CLIENT_QTMANAGER_H

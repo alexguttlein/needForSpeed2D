@@ -6,12 +6,12 @@
 #include <QMovie>
 
 WaitingWindow::WaitingWindow(QWidget* parent)
-    : QWidget(parent), eventQueuePtr(nullptr) {
+    : QWidget(parent) {
 
     setWindowTitle("Waiting for Players...");
     resize(800, 600);
 
-    QPixmap bg("/home/alex/Documents/TP-Final-Taller_2C2025/v2.1/TP-Taller-G7/assets/need-for-speed/lobbyImg/wall3.jpg");
+    QPixmap bg("assets/need-for-speed/lobbyImg/wall3.jpg");
     if (!bg.isNull()) {
         bg = bg.scaled(size(), Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
         QPalette pal;
@@ -51,16 +51,11 @@ WaitingWindow::WaitingWindow(QWidget* parent)
     setLayout(layout);
 }
 
-WaitingWindow::WaitingWindow(Queue<Event>& eventQueueRef, QWidget* parent)
-    : WaitingWindow(parent) {
-    eventQueuePtr = &eventQueueRef;
+void WaitingWindow::onCancelClicked() {
+    emit cancelled();
+    close();
 }
 
 void WaitingWindow::setMessage(const QString& msg) {
     textLabel->setText(msg);
-}
-
-void WaitingWindow::onCancelClicked() {
-    QMessageBox::information(this, "Cancelled", "You left the lobby.");
-    this->close();
 }

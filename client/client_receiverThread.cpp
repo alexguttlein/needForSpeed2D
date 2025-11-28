@@ -22,10 +22,19 @@ void ReceiverThread::run() {
                     "No se pudo unir a la partida."));
                     continue;
                 }
-                // case EventType::GAME_LIST_RECEIVED: {
-                //     eventQueue.push(Event(EventType::GAME_LIST_RECEIVED,""));
-                //     continue;
-                // }
+                case EventType::GAME_START: {
+                    std::cout << "debug: client push start" << std::endl;
+                    eventQueue.push(Event(EventType::GAME_START,
+                    "Iniciando partida..."));
+                    continue;
+                }
+                case EventType::SERVER_DISCONNECTED: {
+                    std::cout << "debug: server disconnected detected" << std::endl;
+                    eventQueue.push(Event(EventType::SERVER_DISCONNECTED,
+                    "El servidor se ha desconectado."));
+                    keepRunning = false; // se termina el loop del receiver
+                    continue;
+                }
                 default: snapshotQueue.push(snapshot);
             }
         }

@@ -90,6 +90,14 @@ std::string GameMonitor::getGameCreator(int matchId) {
     return game->getCreatorsName();
 }
 
+void GameMonitor::checkGameStart(int matchId) {
+    auto it = games.find(matchId);
+    if (it == games.end()) return;
+
+    Game* game = it->second.get();
+    game->checkGameStart();
+}
+
 GameMonitor::~GameMonitor() {
     std::lock_guard<std::mutex> lock(mtx);
     games.clear();

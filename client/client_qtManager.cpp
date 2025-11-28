@@ -171,28 +171,11 @@ void ClientQtManager::setupCreateButton(LobbyMenuWindow* lobby) {
             return;
         }
 
-        auto* waiting = new WaitingWindow(client->getEventQueue());
+        auto* waiting = new WaitingWindow();
         waiting->show();
         lobby->hide();
 
-        (void)QtConcurrent::run([this, lobby, waiting]() {
-            Event event = client->getEventQueue().pop();
-
-            QMetaObject::invokeMethod(waiting, [lobby, waiting, event, this]() {
-                waiting->close();
-                if (event.type == EventType::CREATE_JOIN_ACCEPTED) {
-                    if (!event.message.empty()) {
-                        client->setSelfId(std::stoi(event.message));
-                        qDebug() << "Client selfId set to:" << std::stoi(event.message);
-                    }
-                    lobby->close();
-                } else {
-                    QMessageBox::information(lobby, Constants::ERROR_TXT.data(),
-                        Constants::NO_PUDO_CREAR_PARTIDA.data());
-                    lobby->show();
-                }
-            }, Qt::QueuedConnection);
-        });
+        waitForGameEvents(waiting, lobby);
     });
 }
 
@@ -232,28 +215,12 @@ void ClientQtManager::setupJoinButton(LobbyMenuWindow* lobby) {
                     return;
                 }
 
-                auto* waiting = new WaitingWindow(client->getEventQueue());
+                auto* waiting = new WaitingWindow();
                 waiting->show();
                 listWindow->close();
                 lobby->hide();
 
-                (void)QtConcurrent::run([this, lobby, waiting]() {
-                    Event event = client->getEventQueue().pop();
-                    QMetaObject::invokeMethod(waiting, [lobby, waiting, event, this]() {
-                        waiting->close();
-                        if (event.type == EventType::CREATE_JOIN_ACCEPTED) {
-                            if (!event.message.empty()) {
-                                client->setSelfId(std::stoi(event.message));
-                                qDebug() << "Client selfId set to:" << std::stoi(event.message);
-                            }
-                            lobby->close();
-                        } else {
-                            QMessageBox::warning(lobby, Constants::ERROR_TXT.data(),
-                                Constants::NO_PUDO_UNIR_PARTIDA.data());
-                            lobby->show();
-                        }
-                    }, Qt::QueuedConnection);
-                });
+                waitForGameEvents(waiting, lobby);
             });
         });
     });
@@ -276,4 +243,51 @@ void ClientQtManager::setupSelectCarButton(LobbyMenuWindow* lobby) {
     // Inicialmente deshabilitar botones de juego
     lobby->getCreateButton()->setEnabled(false);
     lobby->getJoinButton()->setEnabled(false);
+}
+
+void ClientQtManager::waitForGameEvents(WaitingWindow* waiting, LobbyMenuWindow* lobby) {
+
+    // Cancel button
+    QObject::connect(waiting, &WaitingWindow::cancelled, [lobby, waiting]() {
+        lobby->show();
+        waiting->close();
+    });
+
+    // Hilo que bloquea en pop()
+    (void)QtConcurrent::run([this, waiting, lobby]() {
+
+        Event event = client->getEventQueue().pop();
+
+        QMetaObject::invokeMethod(waiting, [this, event, waiting, lobby]() {
+
+            // evento de jugador aceptado
+            if (event.type == EventType::CREATE_JOIN_ACCEPTED) {
+
+                if (!event.message.empty()) {
+                    client->setSelfId(std::stoi(event.message));
+                }
+
+                // Esperar el segundo evento, SIN cerrar waiting
+                waitForGameEvents(waiting, lobby);
+                return;
+            }
+
+            // evento para comenzar partida
+            if (event.type == EventType::GAME_START) {
+
+                waiting->close();
+                lobby->close();
+                client->changePlayingStatus();
+                emit waiting->gameShouldStart();
+                return;
+            }
+
+            // ERROR
+            QMessageBox::warning(lobby, Constants::ERROR_TXT.data(),
+                                 "No se pudo unir/crear partida.");
+            lobby->show();
+            waiting->close();
+
+        }, Qt::QueuedConnection);
+    });
 }

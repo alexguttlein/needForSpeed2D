@@ -8,6 +8,7 @@ void Server::run() {
     std::string end;
     while (std::getline(std::cin, end)) {
         if (end == "q") {
+            acceptor.broadcastServerDisconnect();
             break;
         }
     }

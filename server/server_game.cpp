@@ -14,6 +14,17 @@ Queue<std::shared_ptr<Message>>& Game::getSharedQueue() {
     return sharedQueue;
 }
 
+void Game::checkGameStart() {
+    // se informa a los clientes que va a comenzar la partida
+    if ((int)clientQueues.size() >= Constants::MAX_PLAYERS_IN_GAME) {
+        for (auto* q : clientQueues) {
+            auto snapshot = std::make_shared<Snapshot>();
+            snapshot->controlEvent = EventType::GAME_START;
+            q->push(snapshot);
+        }
+    }
+}
+
 void Game::addClientHandler(ClientHandler* client) {
     std::lock_guard<std::mutex> lock(mtx);
     clientHandlers.push_back(client);

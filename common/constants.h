@@ -22,6 +22,8 @@ namespace  Constants {
     static constexpr unsigned char JOIN_REJECTED = 0x22;
     static constexpr unsigned char CREATE_JOIN_ACCEPTED = 0x23;
     static constexpr unsigned char LIST_GAMES = 0x24;
+    static constexpr unsigned char GAME_START = 0x25;
+    static constexpr unsigned char SERVER_DISCONNECTED = 0x26;
     static constexpr unsigned char TYPE_SNAPSHOT = 0x30;
     static constexpr unsigned char TYPE_CONTROL = 0x31;
     static constexpr unsigned char TYPE_GAME_LIST = 0x32;

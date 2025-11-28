@@ -23,7 +23,8 @@ void Client::run() {
     ClientQtManager qt(this);
     qt.start();
 
-    std::cout << "debug: auto elegido = " << selectedCarId << std::endl;
+    // si no se inicio una partida, no abre SDL
+    if (!playing) return;
 
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         std::fprintf(stderr, "SDL_Init error: %s\n", SDL_GetError());
@@ -58,14 +59,12 @@ void Client::run() {
 
     loadTexturesAndAssets_(dib);
     dib.setFacingDeg(0.0f);
+
     bool running = true;
-    //CAMBIAR
-    // int x = 90, y = 90 ;
     bool havePos = false;
 
-    // bool haveSnapshot = false;
     Snapshot snapshot;
-    bool lastRaceFinished = false; 
+    bool lastRaceFinished = false;
 
     while (running) {
         auto start = std::chrono::steady_clock::now();
@@ -77,35 +76,35 @@ void Client::run() {
                 switch (e.key.keysym.sym) {
                     case SDLK_ESCAPE: running = false; break;
                     case SDLK_q: running = false; break;
-                    case SDLK_w: 
-                        if (!dib.hasPlayerFinishedRace()) 
-                            commandQueue.push({ SDLK_w, true }); 
+                    case SDLK_w:
+                        if (!dib.hasPlayerFinishedRace())
+                            commandQueue.push({ SDLK_w, true });
                         break;
-                    case SDLK_s: 
-                        if (!dib.hasPlayerFinishedRace()) 
-                            commandQueue.push({ SDLK_s, true }); 
+                    case SDLK_s:
+                        if (!dib.hasPlayerFinishedRace())
+                            commandQueue.push({ SDLK_s, true });
                         break;
-                    case SDLK_a: 
-                        if (!dib.hasPlayerFinishedRace()) 
-                            commandQueue.push({ SDLK_a, true }); 
+                    case SDLK_a:
+                        if (!dib.hasPlayerFinishedRace())
+                            commandQueue.push({ SDLK_a, true });
                         break;
-                    case SDLK_d: 
-                        if (!dib.hasPlayerFinishedRace()) 
-                            commandQueue.push({ SDLK_d, true }); 
+                    case SDLK_d:
+                        if (!dib.hasPlayerFinishedRace())
+                            commandQueue.push({ SDLK_d, true });
                         break;
-                    case SDLK_1: 
+                    case SDLK_1:
                         commandQueue.push({ SDLK_1, true });
                         dib.showUpgradePopup(1);
                         break;
-                    case SDLK_2: 
+                    case SDLK_2:
                         commandQueue.push({ SDLK_2, true });
                         dib.showUpgradePopup(2);
                         break;
-                    case SDLK_3: 
+                    case SDLK_3:
                         commandQueue.push({ SDLK_3, true });
                         dib.showUpgradePopup(3);
                         break;
-                    case SDLK_4: 
+                    case SDLK_4:
                         commandQueue.push({ SDLK_4, true });
                         dib.showUpgradePopup(4);
                         break;
@@ -113,36 +112,39 @@ void Client::run() {
             }
             else if (e.type == SDL_KEYUP) {
                 switch (e.key.keysym.sym) {
-                    case SDLK_w: 
-                        if (!dib.hasPlayerFinishedRace()) 
-                            commandQueue.push({ SDLK_w, false }); 
+                    case SDLK_w:
+                        if (!dib.hasPlayerFinishedRace())
+                            commandQueue.push({ SDLK_w, false });
                         break;
-                    case SDLK_s: 
-                        if (!dib.hasPlayerFinishedRace()) 
-                            commandQueue.push({ SDLK_s, false }); 
+                    case SDLK_s:
+                        if (!dib.hasPlayerFinishedRace())
+                            commandQueue.push({ SDLK_s, false });
                         break;
-                    case SDLK_a: 
-                        if (!dib.hasPlayerFinishedRace()) 
-                            commandQueue.push({ SDLK_a, false }); 
+                    case SDLK_a:
+                        if (!dib.hasPlayerFinishedRace())
+                            commandQueue.push({ SDLK_a, false });
                         break;
-                    case SDLK_d: 
-                        if (!dib.hasPlayerFinishedRace()) 
-                            commandQueue.push({ SDLK_d, false }); 
+                    case SDLK_d:
+                        if (!dib.hasPlayerFinishedRace())
+                            commandQueue.push({ SDLK_d, false });
                         break;
                 }
             }
         }
 
-       
         Snapshot snapTmp;
-        // if (snapshotQueue.try_pop(snapTmp)) {
-        //     snapshot = std::move(snapTmp);
-        //     havePos = true;
-        //     if (selfId == -1 && snapshot.playerId) selfId = snapshot.playerId; // solo la primera vez
-        // }
-        while (snapshotQueue.try_pop(snapTmp)) { 
+        while (snapshotQueue.try_pop(snapTmp)) {
             snapshot = std::move(snapTmp); // Siempre guardamos el más reciente
             havePos = true;
+        }
+
+        //se revisa la queue de eventos para ver si el server se desconecto
+        Event evt;
+        while (eventQueue.try_pop(evt)) {
+            if (evt.type == EventType::SERVER_DISCONNECTED) {
+                std::cout << "debug: Servidor desconectado, cerrando cliente..." << std::endl;
+                running = false;
+            }
         }
 
         if (havePos) {
@@ -162,7 +164,7 @@ void Client::run() {
             if (snapshot.gameFinished) {
                 dib.setGameFinished(true, snapshot.leaderboards);
             }
-            
+
             if (snapshot.raceFinished && !lastRaceFinished) {
                 dib.setRaceFinished(true, snapshot.raceStates);
             }
@@ -226,4 +228,8 @@ void Client::loadTexturesAndAssets_(ClientDibujador& dib) {
     dib.setUIFont("assets/ui/FreeSans.ttf", 16);
     dib.loadCheckpoint("assets/ui/checkpoint.png");
     dib.loadHint("assets/ui/hint.png");
+}
+
+void Client::changePlayingStatus() {
+    playing = !playing;
 }
