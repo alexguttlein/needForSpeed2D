@@ -63,7 +63,7 @@ namespace  Constants {
     static constexpr float DT = 1.0f / static_cast<float>(TICKS_PER_SECOND);
 
     // constantes de espera entre carreras para seleccionar mejoras
-    static constexpr int UPGRADE_WAIT_SECONDS = 10;
+    static constexpr int UPGRADE_WAIT_SECONDS = 15;
     static constexpr int UPGRADE_WAIT_TICKS = Constants::UPGRADE_WAIT_SECONDS * Constants::TICKS_PER_SECOND;
 
     //constantes del juego

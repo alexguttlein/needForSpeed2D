@@ -211,7 +211,7 @@ void ClientDibujador::renderAll(const std::vector<CarStateDTO>& cars, int selfId
     
     if (raceFinished_) {
         Uint32 now = SDL_GetTicks();
-        const Uint32 SHOW_RESULTS_MS = 10000;
+        const Uint32 SHOW_RESULTS_MS = 15000;
 
         if (now - resultsStartTicks_ < SHOW_RESULTS_MS) {
             renderResultsTable();
@@ -435,25 +435,25 @@ void ClientDibujador::renderResultsUpgradesPanel_(const SDL_Rect& panelRect) {
     // Título
     drawText_("Mejoras", x, titleY, titleColor, false);
 
-    drawText_("[1] + Vida", x, y, nameColor, false);
+    drawText_("[1] + Escudo", x, y, nameColor, false);
     y += lineGap;
 
     drawText_("Costo: 8 s", x + 10, y, costColor, false);
     y += blockGap;
 
-    drawText_("[2] + Ultima Chance", x, y, nameColor, false);
+    drawText_("[2] + Aceleracion ++", x, y, nameColor, false);
     y += lineGap;
 
     drawText_("Costo: 6 s", x + 10, y, costColor, false);
     y += blockGap;
 
-    drawText_("[3] + Control", x, y, nameColor, false);
+    drawText_("[3] + Control ++", x, y, nameColor, false);
     y += lineGap;
 
     drawText_("Costo: 10 s", x + 10, y, costColor, false);
     y += blockGap;
 
-    drawText_("[4] + Velcoidad", x, y, nameColor, false);
+    drawText_("[4] + Velocidad", x, y, nameColor, false);
     y += lineGap;
 
     drawText_("Costo: 12 s", x + 10, y, costColor, false);
@@ -799,18 +799,18 @@ void ClientDibujador::hideUpgradePopup() {
 
 std::string ClientDibujador::getUpgradeName_(int upgradeId) const {
     switch (upgradeId) {
-        case 1: return "Vida";
-        case 2: return "Ultima Chance";
-        case 3: return "Control";
-        case 4: return "Velocidad";
+        case 1: return "Escudo Vital";
+        case 2: return "Aceleracion ++";
+        case 3: return "Control ++";
+        case 4: return "Velocidad Maxima ++";
         default: return "Mejora Desconocida";
     }
 }
 
 std::string ClientDibujador::getUpgradeDescription_(int upgradeId) const {
     switch (upgradeId) {
-        case 1: return "Mejora la vida del vehiculo";
-        case 2: return "Repara el vehiculo";
+        case 1: return "proporciona un escudo que absorbe daño";
+        case 2: return "Mejora la aceleracion del vehiculo";
         case 3: return "Mejora el manejo del vehiculo";
         case 4: return "Aumenta la velocidad maxima";
         default: return "";
