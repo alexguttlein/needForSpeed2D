@@ -214,6 +214,12 @@ void ServerProtocol::sendSnapshot(std::shared_ptr<Snapshot>& snapshot) {
         addIntToUint8tVector(buffer, playerTime.playerId);
         uint32_t timeBits = *reinterpret_cast<const uint32_t*>(&playerTime.finishTime);
         appendUInt32(buffer, timeBits);
+        // Enviar playerName
+        uint16_t nameLen = static_cast<uint16_t>(playerTime.playerName.size());
+        uint16_t nameLenBE = htons(nameLen);
+        const uint8_t* nameLenBytes = reinterpret_cast<const uint8_t*>(&nameLenBE);
+        buffer.insert(buffer.end(), nameLenBytes, nameLenBytes + sizeof(nameLenBE));
+        buffer.insert(buffer.end(), reinterpret_cast<const uint8_t*>(playerTime.playerName.data()), reinterpret_cast<const uint8_t*>(playerTime.playerName.data()) + nameLen);
     }
 
     socket.sendall(buffer.data(), buffer.size());

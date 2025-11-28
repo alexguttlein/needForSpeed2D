@@ -928,8 +928,8 @@ void ClientDibujador::renderGameOver_() {
         
         drawText_(posStr, panelX + 50, y, posColor, true);
 
-        // Player ID
-        std::string playerStr = "Jugador " + std::to_string(entry.playerId);
+        // Player Name
+        std::string playerStr = entry.playerName;
         drawText_(playerStr, panelX + 120, y, {220, 220, 220, 255}, true);
 
         // Tiempo

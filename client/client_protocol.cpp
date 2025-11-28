@@ -270,6 +270,13 @@ std::optional<Snapshot> ClientProtocol::receiveSnapshotFromServer() {
             uint32_t finishTimeHost = ntohl(finishTimeBE);
             pt.finishTime = *reinterpret_cast<float*>(&finishTimeHost);
 
+            // playerName
+            uint16_t nameLenBE = 0;
+            socket.recvall(&nameLenBE, sizeof(nameLenBE));
+            uint16_t nameLen = ntohs(nameLenBE);
+            pt.playerName.resize(nameLen);
+            socket.recvall(pt.playerName.data(), nameLen);
+
             snapshot.leaderboards.push_back(pt);
         }
 

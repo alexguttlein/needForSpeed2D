@@ -297,9 +297,10 @@ Leaderboard RaceLogic::getLeaderBoard() const {
 
     for (const auto& pair : allTimeFinishTimes) {
         float time = pair.second;
+        std::string playerName = getPlayerName(pair.first);
         
         if (time >= 0.0f) { 
-            leaderboard.push_back({pair.first, time});
+            leaderboard.push_back({pair.first, time, playerName});
         }
     }
 

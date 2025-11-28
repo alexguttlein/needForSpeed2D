@@ -10,6 +10,7 @@
 struct PlayerTime {
     int playerId;
     float finishTime;
+    std::string playerName;
 };
 
 using Leaderboard = std::vector<PlayerTime>;

@@ -394,6 +394,7 @@ void GameLogic::finishGame() {
     std::cout << "🏆 LEADERBOARD FINAL 🏆" << std::endl;
     for (size_t i = 0; i < leaderboard.size(); ++i) {
         const auto& entry = leaderboard[i];
+
         std::cout << (i + 1) << ". Jugador " << entry.playerId 
                 << " - Tiempo Total: " << entry.finishTime << " segundos." << std::endl;
     
