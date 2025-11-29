@@ -26,6 +26,7 @@ private:
     std::map<int, float> finishTimes;
     std::map<int, float> allTimeFinishTimes;
     std::map<int, std::string> playerNames;
+    std::map<int, int> playerTimePenalties; // Penalizaciones de tiempo en ticks para cada jugador
 
     std::vector<Vector2D<float>> actualRaceCheckpoints;
     std::string actualRaceId; // ID del circuito actual
@@ -190,5 +191,23 @@ public:
     *
     * */
     Vector2D<float> getSpawnPositionForPlayer(int playerIndex);
+
+    /*
+    * Establece la penalización de tiempo (en ticks) aplicada al jugador por las mejoras compradas
+    *
+    * */
+    void setPlayerTimePenaltyTicks(int playerId, int ticks);
+
+    /*
+    * Devuelve la penalización de tiempo (en ticks) aplicada al jugador por las mejoras compradas
+    *
+    */
+    int getPlayerTimePenaltyTicks(int playerId);
+
+    /*
+    * Limpia las penalizaciones de tiempo de un jugador
+    *
+    * */
+    void clearPlayerTimePenalties(int playerId);
 };
 #endif // SERVER_RACELOGIC_H

@@ -12,6 +12,7 @@
 struct RaceStateDTO {
     std::string playerName;
     int playerId;
+    std::string timeLeftRace; // Formato "MM:SS"
     int currentRaceId;
     Vector2D<float> nextCheckpoint;
     std::vector<Vector2D<float>> currentHints;

@@ -29,7 +29,7 @@ public:
 
     void setFacingDeg(float deg) { facingDeg = deg; }
 
-    void renderAll(const std::vector<CarStateDTO>& cars, int selfId);
+    void renderAll(const std::vector<CarStateDTO>& cars, int selfId, std::string timeLeftRace);
     void updateRaceState(const RaceStateDTO& raceState);
     bool loadCarAtlasForId(int carTypeId, const std::string& pathPng,
                            int cols, int rows, float angle0Deg, bool cw);
@@ -58,11 +58,11 @@ private:
     SDL_Texture* loadTexture_(const std::string& path);
     void updateCamera_(int playerX, int playerY);
 
-    void drawHUD_();
+    void drawHUD_(std::string timeLeftRace);
     void drawHudSpeed_(int panelX, int panelY);
     void drawHudHealth_(int panelX, int panelY);
     void drawHudRace_(int panelX, int panelY);
-    void drawHudTime_(int panelX, int panelY, int panelW);
+    void drawHudTime_(int panelX, int panelY, int panelW, std::string timeLeftRace);
     void drawMinimap_(const std::vector<CarStateDTO>& cars, int selfId);
 
     void drawPanel_(int x, int y, int w, int h, Uint8 a = 160);

@@ -332,3 +332,21 @@ Vector2D<float> RaceLogic::getSpawnPositionForPlayer(int playerIndex) {
     return Vector2D<float>{0.0f, 0.0f};
 }
 
+
+int RaceLogic::getPlayerTimePenaltyTicks(int playerId) {
+    auto it = playerTimePenalties.find(playerId);
+    if (it != playerTimePenalties.end()) {
+        return it->second;
+    }
+    return 0;
+}
+
+
+void RaceLogic::setPlayerTimePenaltyTicks(int playerId, int ticks) {
+    playerTimePenalties[playerId] = ticks;
+}
+
+
+void RaceLogic::clearPlayerTimePenalties(int playerId) {
+    playerTimePenalties.erase(playerId);
+}

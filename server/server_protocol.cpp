@@ -127,7 +127,7 @@ void ServerProtocol::sendSnapshot(std::shared_ptr<Snapshot>& snapshot) {
 
     //players size
     appendUInt32(buffer, snapshot->playersSize);
-
+   
     for (const auto& carState : snapshot->cars) {
         
         // car_id (int, típicamente 4 bytes)
@@ -171,6 +171,14 @@ void ServerProtocol::sendSnapshot(std::shared_ptr<Snapshot>& snapshot) {
         // playerId
         addIntToUint8tVector(buffer, rs.playerId);
 
+
+        // timeLeftRace (string: uint16_t length + chars)
+        uint16_t timeLen = static_cast<uint16_t>(rs.timeLeftRace.size());
+        uint16_t timeLenBE = htons(timeLen);
+        const uint8_t* timeLenBytes = reinterpret_cast<const uint8_t*>(&timeLenBE);
+        buffer.insert(buffer.end(), timeLenBytes, timeLenBytes + sizeof(timeLenBE));
+        buffer.insert(buffer.end(), reinterpret_cast<const uint8_t*>(rs.timeLeftRace.data()), reinterpret_cast<const uint8_t*>(rs.timeLeftRace.data()) + timeLen);
+        
         // currentRaceId
         addIntToUint8tVector(buffer, rs.currentRaceId);
 

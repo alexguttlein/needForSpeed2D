@@ -191,6 +191,28 @@ public:
     * */
     void resetRaceTemporizer();
 
+    /*
+    * Obtiene el temporizador de la carrera para mostrar a los jugadores
+    * Si eligio una mejora se le resta el tiempo correspondiente
+    * */
+    std::string getRaceTimerForPlayer(int playerId);
+
+    /*
+    * Convierte ticks a formato "MM:SS"
+    *
+    * */
+    std::string getMinuteSecondFromTicks(int ticks, bool finished);
+
+    /*
+    * Obtiene el tiempo de penalización asociado a una mejora específica
+    *
+    * */
+    float getPenalizedTimeUpgrade(int upgradeId) const;
+
+    /*
+    * Destructor de GameLogic.
+    *
+    * */
     ~GameLogic();
 };
 #endif // SERVER_GAMELOGIC_H

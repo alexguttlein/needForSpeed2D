@@ -184,6 +184,13 @@ std::optional<Snapshot> ClientProtocol::receiveSnapshotFromServer() {
             socket.recvall(&playerIdBE, sizeof(playerIdBE));
             rs.playerId = static_cast<int>(ntohl(playerIdBE));
 
+            // timeLeftRace
+            uint16_t timeLenBE = 0;
+            socket.recvall(&timeLenBE, sizeof(timeLenBE));
+            uint16_t timeLen = ntohs(timeLenBE);
+            rs.timeLeftRace.resize(timeLen);
+            socket.recvall(rs.timeLeftRace.data(), timeLen);
+
             // currentRaceId
             uint32_t currentRaceIdBE = 0;
             socket.recvall(&currentRaceIdBE, sizeof(currentRaceIdBE));
