@@ -124,6 +124,12 @@ public:
     std::vector<int> getFinishedPlayers() const;
 
     /*
+    * Agrega un jugador a la lista de finalizados
+    *
+    * */
+    void addFinishedPlayer(int playerId);
+
+    /*
     * Devuelve el tiempo (en segundos) en que el jugador terminó la carrera; -1 si no terminó
     *
     * */

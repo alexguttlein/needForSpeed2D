@@ -270,7 +270,7 @@ void GameLogic::applyUpgradeToCar(){
             car->applyUpgrade(upgradeId);
             float penalizeTime = getPenalizedTimeUpgrade(upgradeId);
             raceLogic.upgradePenalizeTimeToPlayer(penalizeTime, id); // agrego la penalizacion al tiempo del jugador
-            raceLogic.setPlayerTimePenaltyTicks(id, penalizeTime); // guardo la penalizacion en ticks
+            raceLogic.setPlayerTimePenaltyTicks(id, static_cast<int>(penalizeTime * Constants::TICKS_PER_SECOND)); // guardo la penalizacion en ticks
             std::cout << "Penalizando al jugador " << id << " con " << penalizeTime << " segundos por mejora." << std::endl;
             std::cout << "Aplicando MEJORA " << upgradeId << " al jugador " << id << std::endl; 
         }
@@ -342,16 +342,28 @@ void GameLogic::resetNpcs(){
 void GameLogic::simulateRaceInProgress(int currentTick, float currentRaceTime) {
 
     for (auto const& [id, car] : cars) {
-    
+
         if (!raceLogic.hasPlayerFinished(id)) {
-            Vector2D<float> carPosition = car->getPosition();
-            bool justFinished = raceLogic.checkCheckpoint(id, carPosition); 
-            if (justFinished) {
-                raceLogic.setCurrentRaceTimeSeconds(currentRaceTime);
-                raceLogic.addTimeFinishPlayer(currentRaceTime, id); // actualizo tiempo en carrera total
+
+            int secondsLeft = getRemainingSecondsForPlayer(id);
+            if(secondsLeft <= 0){
+                setFinishRaceByPlayerLeftTimeToFinish(id, static_cast<int>(currentRaceTime));
+            }
+            else{
+                Vector2D<float> carPosition = car->getPosition();
+                bool justFinished = raceLogic.checkCheckpoint(id, carPosition); 
+                if (justFinished) {
+                    raceLogic.setCurrentRaceTimeSeconds(currentRaceTime);
+                    raceLogic.addTimeFinishPlayer(currentRaceTime, id); // actualizo tiempo en carrera total
+                }
             }
         }
     }
+    hasRaceOver(currentTick); 
+}
+
+
+void GameLogic::hasRaceOver(int currentTick) {
     if (raceLogic.isRaceOver()) {
 
         if(raceLogic.hasNextRace()) {
@@ -361,6 +373,14 @@ void GameLogic::simulateRaceInProgress(int currentTick, float currentRaceTime) {
             finishGame();
         }
     } 
+}
+
+
+void GameLogic::setFinishRaceByPlayerLeftTimeToFinish(int playerId, int currentRaceTime) {
+    raceLogic.addFinishedPlayer(playerId); // marco como finalizado
+    int penalizeTimeForNotFinish = currentRaceTime + Constants::NOT_FINISH_PENALIZE_SECONDS;
+    raceLogic.setCurrentRaceTimeSeconds(penalizeTimeForNotFinish);
+    raceLogic.addTimeFinishPlayer(penalizeTimeForNotFinish, playerId); // actualizo tiempo en carrera
 }
 
 
@@ -420,8 +440,8 @@ void GameLogic::checkFinishRaceByTime(int currentTick) {
     }
     
     if(remainingFinishTicks <= 0){
-        std::cout << "Tiempo máximo de la carrera alcanzado. Finalizando la carrera..." << std::endl;
-        setTransition(currentTick); // Iniciar transición al finalizar la carrera, tener cuidado como arranca el raceStartTick
+        std::cout << "Tiempo máximo de la carrera alcanzado. Finalizando la partida..." << std::endl;
+        //finishGame();
     }
 }
 
@@ -447,12 +467,7 @@ std::string GameLogic::getMinuteSecondFromTicks(int playerId, bool finished) {
         totalSeconds = Constants::MAX_TICKS / Constants::TICKS_PER_SECOND - finishTime;
     }
     else{
-        int penalizeTicks = raceLogic.getPlayerTimePenaltyTicks(playerId);
-        totalSeconds = remainingFinishTicks / Constants::TICKS_PER_SECOND - penalizeTicks;
-    }
-
-    if (totalSeconds < 0) {
-        totalSeconds = 0;
+        totalSeconds = getRemainingSecondsForPlayer(playerId);
     }
 
     unsigned int minutes = static_cast<unsigned int>(totalSeconds) / 60;
@@ -461,6 +476,16 @@ std::string GameLogic::getMinuteSecondFromTicks(int playerId, bool finished) {
     char buffer[12];
     std::snprintf(buffer, sizeof(buffer), "%02d:%02d", minutes, seconds);
     return std::string(buffer);
+}
+
+
+int GameLogic::getRemainingSecondsForPlayer(int playerId) {
+    int penalizeTicks = raceLogic.getPlayerTimePenaltyTicks(playerId);
+    int ticksLeft = remainingFinishTicks - penalizeTicks; 
+    if (ticksLeft < 0) {
+        ticksLeft = 0;
+    }
+    return ticksLeft / Constants::TICKS_PER_SECOND;
 }
 
 

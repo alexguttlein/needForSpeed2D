@@ -61,6 +61,8 @@ namespace  Constants {
     static constexpr int TICKS_PER_SECOND = 60;
     static constexpr int MAX_TICKS = 36000; // 10 minutos a 60 ticks por segundo
     static constexpr float DT = 1.0f / static_cast<float>(TICKS_PER_SECOND);
+    static constexpr int NOT_FINISH_PENALIZE_SECONDS = 40; // penalizacion por no terminar la carrera
+
 
     // constantes de espera entre carreras para seleccionar mejoras
     static constexpr int UPGRADE_WAIT_SECONDS = 15;

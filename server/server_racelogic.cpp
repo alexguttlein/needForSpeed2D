@@ -198,6 +198,11 @@ std::vector<int> RaceLogic::getFinishedPlayers() const {
 }
 
 
+void RaceLogic::addFinishedPlayer(int playerId) {
+    finishedPlayers.push_back(playerId);
+}
+
+
 float RaceLogic::getFinishTime(int playerId) const {
     auto it = finishTimes.find(playerId);
     if (it == finishTimes.end()) {
