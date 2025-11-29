@@ -3,7 +3,7 @@
 
 GameLogic::GameLogic(){
     world = raceBuilder.getWorld();
-    auto objects = mapLoader.loadCollidersFromYaml("server/Mapa1-nfs.yaml");
+    auto objects = mapLoader.loadCollidersFromYaml("settings/Mapa1-nfs.yaml");
     mapSetObjects.createBodiesFromObjects(world, objects);
     //loadStaticNpcs();
 }

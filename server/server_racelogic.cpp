@@ -3,8 +3,8 @@
 
 RaceLogic::RaceLogic() : 
     yamlLoader(),
-    mapData(yamlLoader.loadMapFromYaml("server/raceCheckpoints.yaml")),
-    spawnData(yamlLoader.loadRaceSpawnPositions("server/raceSpawnPositions.yaml")),
+    mapData(yamlLoader.loadMapFromYaml("settings/races.yaml")),
+    spawnData(yamlLoader.loadRaceSpawnPositions("settings/spawnPositions.yaml")),
     actualRaceId("race_1"),
     currentRaceId(1) {
     
