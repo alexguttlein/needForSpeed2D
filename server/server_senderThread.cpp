@@ -23,7 +23,6 @@ void SenderThread::run() {
         } else if (snapshot->controlEvent == EventType::CREATE_JOIN_ACCEPTED) {
             // Enviar CREATE_JOIN_ACCEPTED + playerId
             if (protocol.isConnectionClosed()) continue;
-
             std::vector<uint8_t> buffer;
             buffer.push_back(Constants::TYPE_CONTROL);
             buffer.push_back(Constants::CREATE_JOIN_ACCEPTED);
@@ -41,6 +40,13 @@ void SenderThread::run() {
             std::vector<uint8_t> buffer;
             buffer.push_back(Constants::TYPE_CONTROL);
             buffer.push_back(Constants::SERVER_DISCONNECTED);
+            protocol.sendControl(buffer);
+        } else if (snapshot->controlEvent == EventType::PLAYER_COUNT_UPDATE) {
+            if (protocol.isConnectionClosed()) continue;
+            std::vector<uint8_t> buffer;
+            buffer.push_back(Constants::TYPE_CONTROL);
+            buffer.push_back(Constants::PLAYER_COUNT_UPDATE);
+            protocol.addIntToUint8tVector(buffer, snapshot->gameId);
             protocol.sendControl(buffer);
         } else {
             protocol.sendSnapshot(snapshot);

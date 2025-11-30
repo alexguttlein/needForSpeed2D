@@ -257,13 +257,3 @@ void ServerProtocol::sendControl(std::vector<uint8_t>& buffer) {
     if (isConnectionClosed()) return;
     socket.sendall(buffer.data(), buffer.size());
 }
-
-// void ServerProtocol::sendCreateJoinAccepted(std::vector<uint8_t>& buffer) {
-//     if (isConnectionClosed()) return;
-//     socket.sendall(buffer.data(), buffer.size());
-// }
-//
-// void ServerProtocol::sendGameStart(const std::vector<uint8_t>& buffer) {
-//     if (isConnectionClosed()) return;
-//     socket.sendall(buffer.data(), buffer.size());
-// }

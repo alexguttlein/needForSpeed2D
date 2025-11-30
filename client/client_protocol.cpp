@@ -190,9 +190,9 @@ std::optional<Snapshot> ClientProtocol::receiveSnapshotFromServer() {
             socket.recvall(rs.playerName.data(), nameLen);
 
             // playerId
-            uint32_t playerIdBE = 0;
-            socket.recvall(&playerIdBE, sizeof(playerIdBE));
-            rs.playerId = static_cast<int>(ntohl(playerIdBE));
+            uint32_t plyrIdBE = 0;
+            socket.recvall(&plyrIdBE, sizeof(plyrIdBE));
+            rs.playerId = static_cast<int>(ntohl(plyrIdBE));
 
             // timeLeftRace
             uint16_t timeLenBE = 0;
@@ -278,9 +278,9 @@ std::optional<Snapshot> ClientProtocol::receiveSnapshotFromServer() {
         // 🟢 Usar el tamaño leído, NO playersSizeBE
         for (uint32_t r = 0; r < leaderboardSize; ++r) {
             PlayerTime pt{};
-            uint32_t playerIdBE = 0;
-            socket.recvall(&playerIdBE, sizeof(playerIdBE));
-            pt.playerId = static_cast<int>(ntohl(playerIdBE));
+            uint32_t plyrIdBE = 0;
+            socket.recvall(&plyrIdBE, sizeof(plyrIdBE));
+            pt.playerId = static_cast<int>(ntohl(plyrIdBE));
 
             uint32_t finishTimeBE = 0;
             socket.recvall(&finishTimeBE, sizeof(finishTimeBE));
@@ -334,7 +334,16 @@ std::optional<Snapshot> ClientProtocol::receiveControlFromServer() {
         Snapshot snapshot{};
         snapshot.controlEvent = EventType::SERVER_DISCONNECTED;
         return snapshot;
-    } else {
+    } else if (code == Constants::PLAYER_COUNT_UPDATE) {
+        Snapshot snapshot{};
+        snapshot.controlEvent = EventType::PLAYER_COUNT_UPDATE;
+        uint32_t playerCountBE = 0;
+        socket.recvall(&playerCountBE, sizeof(playerCountBE));
+        int playerCount = ntohl(playerCountBE);
+        snapshot.gameId = playerCount;
+        return snapshot;
+    }
+    else {
         std::cerr << "Código de control recibido: " << std::hex << (int)code << std::endl;
     }
     return std::nullopt;

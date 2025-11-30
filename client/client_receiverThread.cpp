@@ -36,6 +36,12 @@ void ReceiverThread::run() {
                     keepRunning = false; // se termina el loop del receiver
                     continue;
                 }
+                case EventType::PLAYER_COUNT_UPDATE: {
+                    Event event = Event(EventType::PLAYER_COUNT_UPDATE,
+                    std::to_string(snapshot.gameId)); //vienen los jugadores conectados
+                    eventQueue.push(event);
+                    continue;
+                }
                 default: snapshotQueue.push(snapshot);
             }
         }

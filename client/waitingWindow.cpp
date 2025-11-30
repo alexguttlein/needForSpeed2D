@@ -6,7 +6,7 @@
 #include <QMovie>
 
 WaitingWindow::WaitingWindow(bool isCreator, QWidget* parent)
-    : QWidget(parent), isCreator(isCreator) {
+    : QWidget(parent), isCreator(isCreator), playerCount(0) {
 
     setWindowTitle("Waiting for Players...");
     resize(800, 600);
@@ -63,6 +63,8 @@ WaitingWindow::WaitingWindow(bool isCreator, QWidget* parent)
         startGameButton->hide();
     }
 
+    startGameButton->setDisabled(true);
+
     QHBoxLayout* buttonRowStart = new QHBoxLayout();
     buttonRowStart->addStretch();
     buttonRowStart->addWidget(startGameButton);
@@ -79,12 +81,17 @@ WaitingWindow::WaitingWindow(bool isCreator, QWidget* parent)
     }
     loadingRace->setAlignment(Qt::AlignCenter);
 
+    playerCountLabel = new QLabel("Players: 0 / 0", this);
+    playerCountLabel->setStyleSheet("QLabel { color:white; font-size:20px; font-weight:bold; background: rgba(0,0,0,0.5); padding:5px; border-radius:5px; }");
+    playerCountLabel->setAlignment(Qt::AlignCenter);
+
     layout->addWidget(textGameIdLabel);
+    layout->addWidget(playerCountLabel);
     layout->addWidget(loadingLabel);
     layout->addWidget(textLabel);
     layout->addWidget(cancelButton);
     layout->addLayout(buttonRowStart);
-    layout->setSpacing(50);
+    // layout->setSpacing(20);
     layout->addWidget(loadingRace);
 
     setLayout(layout);
@@ -102,4 +109,12 @@ void WaitingWindow::setMessage(const QString& msg) {
 void WaitingWindow::setGameInfo(uint32_t gameId) {
     QString msg = QString("You are on Game: %1").arg(gameId);
     textGameIdLabel->setText(msg);
+}
+
+void WaitingWindow::updatePlayerCount(int current, int max) {
+    playerCountLabel->setText(QString("Players: %1 / %2").arg(current).arg(max));
+    playerCount = current;
+
+    //si hay menos de un jugador no puede empezar la partida
+    if (playerCount > 1) startGameButton->setDisabled(false);
 }

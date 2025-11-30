@@ -49,6 +49,14 @@ void Game::addClientHandler(ClientHandler* client) {
         gameloop->addPlayer(client->getId(), client->getCarId() + 1, client->getPlayerName());
     }
 
+    //se avisa a todos los usuarios que se unió alguien a la partida
+    for (auto* q : clientQueues) {
+        auto snapshot = std::make_shared<Snapshot>();
+        snapshot->controlEvent = EventType::PLAYER_COUNT_UPDATE;
+        snapshot->gameId = clientQueues.size();
+        q->push(snapshot);
+    }
+
     //se verifica si comienza la partida
     checkGameStart();
 }

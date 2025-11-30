@@ -298,6 +298,17 @@ void ClientQtManager::waitForGameEvents(WaitingWindow* waiting, LobbyMenuWindow*
                 return;
             }
 
+            //si se conecto un nuevo jugador, actualiza la ventana de espera
+            if (event.type == EventType::PLAYER_COUNT_UPDATE) {
+                if (!event.message.empty()) {
+                    int current = std::stoi(event.message);
+                    int max = Constants::MAX_PLAYERS_IN_GAME;
+                    waiting->updatePlayerCount(current, max);
+                }
+                waitForGameEvents(waiting, lobby);
+                return;
+            }
+
             // evento para comenzar partida
             if (event.type == EventType::GAME_START) {
                 waiting->close();
