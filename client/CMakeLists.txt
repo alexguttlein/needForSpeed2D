@@ -12,6 +12,7 @@ target_sources(taller_client
     gameListWindow.cpp
     client_qtManager.cpp
     carSelectWindow.cpp
+    ../server/settings_loader.cpp
     PUBLIC
     # .h files
     client_class.h
@@ -25,4 +26,5 @@ target_sources(taller_client
     client_qtManager.h
     carSelectWindow.h
     carConfirmDialog.h
+    ../server/settings_loader.h
     )
