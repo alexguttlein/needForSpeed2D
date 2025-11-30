@@ -22,12 +22,6 @@ class YamlLoader {
 private:
     
     /*
-    * Verifica si una coordenada es segura (no NaN ni infinita).
-    *
-    * */
-    bool isSafeCoord(float c);
-
-    /*
     * Extrae un valor float de una línea con formato 'key: value'.
     *
     * */

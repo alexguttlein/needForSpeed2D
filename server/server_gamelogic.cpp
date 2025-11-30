@@ -180,7 +180,7 @@ void GameLogic::checkCollisions() {
 
                 const float MIN_HIT_SPEED = 1.0f; 
                 if (hitSpeed < MIN_HIT_SPEED) {
-                    continue; // No es un impacto severo, ignorar
+                    continue; 
                 }
                 
                 b2Vec2 normal = getCollisionNormal(bodyA, bodyB);
