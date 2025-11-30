@@ -4,6 +4,7 @@
 #include "../common/map.h"
 #include "../common/vector2D.h"
 #include "../common/mapEntities.h"
+#include "../common/constants.h"
 #include "npcData.h"
 
 #include <string>

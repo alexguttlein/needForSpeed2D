@@ -285,7 +285,7 @@ float GameLogic::getPenalizedTimeUpgrade(int upgradeId) const {
         case Constants::ACCELERATION_UPGRADE_ID:
             return Constants::PENALIZE_ACCELERATION_UPGRADE;
         case Constants::CONTROL_UPGRADE_ID:
-            return Constants::PENALIZE__CONTROL_UPGRADE;
+            return Constants::PENALIZE_CONTROL_UPGRADE;
         case Constants::MAX_SPEED_UPGRADE_ID:
             return Constants::PENALIZE_SPEED_UPGRADE;
         default:

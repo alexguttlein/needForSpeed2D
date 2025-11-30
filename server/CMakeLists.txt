@@ -18,6 +18,7 @@ target_sources(taller_server
     server_racelogic.cpp
     mapSetObjects.cpp
     yamlLoader.cpp
+    settings_loader.cpp
     #gameloop_test.cpp
     PUBLIC
     # .h files
@@ -39,4 +40,5 @@ target_sources(taller_server
     yamlLoader.h
     leaderBoard.h
     npcData.h
+    settings_loader.h
     )

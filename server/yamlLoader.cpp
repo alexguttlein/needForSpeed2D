@@ -41,7 +41,18 @@ Map YamlLoader::loadMapFromYaml(const std::string& filepath) {
             throw std::runtime_error("No se encontró o 'circuitos' no es un mapa válido.");
         }
         
+        int circuitCount = 0;
         for (YAML::const_iterator it = circuitsNode.begin(); it != circuitsNode.end(); ++it) {
+
+    
+            if (circuitCount >= Constants::MAX_RACES) {
+                std::cout << "[MapLoader INFO] Se alcanzó el límite configurado de carreras (" 
+                          << Constants::MAX_RACES << "). Ignorando el resto de circuitos en el YAML." << std::endl;
+                break; 
+            }
+
+            circuitCount++;
+
             std::string raceId = it->first.as<std::string>(); 
             YAML::Node raceNode = it->second;
             
