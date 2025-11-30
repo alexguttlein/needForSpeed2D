@@ -3,7 +3,8 @@
 
 #include <string>
 
-namespace  Constants {
+
+namespace Constants {
 
     // constantes salida de programa
     static constexpr int SUCCESS = 0;
@@ -231,5 +232,5 @@ namespace  Constants {
     inline float DYNAMIC_NPC_HEALTH;
     inline float DYNAMIC_NPC_FRICTION;
     inline float DYNAMIC_NPC_WEIGHT;
-}
+};
 #endif //CONSTANTS_H
