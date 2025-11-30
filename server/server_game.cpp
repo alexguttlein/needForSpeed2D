@@ -19,7 +19,7 @@ Queue<std::shared_ptr<Message>>& Game::getSharedQueue() {
 void Game::checkGameStart() {
 
     if (((int)clientQueues.size() >= Constants::MAX_PLAYERS_IN_GAME || gameStarted)
-            && !gameloop) {
+            && !gameloop && (int)clientQueues.size() > 1) {
 
         //se avisa a todos los usuarios que el juego va a comenzar
         for (auto* q : clientQueues) {
@@ -106,4 +106,8 @@ std::string Game::getCreatorsName() {
 void Game::startGame() {
     gameStarted = true;
     checkGameStart();
+}
+
+bool Game::getGameStarted() {
+    return gameStarted;
 }

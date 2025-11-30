@@ -23,6 +23,7 @@ public:
     std::string getCreatorsName();
     void checkGameStart();
     void startGame();
+    bool getGameStarted();
 private:
     int gameId;
     Queue<std::shared_ptr<Message>> sharedQueue;

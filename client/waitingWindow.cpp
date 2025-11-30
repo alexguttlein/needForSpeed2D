@@ -37,7 +37,7 @@ WaitingWindow::WaitingWindow(bool isCreator, QWidget* parent)
     textLabel->setAlignment(Qt::AlignCenter);
 
     loadingLabel = new QLabel(this);
-    QMovie* movie = new QMovie(":/assets/need-for-speed/lobbyImg/loading.gif");
+    QMovie* movie = new QMovie("assets/need-for-speed/lobbyImg/loading.gif");
     if (!movie->isValid()) {
         loadingLabel->setText("Loading...");
         loadingLabel->setStyleSheet("color:white; font-size:20px;");
@@ -63,16 +63,29 @@ WaitingWindow::WaitingWindow(bool isCreator, QWidget* parent)
         startGameButton->hide();
     }
 
-    QHBoxLayout* buttonRow = new QHBoxLayout();
-    buttonRow->addStretch();
-    buttonRow->addWidget(startGameButton);
-    buttonRow->addStretch();
+    QHBoxLayout* buttonRowStart = new QHBoxLayout();
+    buttonRowStart->addStretch();
+    buttonRowStart->addWidget(startGameButton);
+    buttonRowStart->addStretch();
+
+    loadingRace = new QLabel(this);
+    QMovie* movieRace = new QMovie("assets/need-for-speed/lobbyImg/loadingRace.gif");
+    if (!movieRace->isValid()) {
+        loadingRace->setText("");
+        loadingRace->setStyleSheet("color:white; font-size:20px;");
+    } else {
+        loadingRace->setMovie(movieRace);
+        movieRace->start();
+    }
+    loadingRace->setAlignment(Qt::AlignCenter);
 
     layout->addWidget(textGameIdLabel);
-    layout->addWidget(textLabel);
     layout->addWidget(loadingLabel);
+    layout->addWidget(textLabel);
     layout->addWidget(cancelButton);
-    layout->addLayout(buttonRow);
+    layout->addLayout(buttonRowStart);
+    layout->setSpacing(50);
+    layout->addWidget(loadingRace);
 
     setLayout(layout);
 }

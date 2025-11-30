@@ -85,9 +85,13 @@ bool ClientProtocol::sendLobbyOption(const std::string& input, const std::string
         return false; // sigue en el lobby
 
     } else if (command == Constants::INPUT_START_GAME) {
-        uint8_t msg = Constants::GAME_START;
-        socket.sendall(&msg, sizeof(msg));
-        socket.sendall(&carIdBE, sizeof(carIdBE)); //se envia id de la partida
+        std::vector<uint8_t> buffer;
+        buffer.push_back(Constants::GAME_START);
+
+        auto ptr = reinterpret_cast<uint8_t*>(&carIdBE);
+        buffer.insert(buffer.end(), ptr, ptr + sizeof(carIdBE));
+
+        socket.sendall(buffer.data(), buffer.size());
         return true;
     }
 

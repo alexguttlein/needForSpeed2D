@@ -43,7 +43,8 @@ std::vector<std::pair<int, int>> GameMonitor::listGames() {
     std::lock_guard<std::mutex> lock(mtx);
     std::vector<std::pair<int,int>> result;
     for (auto& [id, gamePtr] : games) {
-        result.emplace_back(id, gamePtr->totalPlayers);
+        if (gamePtr->totalPlayers != 0 && !gamePtr->getGameStarted())
+            result.emplace_back(id, gamePtr->totalPlayers);
     }
     return result;
 }

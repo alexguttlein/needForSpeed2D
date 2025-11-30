@@ -28,14 +28,12 @@ void SenderThread::run() {
             buffer.push_back(Constants::TYPE_CONTROL);
             buffer.push_back(Constants::CREATE_JOIN_ACCEPTED);
             protocol.addIntToUint8tVector(buffer, snapshot->playerId);
-            // protocol.sendCreateJoinAccepted(buffer);
             protocol.sendControl(buffer);
         } else if (snapshot->controlEvent == EventType::GAME_START) {
             if (protocol.isConnectionClosed()) continue;
             std::vector<uint8_t> buffer;
             buffer.push_back(Constants::TYPE_CONTROL);
             buffer.push_back(Constants::GAME_START);
-            // protocol.sendGameStart(buffer);
             protocol.sendControl(buffer);
         } else if (snapshot->controlEvent == EventType::SERVER_DISCONNECTED) {
             if (protocol.isConnectionClosed()) continue;

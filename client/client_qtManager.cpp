@@ -267,12 +267,12 @@ void ClientQtManager::waitForGameEvents(WaitingWindow* waiting, LobbyMenuWindow*
 
             if (!ok) {
                 QMessageBox::warning(waiting, Constants::ERROR_TXT.data(),
-                                     "No se pudo enviar START_GAME al servidor.");
+                                     Constants::START_GAME_ERROR.data());
                 return;
             }
 
-            lobby->show();
             waiting->close();
+            lobby->close();
         });
     }
 
@@ -310,10 +310,10 @@ void ClientQtManager::waitForGameEvents(WaitingWindow* waiting, LobbyMenuWindow*
 
             // ERROR
             QMessageBox::warning(lobby, Constants::ERROR_TXT.data(),
-                                 "No se pudo unir/crear partida.");
-            lobby->show();
+                                 Constants::SERVER_ERROR.data());
+            lobby->close();
             waiting->close();
-
+            app->quit();
         }, Qt::QueuedConnection);
     });
 }

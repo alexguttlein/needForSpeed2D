@@ -24,6 +24,8 @@ namespace  Constants {
     static constexpr unsigned char LIST_GAMES = 0x24;
     static constexpr unsigned char GAME_START = 0x25;
     static constexpr unsigned char SERVER_DISCONNECTED = 0x26;
+    static constexpr unsigned char GAME_START_OK = 0x27;
+    static constexpr unsigned char GAME_START_ERROR = 0x28;
     static constexpr unsigned char TYPE_SNAPSHOT = 0x30;
     static constexpr unsigned char TYPE_CONTROL = 0x31;
     static constexpr unsigned char TYPE_GAME_LIST = 0x32;
@@ -58,6 +60,8 @@ namespace  Constants {
     static const std::string NO_ENVIO_SOLICITUD = "No se pudo enviar la solicitud al servidor.";
     static const std::string NO_ENVIO_SOLICITUD_UNIRSE = "No se pudo enviar la solicitud de unirse.";
     static const std::string NO_PUDO_UNIR_PARTIDA = "No se pudo unir a la partida.";
+    static const std::string SERVER_ERROR = "No se encuentra el servidor. La aplicación se va a cerrar";
+    static const std::string START_GAME_ERROR = "No se pudo enviar START GAME al servidor.";
 
     // constante tiempo sleep de loop
     static constexpr int THREAD_SLEEP_MS = 16; // aprox 60 FPS

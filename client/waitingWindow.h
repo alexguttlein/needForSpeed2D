@@ -37,6 +37,7 @@ private:
     QLabel *textGameIdLabel;
     QPushButton *cancelButton;
     QPushButton *startGameButton;
+    QLabel *loadingRace;
 };
 
 #endif //WAITINGWINDOW_H
