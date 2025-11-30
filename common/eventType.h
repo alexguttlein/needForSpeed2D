@@ -15,6 +15,7 @@ enum class EventType {
 struct Event {
     EventType type;
     std::string message;
+    std::string auxMessage = "";
 
     explicit Event(EventType t = EventType::NONE, std::string msg = "")
         : type(t), message(std::move(msg)) {}

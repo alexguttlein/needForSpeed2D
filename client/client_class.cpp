@@ -233,3 +233,11 @@ void Client::loadTexturesAndAssets_(ClientDibujador& dib) {
 void Client::changePlayingStatus() {
     playing = !playing;
 }
+
+void Client::setGameId(int id) {
+    gameId = id;
+}
+
+int Client::getGameId() {
+    return gameId;
+}

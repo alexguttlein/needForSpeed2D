@@ -83,7 +83,14 @@ bool ClientProtocol::sendLobbyOption(const std::string& input, const std::string
         uint8_t msg = Constants::LIST_GAMES;
         socket.sendall(&msg, sizeof(msg));
         return false; // sigue en el lobby
+
+    } else if (command == Constants::INPUT_START_GAME) {
+        uint8_t msg = Constants::GAME_START;
+        socket.sendall(&msg, sizeof(msg));
+        socket.sendall(&carIdBE, sizeof(carIdBE)); //se envia id de la partida
+        return true;
     }
+
     std::cerr << "Opción inválida. Usa 'crear' o 'unirse <id>'" << std::endl;
     return false;
 }
@@ -105,7 +112,6 @@ std::optional<Snapshot> ClientProtocol::receiveSnapshotFromServer() {
     uint32_t playersSizeBE = 0;
     socket.recvall(&playersSizeBE, sizeof(playersSizeBE));
     snapshot.playersSize = static_cast<uint32_t>(ntohl(playersSizeBE));
-    //std::cout << "debug: Player id: " << snapshot.playerId << std::endl;
 
     for (uint32_t i = 0; i < snapshot.playersSize; i++) {
         CarStateDTO dto{};
@@ -287,9 +293,15 @@ std::optional<Snapshot> ClientProtocol::receiveControlFromServer() {
         socket.recvall(&playerIdBE, sizeof(playerIdBE));
         int selfId = ntohl(playerIdBE);
 
+        uint32_t gameIdBE = 0;
+        socket.recvall(&gameIdBE, sizeof(gameIdBE));
+        int gameId = ntohl(gameIdBE);
+
         Snapshot snapshot{};
         snapshot.controlEvent = EventType::CREATE_JOIN_ACCEPTED;
         snapshot.playerId = selfId;
+        snapshot.gameId = gameId;
+
         return snapshot;
     } else if (code == Constants::JOIN_REJECTED) {
         Snapshot snapshot{};

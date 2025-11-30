@@ -47,12 +47,18 @@ Message ServerProtocol::receiveMessage() {
         uint32_t carIdBE;
         socket.recvall(&carIdBE, sizeof(carIdBE));
         message.carId = static_cast<int>(ntohl(carIdBE));
+
     } else if (message.code == Constants::CREATE_GAME) {
         message.stringValue = receiveString(); //se recibe el nombre del player
         // se recibe id del auto elegido
         uint32_t carIdBE;
         socket.recvall(&carIdBE, sizeof(carIdBE));
         message.carId = static_cast<int>(ntohl(carIdBE));
+
+    } else if (message.code == Constants::GAME_START) {
+        uint32_t gameIdBE;
+        socket.recvall(&gameIdBE, sizeof(gameIdBE));
+        message.intValue = static_cast<int>(ntohl(gameIdBE)); //se carga el gameId en el mensaje
     }
     return message;
 }

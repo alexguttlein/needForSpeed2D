@@ -171,7 +171,7 @@ void ClientQtManager::setupCreateButton(LobbyMenuWindow* lobby) {
             return;
         }
 
-        auto* waiting = new WaitingWindow();
+        auto* waiting = new WaitingWindow(true); //el flag indica que es el creador
         waiting->show();
         lobby->hide();
 
@@ -215,7 +215,7 @@ void ClientQtManager::setupJoinButton(LobbyMenuWindow* lobby) {
                     return;
                 }
 
-                auto* waiting = new WaitingWindow();
+                auto* waiting = new WaitingWindow(false); //el flag indica que no es el creador
                 waiting->show();
                 listWindow->close();
                 lobby->hide();
@@ -247,11 +247,34 @@ void ClientQtManager::setupSelectCarButton(LobbyMenuWindow* lobby) {
 
 void ClientQtManager::waitForGameEvents(WaitingWindow* waiting, LobbyMenuWindow* lobby) {
 
-    // Cancel button
-    QObject::connect(waiting, &WaitingWindow::cancelled, [lobby, waiting]() {
-        lobby->show();
-        waiting->close();
-    });
+    //solo se conectan los botones una vez
+    static bool buttonsConnected = false;
+    if (!buttonsConnected) {
+        buttonsConnected = true;
+
+        // Cancel button
+        QObject::connect(waiting, &WaitingWindow::cancelled, [lobby, waiting]() {
+            lobby->show();
+            waiting->close();
+        });
+
+        // start game button
+        QObject::connect(waiting, &WaitingWindow::startGamePressed, [this, lobby, waiting]() {
+
+            bool ok = client->sendLobbyOption(Constants::INPUT_START_GAME,
+                                              client->getPlayerName(),
+                                              client->getGameId());
+
+            if (!ok) {
+                QMessageBox::warning(waiting, Constants::ERROR_TXT.data(),
+                                     "No se pudo enviar START_GAME al servidor.");
+                return;
+            }
+
+            lobby->show();
+            waiting->close();
+        });
+    }
 
     // Hilo que bloquea en pop()
     (void)QtConcurrent::run([this, waiting, lobby]() {
@@ -259,12 +282,16 @@ void ClientQtManager::waitForGameEvents(WaitingWindow* waiting, LobbyMenuWindow*
         Event event = client->getEventQueue().pop();
 
         QMetaObject::invokeMethod(waiting, [this, event, waiting, lobby]() {
-
             // evento de jugador aceptado
             if (event.type == EventType::CREATE_JOIN_ACCEPTED) {
 
                 if (!event.message.empty()) {
                     client->setSelfId(std::stoi(event.message));
+                }
+
+                if (!event.auxMessage.empty()) {
+                    client->setGameId(std::stoi(event.auxMessage));
+                    waiting->setGameInfo(client->getGameId());
                 }
 
                 // Esperar el segundo evento, SIN cerrar waiting
@@ -274,7 +301,6 @@ void ClientQtManager::waitForGameEvents(WaitingWindow* waiting, LobbyMenuWindow*
 
             // evento para comenzar partida
             if (event.type == EventType::GAME_START) {
-
                 waiting->close();
                 lobby->close();
                 client->changePlayingStatus();

@@ -22,6 +22,7 @@ public:
     ~Game();
     std::string getCreatorsName();
     void checkGameStart();
+    void startGame();
 private:
     int gameId;
     Queue<std::shared_ptr<Message>> sharedQueue;
@@ -31,5 +32,6 @@ private:
     std::unique_ptr<GameLoop> gameloop;
     void closeAllClientQueues();
     std::string gameCreator;
+    bool gameStarted;
 };
 #endif //SERVER_GAME_H

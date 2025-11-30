@@ -19,6 +19,7 @@ struct Snapshot {
     bool raceFinished = false;      // true cuando todos los jugadores terminaron
     bool gameFinished = false;  // true cuando no hay más circuitos
     std::vector<PlayerTime> leaderboards; // Leaderboard final partida
+    int gameId;
     Snapshot () = default;
 };
 #pragma pack(pop)

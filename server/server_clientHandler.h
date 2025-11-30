@@ -67,5 +67,7 @@
         void setCarId(int carId);
         int getCarId() const;
         void startGame();
+        bool getIsPlaying() {return isPlaying;}
+        void setIsPlaying() {isPlaying = true;}
     };
     #endif //CLIENTHANDLER_H

@@ -27,7 +27,7 @@ namespace  Constants {
     static constexpr unsigned char TYPE_SNAPSHOT = 0x30;
     static constexpr unsigned char TYPE_CONTROL = 0x31;
     static constexpr unsigned char TYPE_GAME_LIST = 0x32;
-    static constexpr int MAX_PLAYERS_IN_GAME = 2; // por ahora
+    static constexpr int MAX_PLAYERS_IN_GAME = 8;
 
     // constantes de tamanios de queues
     static const unsigned int CLIENT_QUEUE_MAXSIZE = 100;
@@ -38,6 +38,7 @@ namespace  Constants {
     static const std::string INPUT_LISTAR = "listar";
     static const std::string INPUT_CREAR = "crear";
     static const std::string INPUT_UNIRSE = "unirse";
+    static const std::string INPUT_START_GAME = "iniciar";
 
     // constantes de errores
     static const std::string ERROR_PARAMETERS_QUANTITY =

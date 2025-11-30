@@ -16,21 +16,27 @@ class WaitingWindow : public QWidget {
     Q_OBJECT
 
 public:
-    explicit WaitingWindow(QWidget* parent = nullptr);
+    // explicit WaitingWindow(QWidget* parent = nullptr);
+    explicit WaitingWindow(bool isCreator, QWidget* parent = nullptr);
     void setMessage(const QString& msg);
+    void setGameInfo(uint32_t gameId);
 
     signals:
     void cancelled();
     void gameShouldStart();
+    void startGamePressed();
 
 private
     slots:
     void onCancelClicked();
 
 private:
+    bool isCreator;
     QLabel *loadingLabel;
     QLabel *textLabel;
+    QLabel *textGameIdLabel;
     QPushButton *cancelButton;
+    QPushButton *startGameButton;
 };
 
 #endif //WAITINGWINDOW_H

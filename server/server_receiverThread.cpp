@@ -32,7 +32,7 @@ void ReceiverThread::lobbyCommands(Message msg) {
         buffer.push_back(Constants::TYPE_CONTROL);
         buffer.push_back(Constants::CREATE_JOIN_ACCEPTED);
         protocol.addIntToUint8tVector(buffer, clientHandler.getId());
-        // protocol.sendCreateJoinAccepted(buffer);
+        protocol.addIntToUint8tVector(buffer, clientHandler.getCurrentGameId());
         protocol.sendControl(buffer);
 
         gameMonitor.checkGameStart(newId);
@@ -83,7 +83,7 @@ void ReceiverThread::lobbyCommands(Message msg) {
             buffer.push_back(Constants::TYPE_CONTROL);
             buffer.push_back(Constants::CREATE_JOIN_ACCEPTED);
             protocol.addIntToUint8tVector(buffer, clientHandler.getId());
-            // protocol.sendCreateJoinAccepted(buffer);
+            protocol.addIntToUint8tVector(buffer, joinId);
             protocol.sendControl(buffer);
         }
 
@@ -100,6 +100,9 @@ void ReceiverThread::lobbyCommands(Message msg) {
             protocol.sendControl(Constants::JOIN_REJECTED);
             return;
         }
+    } else if (msg.code == Constants::GAME_START) {
+        int gameId = msg.intValue;
+        gameMonitor.startGame(gameId);
     } else {
         std::cerr << "Invalid command before joining a game." << std::endl;
         return;
@@ -122,7 +125,7 @@ void ReceiverThread::run() {
         }
 
         // Si todavía no tiene partida asignada
-        if (gameQueue == nullptr) {
+        if (gameQueue == nullptr || !clientHandler.getIsPlaying()) {
             lobbyCommands(msg);
             continue;
         }

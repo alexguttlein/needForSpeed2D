@@ -10,11 +10,13 @@ void ReceiverThread::run() {
             if (!optSnapshot.has_value()) continue;
 
             Snapshot snapshot = optSnapshot.value();
-            // EventType eventType = snapshot.controlEvent;
+
             switch (snapshot.controlEvent) {
                 case EventType::CREATE_JOIN_ACCEPTED: {
-                    eventQueue.push(Event(EventType::CREATE_JOIN_ACCEPTED,
-                    std::to_string(snapshot.playerId)));
+                    Event event = Event(EventType::CREATE_JOIN_ACCEPTED,
+                    std::to_string(snapshot.playerId));
+                    event.auxMessage = std::to_string(snapshot.gameId);
+                    eventQueue.push(event);
                     continue;
                 }
                 case EventType::JOIN_REJECTED: {
@@ -23,7 +25,6 @@ void ReceiverThread::run() {
                     continue;
                 }
                 case EventType::GAME_START: {
-                    std::cout << "debug: client push start" << std::endl;
                     eventQueue.push(Event(EventType::GAME_START,
                     "Iniciando partida..."));
                     continue;

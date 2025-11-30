@@ -98,6 +98,14 @@ void GameMonitor::checkGameStart(int matchId) {
     game->checkGameStart();
 }
 
+void GameMonitor::startGame(int matchId) {
+    auto it = games.find(matchId);
+    if (it == games.end()) return;
+
+    Game* game = it->second.get();
+    game->startGame();
+}
+
 GameMonitor::~GameMonitor() {
     std::lock_guard<std::mutex> lock(mtx);
     games.clear();

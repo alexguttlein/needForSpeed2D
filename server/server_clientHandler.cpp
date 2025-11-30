@@ -9,7 +9,7 @@ ClientHandler::ClientHandler(Socket socket, int id, GameMonitor& gameMonitor) :
         sharedQueue(nullptr),
         senderThread(protocol, clientQueue),
         receiverThread(std::make_unique<ReceiverThread>(protocol, gameMonitor, *this)),
-        id(id), alive(true), snapshot(), currentGameId(0) {}
+        id(id), alive(true), snapshot(), currentGameId(0), isPlaying(false) {}
 
 void ClientHandler::startThreads() {
     receiverThread->start();

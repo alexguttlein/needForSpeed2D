@@ -19,7 +19,7 @@ public:
     void loadGameList(const std::vector<GameInfo>& games);
 
     signals:
-        void gameSelected(uint32_t gameId);
+        void gameSelected(uint32_t gameId, QString creator);
 
 private:
     Client* client;

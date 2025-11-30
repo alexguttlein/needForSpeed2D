@@ -81,6 +81,7 @@ void GameListWindow::onCancelClicked() {
 
 void GameListWindow::onTableDoubleClicked(int row, int) {
     uint32_t gameId = table->item(row, 0)->text().toUInt();
-    emit gameSelected(gameId);
+    QString creator = table->item(row, 1)->text();
+    emit gameSelected(gameId, creator);
     this->close();
 }

@@ -8,20 +8,35 @@ Game::Game(int gameId, std::string& gameCreator) :
     sharedQueue(Constants::GAME_QUEUE_MAXSIZE),
     clientQueues(),
     clientHandlers(),
-    gameloop(nullptr), gameCreator(gameCreator) {}
+    gameloop(nullptr),
+    gameCreator(gameCreator),
+    gameStarted(false) {}
 
 Queue<std::shared_ptr<Message>>& Game::getSharedQueue() {
     return sharedQueue;
 }
 
 void Game::checkGameStart() {
-    // se informa a los clientes que va a comenzar la partida
-    if ((int)clientQueues.size() >= Constants::MAX_PLAYERS_IN_GAME) {
+
+    if (((int)clientQueues.size() >= Constants::MAX_PLAYERS_IN_GAME || gameStarted)
+            && !gameloop) {
+
+        //se avisa a todos los usuarios que el juego va a comenzar
         for (auto* q : clientQueues) {
             auto snapshot = std::make_shared<Snapshot>();
             snapshot->controlEvent = EventType::GAME_START;
             q->push(snapshot);
         }
+
+        // gameLoop acepta la queue compartida, el vector de queues privadas y el mutex de clientes
+        gameloop = std::make_unique<GameLoop>(sharedQueue, clientQueues, clientHandlers, mtx, this);
+
+        for (auto* handler : clientHandlers) {
+            handler->setIsPlaying();
+            gameloop->addPlayer(handler->getId(), handler->getCarId() + 1, handler->getPlayerName());
+        }
+
+        gameloop->start();
     }
 }
 
@@ -47,7 +62,6 @@ void Game::addClientHandler(ClientHandler* client) {
 }
 
 void Game::removeClientHandler(ClientHandler* client) {
-
     // std::lock_guard<std::mutex> lock(mtx);
     auto itH = std::find(clientHandlers.begin(), clientHandlers.end(), client);
     if (itH != clientHandlers.end()) clientHandlers.erase(itH);
@@ -87,4 +101,9 @@ Game::~Game() {
 
 std::string Game::getCreatorsName() {
     return gameCreator;
+}
+
+void Game::startGame() {
+    gameStarted = true;
+    checkGameStart();
 }

@@ -27,6 +27,7 @@ public:
     void unregisterClientFromGame(int id, ClientHandler* client);
     std::string getGameCreator(int gameId);
     void checkGameStart(int gameId);
+    void startGame(int matchId);
 };
 
 #endif //SERVER_GAMEMONITOR_H

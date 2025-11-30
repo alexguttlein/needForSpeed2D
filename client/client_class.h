@@ -31,6 +31,8 @@ public:
     const std::string& getPlayerName() const { return playerName; }
     bool sendLobbyOption(const std::string& option, const std::string& playerName, const int& carId);
     void changePlayingStatus();
+    void setGameId(int gameId);
+    int getGameId();
 
 private:
     ClientProtocol protocol;
@@ -43,6 +45,7 @@ private:
     std::atomic<int> selfId{-1};
     int selectedCarId = -1;
     std::string playerName;
+    int gameId = 0;
 
     void loadTexturesAndAssets_(ClientDibujador& dib);
 };
