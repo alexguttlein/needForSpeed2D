@@ -1,11 +1,19 @@
 #include <fstream>
 #include <iostream>
 
+#include "../server/settings_loader.h"
 #include "../common/constants.h"
 #include "client_class.h"
 
 
 int main(int argc, char* argv[]) {
+
+    try {
+        SettingsLoader::load("settings/game_settings.yaml"); 
+    } catch (const std::exception& e) {
+        std::cerr << "Error FATAL al cargar la configuración: " << e.what() << std::endl;
+        return Constants::ERROR;
+    }
 
     try {
         if (argc < Constants::EXPECTED_CLIENT_ARGC) {
