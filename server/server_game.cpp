@@ -49,16 +49,8 @@ void Game::addClientHandler(ClientHandler* client) {
         gameloop->addPlayer(client->getId(), client->getCarId() + 1, client->getPlayerName());
     }
 
-    // si alcanzamos el número de jugadores, arrancamos GameLoop si aún no arrancó
-    if ((int)clientQueues.size() >= Constants::MAX_PLAYERS_IN_GAME && !gameloop) {
-        // como se conectaron todos los usuarios,
-        // gameLoop acepta la queue compartida, el vector de queues privadas y el mutex de clientes
-        gameloop = std::make_unique<GameLoop>(sharedQueue, clientQueues, clientHandlers, mtx, this);
-
-        for (auto* handler : clientHandlers)
-            gameloop->addPlayer(handler->getId(), handler->getCarId() + 1, handler->getPlayerName());
-        gameloop->start();
-    }
+    //se verifica si comienza la partida
+    checkGameStart();
 }
 
 void Game::removeClientHandler(ClientHandler* client) {

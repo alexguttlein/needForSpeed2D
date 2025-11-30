@@ -270,9 +270,8 @@ void ClientQtManager::waitForGameEvents(WaitingWindow* waiting, LobbyMenuWindow*
                                      Constants::START_GAME_ERROR.data());
                 return;
             }
-
-            waiting->close();
             lobby->close();
+            waiting->close();
         });
     }
 
