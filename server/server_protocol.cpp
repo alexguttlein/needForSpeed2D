@@ -124,7 +124,7 @@ void ServerProtocol::sendSnapshot(std::shared_ptr<Snapshot>& snapshot) {
 
     //players size
     appendUInt32(buffer, snapshot->playersSize);
-
+   
     for (const auto& carState : snapshot->cars) {
         
         // car_id (int, típicamente 4 bytes)
@@ -168,6 +168,14 @@ void ServerProtocol::sendSnapshot(std::shared_ptr<Snapshot>& snapshot) {
         // playerId
         addIntToUint8tVector(buffer, rs.playerId);
 
+
+        // timeLeftRace (string: uint16_t length + chars)
+        uint16_t timeLen = static_cast<uint16_t>(rs.timeLeftRace.size());
+        uint16_t timeLenBE = htons(timeLen);
+        const uint8_t* timeLenBytes = reinterpret_cast<const uint8_t*>(&timeLenBE);
+        buffer.insert(buffer.end(), timeLenBytes, timeLenBytes + sizeof(timeLenBE));
+        buffer.insert(buffer.end(), reinterpret_cast<const uint8_t*>(rs.timeLeftRace.data()), reinterpret_cast<const uint8_t*>(rs.timeLeftRace.data()) + timeLen);
+        
         // currentRaceId
         addIntToUint8tVector(buffer, rs.currentRaceId);
 
@@ -211,6 +219,12 @@ void ServerProtocol::sendSnapshot(std::shared_ptr<Snapshot>& snapshot) {
         addIntToUint8tVector(buffer, playerTime.playerId);
         uint32_t timeBits = *reinterpret_cast<const uint32_t*>(&playerTime.finishTime);
         appendUInt32(buffer, timeBits);
+        // Enviar playerName
+        uint16_t nameLen = static_cast<uint16_t>(playerTime.playerName.size());
+        uint16_t nameLenBE = htons(nameLen);
+        const uint8_t* nameLenBytes = reinterpret_cast<const uint8_t*>(&nameLenBE);
+        buffer.insert(buffer.end(), nameLenBytes, nameLenBytes + sizeof(nameLenBE));
+        buffer.insert(buffer.end(), reinterpret_cast<const uint8_t*>(playerTime.playerName.data()), reinterpret_cast<const uint8_t*>(playerTime.playerName.data()) + nameLen);
     }
 
     socket.sendall(buffer.data(), buffer.size());

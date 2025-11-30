@@ -3,7 +3,7 @@
 
 GameLogic::GameLogic(){
     world = raceBuilder.getWorld();
-    auto objects = mapLoader.loadCollidersFromYaml("server/Mapa1-nfs.yaml");
+    auto objects = mapLoader.loadCollidersFromYaml("settings/Mapa1-nfs.yaml");
     mapSetObjects.createBodiesFromObjects(world, objects);
     //loadStaticNpcs();
 }
@@ -94,6 +94,7 @@ std::shared_ptr<Snapshot> GameLogic::getSnapshot(EventType controlEvent) const {
         RaceStateDTO raceState{};
         raceState.playerName   = raceLogic.getPlayerName(id);
         raceState.playerId      = id;
+        raceState.timeLeftRace = const_cast<GameLogic*>(this)->getRaceTimerForPlayer(id);
         raceState.currentRaceId = raceLogic.getCurrentRaceId();
         raceState.nextCheckpoint = raceLogic.getNextCheckpointPosition(id);
         raceState.currentHints   = raceLogic.getHintsForPlayer(id, car->getPosition());
@@ -179,7 +180,7 @@ void GameLogic::checkCollisions() {
 
                 const float MIN_HIT_SPEED = 1.0f; 
                 if (hitSpeed < MIN_HIT_SPEED) {
-                    continue; // No es un impacto severo, ignorar
+                    continue; 
                 }
                 
                 b2Vec2 normal = getCollisionNormal(bodyA, bodyB);
@@ -243,6 +244,7 @@ float GameLogic::getCollisionSpeed(b2BodyId bodyA, b2BodyId bodyB) {
 
 
 void GameLogic::simulateRaceInTransition(int currentTick){
+    
     if (currentTick - transitionStartTick >= Constants::UPGRADE_WAIT_TICKS) {
             
             std::cout << "--- TRANSICIÓN: CONFIGURANDO PRÓXIMA CARRERA ---" << std::endl;
@@ -266,29 +268,28 @@ void GameLogic::applyUpgradeToCar(){
 
             std::shared_ptr<Car> car = carIt->second;
             car->applyUpgrade(upgradeId);
-
-            float penalizeTime = Constants::DEFAULT_PENALIZE;
-            switch (upgradeId) {
-                case Constants::HEALTH_UPGRADE_ID:
-                    penalizeTime = Constants::PENALIZE_HEALTH_UPGRADE;
-                    break;
-                case Constants::ACCELERATION_UPGRADE_ID:
-                    penalizeTime = Constants::PENALIZE_ACCELERATION_UPGRADE;
-                    break;
-                case Constants::CONTROL_UPGRADE_ID:
-                    penalizeTime = Constants::PENALIZE__CONTROL_UPGRADE;
-                    break;
-                case Constants::MAX_SPEED_UPGRADE_ID:
-                    penalizeTime = Constants::PENALIZE_SPEED_UPGRADE;
-                    break;
-                default:
-                    penalizeTime = Constants::DEFAULT_PENALIZE;
-                    break;
-            }
-            raceLogic.upgradePenalizeTimeToPlayer(penalizeTime, id); // penalizo tiempo por mejora
+            float penalizeTime = getPenalizedTimeUpgrade(upgradeId);
+            raceLogic.upgradePenalizeTimeToPlayer(penalizeTime, id); // agrego la penalizacion al tiempo del jugador
+            raceLogic.setPlayerTimePenaltyTicks(id, static_cast<int>(penalizeTime * Constants::TICKS_PER_SECOND)); // guardo la penalizacion en ticks
             std::cout << "Penalizando al jugador " << id << " con " << penalizeTime << " segundos por mejora." << std::endl;
             std::cout << "Aplicando MEJORA " << upgradeId << " al jugador " << id << std::endl; 
         }
+    }
+}
+
+
+float GameLogic::getPenalizedTimeUpgrade(int upgradeId) const {
+    switch (upgradeId) {
+        case Constants::HEALTH_UPGRADE_ID:
+            return Constants::PENALIZE_HEALTH_UPGRADE;
+        case Constants::ACCELERATION_UPGRADE_ID:
+            return Constants::PENALIZE_ACCELERATION_UPGRADE;
+        case Constants::CONTROL_UPGRADE_ID:
+            return Constants::PENALIZE_CONTROL_UPGRADE;
+        case Constants::MAX_SPEED_UPGRADE_ID:
+            return Constants::PENALIZE_SPEED_UPGRADE;
+        default:
+            return Constants::DEFAULT_PENALIZE;
     }
 }
 
@@ -316,6 +317,7 @@ void GameLogic::resetFinishRace(){
                 car->resetVelocity(); 
                 car->clearUpgradeEffects();
                 raceLogic.addPlayer(playerId); 
+                raceLogic.clearPlayerTimePenalties(playerId);
             }
         }
         resetNpcs();
@@ -340,16 +342,28 @@ void GameLogic::resetNpcs(){
 void GameLogic::simulateRaceInProgress(int currentTick, float currentRaceTime) {
 
     for (auto const& [id, car] : cars) {
-    
+
         if (!raceLogic.hasPlayerFinished(id)) {
-            Vector2D<float> carPosition = car->getPosition();
-            bool justFinished = raceLogic.checkCheckpoint(id, carPosition); 
-            if (justFinished) {
-                raceLogic.setCurrentRaceTimeSeconds(currentRaceTime);
-                raceLogic.addTimeFinishPlayer(currentRaceTime, id); // actualizo tiempo en carrera total
+
+            int secondsLeft = getRemainingSecondsForPlayer(id);
+            if(secondsLeft <= 0){
+                setFinishRaceByPlayerLeftTimeToFinish(id, static_cast<int>(currentRaceTime));
+            }
+            else{
+                Vector2D<float> carPosition = car->getPosition();
+                bool justFinished = raceLogic.checkCheckpoint(id, carPosition); 
+                if (justFinished) {
+                    raceLogic.setCurrentRaceTimeSeconds(currentRaceTime);
+                    raceLogic.addTimeFinishPlayer(currentRaceTime, id); // actualizo tiempo en carrera total
+                }
             }
         }
     }
+    hasRaceOver(currentTick); 
+}
+
+
+void GameLogic::hasRaceOver(int currentTick) {
     if (raceLogic.isRaceOver()) {
 
         if(raceLogic.hasNextRace()) {
@@ -359,6 +373,14 @@ void GameLogic::simulateRaceInProgress(int currentTick, float currentRaceTime) {
             finishGame();
         }
     } 
+}
+
+
+void GameLogic::setFinishRaceByPlayerLeftTimeToFinish(int playerId, int currentRaceTime) {
+    raceLogic.addFinishedPlayer(playerId); // marco como finalizado
+    int penalizeTimeForNotFinish = currentRaceTime + Constants::NOT_FINISH_PENALIZE_SECONDS;
+    raceLogic.setCurrentRaceTimeSeconds(penalizeTimeForNotFinish);
+    raceLogic.addTimeFinishPlayer(penalizeTimeForNotFinish, playerId); // actualizo tiempo en carrera
 }
 
 
@@ -394,6 +416,7 @@ void GameLogic::finishGame() {
     std::cout << "🏆 LEADERBOARD FINAL 🏆" << std::endl;
     for (size_t i = 0; i < leaderboard.size(); ++i) {
         const auto& entry = leaderboard[i];
+
         std::cout << (i + 1) << ". Jugador " << entry.playerId 
                 << " - Tiempo Total: " << entry.finishTime << " segundos." << std::endl;
     
@@ -417,9 +440,52 @@ void GameLogic::checkFinishRaceByTime(int currentTick) {
     }
     
     if(remainingFinishTicks <= 0){
-        std::cout << "Tiempo máximo de la carrera alcanzado. Finalizando la carrera..." << std::endl;
-        finishGame(); 
+        std::cout << "Tiempo máximo de la carrera alcanzado. Finalizando la partida..." << std::endl;
+        //finishGame();
     }
+}
+
+
+std::string GameLogic::getRaceTimerForPlayer(int playerId) {
+    
+    if (raceLogic.hasPlayerFinished(playerId)) { 
+        return getMinuteSecondFromTicks(playerId, true);
+    }
+    if(remainingFinishTicks <= 0){
+        return "00:00";
+    }
+    return getMinuteSecondFromTicks(playerId, false);
+}
+
+
+std::string GameLogic::getMinuteSecondFromTicks(int playerId, bool finished) {
+    
+    int totalSeconds = 0;
+
+    if(finished){
+        int finishTime = static_cast<int>(raceLogic.getFinishTime(playerId));
+        totalSeconds = Constants::MAX_TICKS / Constants::TICKS_PER_SECOND - finishTime;
+    }
+    else{
+        totalSeconds = getRemainingSecondsForPlayer(playerId);
+    }
+
+    unsigned int minutes = static_cast<unsigned int>(totalSeconds) / 60;
+    unsigned int seconds = static_cast<unsigned int>(totalSeconds) % 60;
+
+    char buffer[12];
+    std::snprintf(buffer, sizeof(buffer), "%02d:%02d", minutes, seconds);
+    return std::string(buffer);
+}
+
+
+int GameLogic::getRemainingSecondsForPlayer(int playerId) {
+    int penalizeTicks = raceLogic.getPlayerTimePenaltyTicks(playerId);
+    int ticksLeft = remainingFinishTicks - penalizeTicks; 
+    if (ticksLeft < 0) {
+        ticksLeft = 0;
+    }
+    return ticksLeft / Constants::TICKS_PER_SECOND;
 }
 
 
@@ -431,13 +497,11 @@ void GameLogic::resetRaceTemporizer() {
 
 GameLogic::~GameLogic() {
 
-    // 1. Destruir bodies ANTES del world
     for (auto& [id, car] : cars) {
         if (car) car->destroyBody();
     }
     cars.clear();
 
-    // 2. Ahora destruir el world
     if (b2World_IsValid(world)) {
         b2DestroyWorld(world);
         world = b2WorldId{};

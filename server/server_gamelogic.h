@@ -181,16 +181,57 @@ public:
 
     /*
     * Verifica si se debe finalizar una carrera por tiempo y actualiza el estado
-    * si en 10 minutos no se han terminado una carrera finaliza el game.
+    * si en 10 minutos no se han terminado una carrera finaliza la carrera
     * */
     void checkFinishRaceByTime(int currentTick);
 
     /*
-    * Resetea el temporizador para la siguiente carrera
+    * Verifica si la carrera ha terminado
     *
     * */
+    void hasRaceOver(int currentTick);
+
+    /*
+    * setea que el jugador no terminó la carrera, y la termina automáticamente
+    * como no termino, se le aplica la penalización correspondiente.
+    * */
+    void setFinishRaceByPlayerLeftTimeToFinish(int playerId, int currentRaceTime);
+
+    /*
+    * Resetea el temporizador para la siguiente carrera
+    *
+    */
     void resetRaceTemporizer();
 
+    /*
+    * Obtiene el temporizador de la carrera para mostrar a los jugadores
+    * Si eligio una mejora se le resta el tiempo correspondiente
+    * */
+    std::string getRaceTimerForPlayer(int playerId);
+
+    /*
+    * Convierte ticks a formato "MM:SS"
+    *
+    * */
+    std::string getMinuteSecondFromTicks(int ticks, bool finished);
+
+    /*
+    * Obtiene los segundos totales restantes considerando las mejoras aplicadas
+    *
+    * */
+    int getRemainingSecondsForPlayer(int playerId);
+
+
+    /*
+    * Obtiene el tiempo de penalización asociado a una mejora específica
+    *
+    * */
+    float getPenalizedTimeUpgrade(int upgradeId) const;
+
+    /*
+    * Destructor de GameLogic.
+    *
+    * */
     ~GameLogic();
 };
 #endif // SERVER_GAMELOGIC_H

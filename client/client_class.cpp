@@ -175,7 +175,7 @@ void Client::run() {
                 }
             }
             lastRaceFinished = snapshot.raceFinished;
-            dib.renderAll(snapshot.cars, selfId.load());
+            dib.renderAll(snapshot.cars, selfId.load(), myRace->timeLeftRace);
         }
 
 

@@ -1,0 +1,122 @@
+game_config:
+  
+  max_players_in_game: 2             
+  max_races: 3              
+
+timing:
+
+  thread_sleep_ms: 16        
+  ticks_per_second: 60       
+  max_race_minutes: 10       
+  not_finish_penalize_seconds: 40 
+  upgrade_wait_seconds: 15   
+
+
+physics_cars:
+
+  default_restitution: 0.4
+  default_linear_damping: 0.5
+  default_angular_damping: 8.0
+  default_multiplier: 1.0
+
+
+upgrades:
+
+  default_penalty_sec: 0.0
+
+  health:
+    value: 20.0
+    penalty_sec: 8.0        
+
+  acceleration:
+    value: 2.0
+    penalty_sec: 10.0   
+
+  control:
+    value: 2.0
+    penalty_sec: 6.0         
+
+  max_speed:
+    value: 1.2
+    penalty_sec: 12.0   
+
+
+npc:
+
+  static:
+    max_speed: 0.0
+    max_reverse_speed: 0.0
+    acceleration: 0.0
+    control: 0.0
+    health: 9999.0
+    friction: 0.0
+    weight: 6.0
+
+  dynamic:
+    max_speed: 40.0
+    max_reverse_speed: 15.0
+    acceleration: 30.0
+    control: 20.0
+    health: 9999.0
+    friction: 0.5
+    weight: 6.0
+
+
+
+cars:
+
+  ford:
+    acceleration: 50.0
+    control: 40.0
+    weight: 6.0
+    max_speed: 50.0
+    max_reverse_speed: 50.0
+    health: 90.0
+
+  mazda:
+    acceleration: 65.0
+    control: 70.0
+    weight: 3.0
+    max_speed: 70.0
+    max_reverse_speed: 40.0
+    health: 80.0
+
+  corrolla:
+    acceleration: 55.0
+    control: 55.0
+    weight: 6.0
+    max_speed: 50.0
+    max_reverse_speed: 50.0
+    health: 100.0
+
+  bmw:
+    acceleration: 60.0
+    control: 70.0
+    weight: 3.0
+    max_speed: 50.0
+    max_reverse_speed: 60.0
+    health: 70.0
+
+  jeep:
+    acceleration: 40.0
+    control: 70.0
+    weight: 3.0
+    max_speed: 50.0
+    max_reverse_speed: 50.0
+    health: 110.0
+
+  civic:
+    acceleration: 50.0
+    control: 70.0
+    weight: 5.0
+    max_speed: 50.0
+    max_reverse_speed: 40.0
+    health: 100.0
+
+  truck:
+    acceleration: 50.0
+    control: 90.0
+    weight: 5.0
+    max_speed: 50.0
+    max_reverse_speed: 50.0
+    health: 150.0      

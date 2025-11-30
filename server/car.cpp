@@ -218,25 +218,25 @@ void Car::takeDamage(float damage) {
 
 
 void Car::upgradeControl() {
-    controlMultiplier *= Constants::CONTROL_UPGRADE;
+    controlMultiplier *= Constants::CONTROL_UPGRADE_VALUE;
     b2Body_SetAngularDamping(body, b2Body_GetAngularDamping(body) * 0.8f);
 }
 
 
 void Car::upgradeAcceleration() {
-   accelerationMultiplier *= Constants::ACCELERATION_UPGRADE;
+   accelerationMultiplier *= Constants::ACCELERATION_UPGRADE_VALUE;
    std:: cout << "Upgraded acceleration. New acceleration multiplier: " << accelerationMultiplier << std::endl;
 }
 
 
 void Car::upgradeHealth(){
-    maxHealth += Constants::HEALTH_UPGRADE; 
-    health = std::min(maxHealth, health + Constants::HEALTH_UPGRADE); 
+    maxHealth += Constants::HEALTH_UPGRADE_VALUE; 
+    health = std::min(maxHealth, health + Constants::HEALTH_UPGRADE_VALUE); 
 }
 
 
 void Car::upgradeSpeed() {
-    speedMultiplier *= Constants::MAX_SPEED_UPGRADE;
+    speedMultiplier *= Constants::MAX_SPEED_UPGRADE_VALUE;
     b2Body_SetLinearDamping(body, b2Body_GetLinearDamping(body) * 0.8f);
 }
 

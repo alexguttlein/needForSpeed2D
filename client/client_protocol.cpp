@@ -194,6 +194,13 @@ std::optional<Snapshot> ClientProtocol::receiveSnapshotFromServer() {
             socket.recvall(&playerIdBE, sizeof(playerIdBE));
             rs.playerId = static_cast<int>(ntohl(playerIdBE));
 
+            // timeLeftRace
+            uint16_t timeLenBE = 0;
+            socket.recvall(&timeLenBE, sizeof(timeLenBE));
+            uint16_t timeLen = ntohs(timeLenBE);
+            rs.timeLeftRace.resize(timeLen);
+            socket.recvall(rs.timeLeftRace.data(), timeLen);
+
             // currentRaceId
             uint32_t currentRaceIdBE = 0;
             socket.recvall(&currentRaceIdBE, sizeof(currentRaceIdBE));
@@ -279,6 +286,13 @@ std::optional<Snapshot> ClientProtocol::receiveSnapshotFromServer() {
             socket.recvall(&finishTimeBE, sizeof(finishTimeBE));
             uint32_t finishTimeHost = ntohl(finishTimeBE);
             pt.finishTime = *reinterpret_cast<float*>(&finishTimeHost);
+
+            // playerName
+            uint16_t nameLenBE = 0;
+            socket.recvall(&nameLenBE, sizeof(nameLenBE));
+            uint16_t nameLen = ntohs(nameLenBE);
+            pt.playerName.resize(nameLen);
+            socket.recvall(pt.playerName.data(), nameLen);
 
             snapshot.leaderboards.push_back(pt);
         }

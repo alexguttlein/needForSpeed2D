@@ -203,7 +203,7 @@ void ClientDibujador::setRaceFinished(bool finished, const std::vector<RaceState
     }
 }
 
-void ClientDibujador::renderAll(const std::vector<CarStateDTO>& cars, int selfId) {
+void ClientDibujador::renderAll(const std::vector<CarStateDTO>& cars, int selfId, std::string timeLeftRace) {
     if (gameFinished_) {
         renderGameOver_();
         return;
@@ -211,7 +211,7 @@ void ClientDibujador::renderAll(const std::vector<CarStateDTO>& cars, int selfId
     
     if (raceFinished_) {
         Uint32 now = SDL_GetTicks();
-        const Uint32 SHOW_RESULTS_MS = 10000;
+        const Uint32 SHOW_RESULTS_MS = 15000;
 
         if (now - resultsStartTicks_ < SHOW_RESULTS_MS) {
             renderResultsTable();
@@ -308,7 +308,7 @@ void ClientDibujador::renderAll(const std::vector<CarStateDTO>& cars, int selfId
     drawCheckpoint_();
     drawHints_();
 
-    drawHUD_();
+    drawHUD_(timeLeftRace);
     drawMinimap_(cars, selfId);
     
     // Mostrar popup si el jugador terminó pero la carrera no ha finalizado
@@ -435,13 +435,13 @@ void ClientDibujador::renderResultsUpgradesPanel_(const SDL_Rect& panelRect) {
     // Título
     drawText_("Mejoras", x, titleY, titleColor, false);
 
-    drawText_("[1] + Vida", x, y, nameColor, false);
+    drawText_("[1] + Escudo", x, y, nameColor, false);
     y += lineGap;
 
     drawText_("Costo: 8 s", x + 10, y, costColor, false);
     y += blockGap;
 
-    drawText_("[2] + Ultima Chance", x, y, nameColor, false);
+    drawText_("[2] + Aceleracion", x, y, nameColor, false);
     y += lineGap;
 
     drawText_("Costo: 6 s", x + 10, y, costColor, false);
@@ -453,7 +453,7 @@ void ClientDibujador::renderResultsUpgradesPanel_(const SDL_Rect& panelRect) {
     drawText_("Costo: 10 s", x + 10, y, costColor, false);
     y += blockGap;
 
-    drawText_("[4] + Velcoidad", x, y, nameColor, false);
+    drawText_("[4] + MAX Velocidad", x, y, nameColor, false);
     y += lineGap;
 
     drawText_("Costo: 12 s", x + 10, y, costColor, false);
@@ -506,7 +506,7 @@ void ClientDibujador::drawBadge_(int x, int y, const std::string& label,
     drawText_(value, x + padX + lw + 8, cy, valueCol, true);
 }
 
-void ClientDibujador::drawHUD_() {
+void ClientDibujador::drawHUD_(std::string timeLeftRace) {
     if (!uiFont) {
         return;
     }
@@ -523,7 +523,7 @@ void ClientDibujador::drawHUD_() {
     const int rightPy     = pad;
 
     drawHudRace_(rightPx, rightPy);
-    drawHudTime_(rightPx, rightPy, rightPanelW);
+    drawHudTime_(rightPx, rightPy, rightPanelW, timeLeftRace);
 }
 
 
@@ -604,16 +604,16 @@ void ClientDibujador::updateRaceState(const RaceStateDTO& raceState) {
     playerFinishedRace_ = raceState.hasFinished;
 }
 
-void ClientDibujador::drawHudTime_(int panelX, int panelY, int panelW) {
-    Uint32 now = SDL_GetTicks();
-    Uint32 elapsedMs = raceStarted_ ? (now - raceStartTicks_) : 0;
+void ClientDibujador::drawHudTime_(int panelX, int panelY, int panelW, std::string timeLeftRace) {
+    // Uint32 now = SDL_GetTicks();
+    // Uint32 elapsedMs = raceStarted_ ? (now - raceStartTicks_) : 0;
 
-    Uint32 totalSeconds = elapsedMs / 1000;
-    Uint32 minutes = totalSeconds / 60;
-    Uint32 seconds = totalSeconds % 60;
+    // Uint32 totalSeconds = elapsedMs / 1000;
+    // Uint32 minutes = totalSeconds / 60;
+    // Uint32 seconds = totalSeconds % 60;
 
     char value[32];
-    std::snprintf(value, sizeof(value), "%02u:%02u", minutes, seconds);
+    std::snprintf(value, sizeof(value), "%s", timeLeftRace.c_str());
 
     int lw = 0, lh = 0, vw = 0, vh = 0;
     if (uiFont) {
@@ -799,18 +799,18 @@ void ClientDibujador::hideUpgradePopup() {
 
 std::string ClientDibujador::getUpgradeName_(int upgradeId) const {
     switch (upgradeId) {
-        case 1: return "Vida";
-        case 2: return "Ultima Chance";
+        case 1: return "Escudo";
+        case 2: return "Aceleracion";
         case 3: return "Control";
-        case 4: return "Velocidad";
+        case 4: return "Velocidad Maxima";
         default: return "Mejora Desconocida";
     }
 }
 
 std::string ClientDibujador::getUpgradeDescription_(int upgradeId) const {
     switch (upgradeId) {
-        case 1: return "Mejora la vida del vehiculo";
-        case 2: return "Repara el vehiculo";
+        case 1: return "proporciona un escudo que absorbe daño";
+        case 2: return "Mejora la aceleracion del vehiculo";
         case 3: return "Mejora el manejo del vehiculo";
         case 4: return "Aumenta la velocidad maxima";
         default: return "";
@@ -928,8 +928,8 @@ void ClientDibujador::renderGameOver_() {
         
         drawText_(posStr, panelX + 50, y, posColor, true);
 
-        // Player ID
-        std::string playerStr = "Jugador " + std::to_string(entry.playerId);
+        // Player Name
+        std::string playerStr = entry.playerName;
         drawText_(playerStr, panelX + 120, y, {220, 220, 220, 255}, true);
 
         // Tiempo

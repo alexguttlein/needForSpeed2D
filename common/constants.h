@@ -29,8 +29,7 @@ namespace  Constants {
     static constexpr unsigned char TYPE_SNAPSHOT = 0x30;
     static constexpr unsigned char TYPE_CONTROL = 0x31;
     static constexpr unsigned char TYPE_GAME_LIST = 0x32;
-    static constexpr int MAX_PLAYERS_IN_GAME = 8;
-
+   
     // constantes de tamanios de queues
     static const unsigned int CLIENT_QUEUE_MAXSIZE = 100;
     static const unsigned int GAME_QUEUE_MAXSIZE = 500;
@@ -41,6 +40,11 @@ namespace  Constants {
     static const std::string INPUT_CREAR = "crear";
     static const std::string INPUT_UNIRSE = "unirse";
     static const std::string INPUT_START_GAME = "iniciar";
+
+    //constantes menu Qt
+    static const std::string ENTER_DRIVER_NAME = "Enter your driver name";
+    static const std::string NFS_TITLE = "Need For Speed 2D";
+    static const std::string START_BUTTON = "START ENGINE";
 
     // constantes de errores
     static const std::string ERROR_PARAMETERS_QUANTITY =
@@ -63,69 +67,20 @@ namespace  Constants {
     static const std::string SERVER_ERROR = "No se encuentra el servidor. La aplicación se va a cerrar";
     static const std::string START_GAME_ERROR = "No se pudo enviar START GAME al servidor.";
 
-    // constante tiempo sleep de loop
-    static constexpr int THREAD_SLEEP_MS = 16; // aprox 60 FPS
-    static constexpr int TICKS_PER_SECOND = 60;
-    static constexpr int MAX_TICKS = 36000; // 10 minutos a 60 ticks por segundo
-    static constexpr float DT = 1.0f / static_cast<float>(TICKS_PER_SECOND);
 
-    // constantes de espera entre carreras para seleccionar mejoras
-    static constexpr int UPGRADE_WAIT_SECONDS = 10;
-    static constexpr int UPGRADE_WAIT_TICKS = Constants::UPGRADE_WAIT_SECONDS * Constants::TICKS_PER_SECOND;
-
-    //constantes del juego
+    static constexpr float SPAWN_START_X = 90.0f;
+    static constexpr float SPAWN_START_Y = 90.0f;
+    static constexpr float SPAWN_OFFSET_X = 50.0f;
+    static constexpr float MAX_ROW_X = 600.0f;
+    static constexpr float CHECKPOINT_RADIUS = 2.0f;
+    static constexpr float HINT_SPACING = 3.0f;
+    static constexpr float SCALE_METER_TO_PIXEL = 25.0f;
 
     // nombre de movimientos
     static constexpr const char* MOVE_FORDWARD = "w";
     static constexpr const char* MOVE_BACKWARD = "s";
     static constexpr const char* TURN_LEFT = "a";
     static constexpr const char* TURN_RIGHT = "d";
-
-
-    // mejora de atributos
-    static constexpr float HEALTH_UPGRADE = 20.0f;
-    static constexpr float ACCELERATION_UPGRADE = 2.0f;
-    static constexpr float CONTROL_UPGRADE = 2.0f;
-    static constexpr float MAX_SPEED_UPGRADE = 1.2f;
-
-    // nombre de mejoras
-    static constexpr const char* SELECT_HEALTH_UPGRADE = "1";
-    static constexpr const char* SELECT_ACCELERATION_UPGRADE = "2";
-    static constexpr const char* SELECT_CONTROL_UPGRADE = "3";
-    static constexpr const char* SELECT_MAX_SPEED_UPGRADE = "4";
-    
-    // representacion mejoras en int
-    static constexpr int DEFAULT_UPGRADE_ID = 0;
-    static constexpr int HEALTH_UPGRADE_ID = 1;
-    static constexpr int ACCELERATION_UPGRADE_ID = 2;
-    static constexpr int CONTROL_UPGRADE_ID = 3;
-    static constexpr int MAX_SPEED_UPGRADE_ID = 4;
-
-
-    // atributos autos
-    static constexpr float NO_HEALTH = 0.0f;
-    static constexpr float FRICTION_BASE = 0.0f;
-    static constexpr float INITIAL_SPEED = 0.0f;
-    static constexpr float DEFAULT_RESTITUTION = 0.4f;
-    static constexpr float DEFAULT_LINEAR_DAMPING = 0.5f;
-    static constexpr float DEFAULT_ANGULAR_DAMPING = 8.0f;
-    static constexpr float DEFAULT_MULTIPLIER = 1.0f;
-    
-    // constantes de spawn - checkpoints - hints
-
-    static constexpr float SPAWN_START_X = 90.0f;
-    static constexpr float SPAWN_START_Y = 90.0f;
-    static constexpr float SPAWN_OFFSET_X = 50.0f; 
-    static constexpr float MAX_ROW_X = 600.0f;
-    static constexpr float CHECKPOINT_RADIUS = 2.0f; 
-    static constexpr float HINT_SPACING = 3.0f; // ver como cambia esto con el mapa
-
-    // constante penalizacion por mejora
-    static constexpr float DEFAULT_PENALIZE = 0.0f;
-    static constexpr float PENALIZE_HEALTH_UPGRADE = 8.0f;
-    static constexpr float PENALIZE__CONTROL_UPGRADE = 6.0f;
-    static constexpr float PENALIZE_ACCELERATION_UPGRADE = 10.0f; 
-    static constexpr float PENALIZE_SPEED_UPGRADE = 12.0f; 
 
     // constantes representacion autos:
     static constexpr int FORD = 1;
@@ -136,35 +91,145 @@ namespace  Constants {
     static constexpr int CIVIC = 6;
     static constexpr int TRUCK = 7;
 
+    inline float FORD_BASE_ACCELERATION;
+    inline float MAZDA_BASE_ACCELERATION;
+    inline float CORROLLA_BASE_ACCELERATION;
+    inline float BMW_BASE_ACCELERATION;
+    inline float JEEP_BASE_ACCELERATION;
+    inline float CIVIC_BASE_ACCELERATION;
+    inline float TRUCK_BASE_ACCELERATION;
 
-    // npcs constantes
+    inline float FORD_BASE_MAX_SPEED;
+    inline float MAZDA_BASE_MAX_SPEED;
+    inline float CORROLLA_BASE_MAX_SPEED;
+    inline float BMW_BASE_MAX_SPEED;
+    inline float JEEP_BASE_MAX_SPEED;
+    inline float CIVIC_BASE_MAX_SPEED;
+    inline float TRUCK_BASE_MAX_SPEED;
 
-    // npc estaticos
-    static constexpr int STATIC_NPC_MAX_SPEED = 0.0f;
-    static constexpr int STATIC_NPC_MAX_REVERSE_SPEED = 0.0f;
-    static constexpr int STATIC_NPC_ACCELERATION = 0.0f;
-    static constexpr int STATIC_NPC_CONTROL = 0.0f;
-    static constexpr int STATIC_NPC_HEALTH = 9999.0f;
-    static constexpr float STATIC_NPC_FRICTION = 0.0f;
-    static constexpr float STATIC_NPC_WEIGHT = 6.0f;
+    inline float FORD_BASE_CONTROL;
+    inline float MAZDA_BASE_CONTROL;
+    inline float CORROLLA_BASE_CONTROL;
+    inline float BMW_BASE_CONTROL;
+    inline float JEEP_BASE_CONTROL;
+    inline float CIVIC_BASE_CONTROL;
+    inline float TRUCK_BASE_CONTROL;
+
+    inline float FORD_BASE_HEALTH;
+    inline float MAZDA_BASE_HEALTH;
+    inline float CORROLLA_BASE_HEALTH;
+    inline float BMW_BASE_HEALTH;
+    inline float JEEP_BASE_HEALTH;
+    inline float CIVIC_BASE_HEALTH;
+    inline float TRUCK_BASE_HEALTH;
+
+    inline float FORD_BASE_WEIGHT;
+    inline float MAZDA_BASE_WEIGHT;
+    inline float CORROLLA_BASE_WEIGHT;
+    inline float BMW_BASE_WEIGHT;
+    inline float JEEP_BASE_WEIGHT;
+    inline float CIVIC_BASE_WEIGHT;
+    inline float TRUCK_BASE_WEIGHT;
+
+    inline float FORD_BASE_REVERSE_SPEED;
+    inline float MAZDA_BASE_REVERSE_SPEED;
+    inline float CORROLLA_BASE_REVERSE_SPEED;
+    inline float BMW_BASE_REVERSE_SPEED;
+    inline float JEEP_BASE_REVERSE_SPEED;
+    inline float CIVIC_BASE_REVERSE_SPEED;
+    inline float TRUCK_BASE_REVERSE_SPEED;
+
+    static constexpr float FORD_WIDTH_SPRITE = 1.28f / 2.0f;
+    static constexpr float FORD_HEIGHT_SPRITE = 1.20f / 2.0f;
+
+    static constexpr float MAZDA_WIDTH_SPRITE = 1.64f/2.0f;
+    static constexpr float MAZDA_HEIGHT_SPRITE = 1.55f / 2.0f;
+
+    static constexpr float CORROLLA_WIDTH_SPRITE = 1.64f / 2.0f;
+    static constexpr float CORROLLA_HEIGHT_SPRITE = 1.45f / 2.0f;
+
+    static constexpr float BMW_WIDTH_SPRITE = 1.68f / 2.0f;
+    static constexpr float BMW_HEIGHT_SPRITE = 1.48f / 2.0f;
+
+    static constexpr float JEEP_WIDTH_SPRITE = 1.68f / 2.0f;
+    static constexpr float JEEP_HEIGHT_SPRITE = 1.48f / 2.0f;
+
+    static constexpr float CIVIC_WIDTH_SPRITE = 1.64f / 2.0f;
+    static constexpr float CIVIC_HEIGHT_SPRITE = 1.48f / 2.0f;
+
+    static constexpr float TRUCK_WIDTH_SPRITE = 2.04f / 2.0f;
+    static constexpr float TRUCK_HEIGHT_SPRITE = 1.77f / 2.0f;
+
+    // config juego
+    inline int MAX_PLAYERS_IN_GAME; 
+    inline int MAX_RACES; 
+
+    // times
+    inline int THREAD_SLEEP_MS;
+    inline int TICKS_PER_SECOND;
+    inline int MAX_RACE_MINUTES;
     
-    // npc dinamicos
-    static constexpr int DYNAMIC_NPC_MAX_SPEED = 40.0f;
-    static constexpr int DYNAMIC_NPC_ACCELERATION = 30.0f;
-    static constexpr int DYNAMIC_NPC_CONTROL = 20.0f;
-    static constexpr int DYNAMIC_NPC_HEALTH = 9999.0f;
-    static constexpr float DYNAMIC_NPC_FRICTION = 0.5f;
-    static constexpr float DYNAMIC_NPC_WEIGHT = 6.0f;
+    inline int MAX_TICKS; // Calculado: MAX_RACE_MINUTES * 60 * TICKS_PER_SECOND
+    inline float DT;      // Calculado: 1.0f / TICKS_PER_SECOND
+    inline int NOT_FINISH_PENALIZE_SECONDS;
 
-    // cuando este el yaml habria que poner ahi los valores de los autos hardcodeados
+    inline int UPGRADE_WAIT_SECONDS;
+    inline int UPGRADE_WAIT_TICKS; // Calculado: UPGRADE_WAIT_SECONDS * TICKS_PER_SECOND
+    
+    // upgrades & penalties
 
-    // renderizado con fisica en metros
-    static constexpr float SCALE_METER_TO_PIXEL = 25.0f;
+    inline float DEFAULT_PENALIZE;
 
-    //constantes menu Qt
-    static const std::string ENTER_DRIVER_NAME = "Enter your driver name";
-    static const std::string NFS_TITLE = "Need For Speed 2D";
-    static const std::string START_BUTTON = "START ENGINE";
+    inline float HEALTH_UPGRADE_VALUE;
+    inline float ACCELERATION_UPGRADE_VALUE;
+    inline float CONTROL_UPGRADE_VALUE;
+    inline float MAX_SPEED_UPGRADE_VALUE;
 
+    inline float PENALIZE_HEALTH_UPGRADE;
+    inline float PENALIZE_CONTROL_UPGRADE;
+    inline float PENALIZE_ACCELERATION_UPGRADE;
+    inline float PENALIZE_SPEED_UPGRADE;
+
+    // IDs de mejoras
+    static constexpr int DEFAULT_UPGRADE_ID = 0;
+    static constexpr int HEALTH_UPGRADE_ID = 1;
+    static constexpr int ACCELERATION_UPGRADE_ID = 2;
+    static constexpr int CONTROL_UPGRADE_ID = 3;
+    static constexpr int MAX_SPEED_UPGRADE_ID = 4;
+
+    static const std::string SELECT_HEALTH_UPGRADE = "1";
+    static const std::string SELECT_ACCELERATION_UPGRADE = "2";
+    static const std::string SELECT_CONTROL_UPGRADE = "3";
+    static const std::string SELECT_MAX_SPEED_UPGRADE = "4";
+
+
+    // física y autos base
+    inline float DEFAULT_RESTITUTION;
+    inline float DEFAULT_LINEAR_DAMPING;
+    inline float DEFAULT_ANGULAR_DAMPING;
+    inline float DEFAULT_MULTIPLIER;
+    inline float NO_HEALTH;
+    inline float FRICTION_BASE;
+    inline float INITIAL_SPEED;
+
+    // NPCs
+
+    // Estáticos
+    inline float STATIC_NPC_MAX_SPEED;
+    inline float STATIC_NPC_MAX_REVERSE_SPEED;
+    inline float STATIC_NPC_ACCELERATION;
+    inline float STATIC_NPC_CONTROL;
+    inline float STATIC_NPC_HEALTH;
+    inline float STATIC_NPC_FRICTION;
+    inline float STATIC_NPC_WEIGHT;
+    
+    // Dinámicos
+    inline float DYNAMIC_NPC_MAX_SPEED;
+    inline float DYNAMIC_NPC_MAX_REVERSE_SPEED;
+    inline float DYNAMIC_NPC_ACCELERATION;
+    inline float DYNAMIC_NPC_CONTROL;
+    inline float DYNAMIC_NPC_HEALTH;
+    inline float DYNAMIC_NPC_FRICTION;
+    inline float DYNAMIC_NPC_WEIGHT;
 }
 #endif //CONSTANTS_H

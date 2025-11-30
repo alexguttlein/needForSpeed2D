@@ -3,8 +3,8 @@
 
 RaceLogic::RaceLogic() : 
     yamlLoader(),
-    mapData(yamlLoader.loadMapFromYaml("server/raceCheckpoints.yaml")),
-    spawnData(yamlLoader.loadRaceSpawnPositions("server/raceSpawnPositions.yaml")),
+    mapData(yamlLoader.loadMapFromYaml("settings/races.yaml")),
+    spawnData(yamlLoader.loadRaceSpawnPositions("settings/spawnPositions.yaml")),
     actualRaceId("race_1"),
     currentRaceId(1) {
     
@@ -198,6 +198,11 @@ std::vector<int> RaceLogic::getFinishedPlayers() const {
 }
 
 
+void RaceLogic::addFinishedPlayer(int playerId) {
+    finishedPlayers.push_back(playerId);
+}
+
+
 float RaceLogic::getFinishTime(int playerId) const {
     auto it = finishTimes.find(playerId);
     if (it == finishTimes.end()) {
@@ -297,9 +302,10 @@ Leaderboard RaceLogic::getLeaderBoard() const {
 
     for (const auto& pair : allTimeFinishTimes) {
         float time = pair.second;
+        std::string playerName = getPlayerName(pair.first);
         
         if (time >= 0.0f) { 
-            leaderboard.push_back({pair.first, time});
+            leaderboard.push_back({pair.first, time, playerName});
         }
     }
 
@@ -331,3 +337,21 @@ Vector2D<float> RaceLogic::getSpawnPositionForPlayer(int playerIndex) {
     return Vector2D<float>{0.0f, 0.0f};
 }
 
+
+int RaceLogic::getPlayerTimePenaltyTicks(int playerId) {
+    auto it = playerTimePenalties.find(playerId);
+    if (it != playerTimePenalties.end()) {
+        return it->second;
+    }
+    return 0;
+}
+
+
+void RaceLogic::setPlayerTimePenaltyTicks(int playerId, int ticks) {
+    playerTimePenalties[playerId] = ticks;
+}
+
+
+void RaceLogic::clearPlayerTimePenalties(int playerId) {
+    playerTimePenalties.erase(playerId);
+}

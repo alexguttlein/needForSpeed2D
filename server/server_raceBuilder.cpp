@@ -15,7 +15,6 @@ RaceBuilder::~RaceBuilder() {
 }
 
 
-// por ahora asi, mas adelante se deberia poner a cada auto segun como salio en la carrera
 Vector2D<float> RaceBuilder::getSpawnPosition() {
     Vector2D<float> currentPos = {nextSpawnX, nextSpawnY};
     nextSpawnX += Constants::SPAWN_OFFSET_X;
@@ -53,25 +52,46 @@ void RaceBuilder::addSelectCar(int carType) {
         // Atributos: world, position, carType, acceleration, control, weight, maxSpeed, maxReverseSpeed, health, height, width
 
         case Constants::FORD:
-            car = std::make_shared<Car>(world, position, carType, 50.0f, 40.0f, 6.0f, 50.0f, 50.0f, 90.0f, 1.20f / 2.0f, 1.28f / 2.0f);
+            car = std::make_shared<Car>(world, position, carType, Constants::FORD_BASE_ACCELERATION,
+                                        Constants::FORD_BASE_CONTROL, Constants::FORD_BASE_WEIGHT,
+                                        Constants::FORD_BASE_MAX_SPEED, Constants::FORD_BASE_REVERSE_SPEED,
+                                        Constants::FORD_BASE_HEALTH, Constants::FORD_HEIGHT_SPRITE, Constants::FORD_WIDTH_SPRITE);
             break;
         case Constants::MAZDA:
-            car = std::make_shared<Car>(world, position, carType, 65.0f, 70.0f, 3.0f, 70.0f, 40.0f, 80.0f, 1.55f/2.0f,1.64f/2.0f);
+            car = std::make_shared<Car>(world, position, carType, Constants::MAZDA_BASE_ACCELERATION,
+                                        Constants::MAZDA_BASE_CONTROL, Constants::MAZDA_BASE_WEIGHT, 
+                                        Constants::MAZDA_BASE_MAX_SPEED, Constants::MAZDA_BASE_REVERSE_SPEED,
+                                        Constants::MAZDA_BASE_HEALTH, Constants::MAZDA_HEIGHT_SPRITE, Constants::MAZDA_WIDTH_SPRITE);
             break;
         case Constants::CORROLLA:
-            car = std::make_shared<Car>(world, position, carType, 55.0f, 55.0f, 6.0f, 60.0f, 50.0f, 100.0f, 1.45f/2.0f,1.64f/2.0f);
+            car = std::make_shared<Car>(world, position, carType, Constants::CORROLLA_BASE_ACCELERATION,
+                                        Constants::CORROLLA_BASE_CONTROL, Constants::CORROLLA_BASE_WEIGHT,
+                                        Constants::CORROLLA_BASE_MAX_SPEED, Constants::CORROLLA_BASE_REVERSE_SPEED,
+                                        Constants::CORROLLA_BASE_HEALTH, Constants::CORROLLA_HEIGHT_SPRITE, Constants::CORROLLA_WIDTH_SPRITE);
             break;
         case Constants::BMW:
-            car = std::make_shared<Car>(world, position, carType, 60.0f, 70.0f, 3.0f, 50.0f, 60.0f, 70.0f, 1.48f/2.0f,1.68f/2.0f);
+            car = std::make_shared<Car>(world, position, carType, Constants::BMW_BASE_ACCELERATION,
+                                        Constants::BMW_BASE_CONTROL, Constants::BMW_BASE_WEIGHT,
+                                        Constants::BMW_BASE_MAX_SPEED, Constants::BMW_BASE_REVERSE_SPEED,
+                                        Constants::BMW_BASE_HEALTH, Constants::BMW_HEIGHT_SPRITE, Constants::BMW_WIDTH_SPRITE);
             break;
         case Constants::JEEP:
-            car = std::make_shared<Car>(world, position, carType, 40.0f, 70.0f, 3.0f, 50.0f, 50.0f, 110.0f, 1.48f/2.0f,1.68f/2.0f);
+            car = std::make_shared<Car>(world, position, carType, Constants::JEEP_BASE_ACCELERATION,
+                                        Constants::JEEP_BASE_CONTROL, Constants::JEEP_BASE_WEIGHT,
+                                        Constants::JEEP_BASE_MAX_SPEED, Constants::JEEP_BASE_REVERSE_SPEED,
+                                        Constants::JEEP_BASE_HEALTH, Constants::JEEP_HEIGHT_SPRITE, Constants::JEEP_WIDTH_SPRITE);
             break;
         case Constants::CIVIC:
-            car = std::make_shared<Car>(world, position, carType, 50.0f, 70.0f, 5.0f, 50.0f, 50.0f, 100.0f, 1.48f/2.0f,1.64f/2.0f);
+            car = std::make_shared<Car>(world, position, carType, Constants::CIVIC_BASE_ACCELERATION,
+                                        Constants::CIVIC_BASE_CONTROL, Constants::CIVIC_BASE_WEIGHT,
+                                        Constants::CIVIC_BASE_MAX_SPEED, Constants::CIVIC_BASE_REVERSE_SPEED,
+                                        Constants::CIVIC_BASE_HEALTH, Constants::CIVIC_HEIGHT_SPRITE, Constants::CIVIC_WIDTH_SPRITE);
             break;
         case Constants::TRUCK:
-            car = std::make_shared<Car>(world, position, carType, 50.0f, 90.0f, 5.0f, 50.0f, 50.0f, 150.0f, 1.77f/2.0f,2.04f/2.0f);
+            car = std::make_shared<Car>(world, position, carType, Constants::TRUCK_BASE_ACCELERATION,
+                                        Constants::TRUCK_BASE_CONTROL, Constants::TRUCK_BASE_WEIGHT,
+                                        Constants::TRUCK_BASE_MAX_SPEED, Constants::TRUCK_BASE_REVERSE_SPEED,
+                                        Constants::TRUCK_BASE_HEALTH, Constants::TRUCK_HEIGHT_SPRITE, Constants::TRUCK_WIDTH_SPRITE);
             break;
         default:
             std::cerr << "Tipo de auto desconocido: " << carType << std::endl;
@@ -82,7 +102,6 @@ void RaceBuilder::addSelectCar(int carType) {
 }
 
 
-// fijarse que aparezcan bien porque creo que esta seteado que aparezcan apanzados
 void RaceBuilder::addStaticNpcCar(int carType, Vector2D<float> basePosition) {
     std::shared_ptr<Car> car;
     switch (carType) {
@@ -91,43 +110,43 @@ void RaceBuilder::addStaticNpcCar(int carType, Vector2D<float> basePosition) {
             car =  std::make_shared<Car>(world, basePosition, carType, Constants::STATIC_NPC_ACCELERATION,
                 Constants::STATIC_NPC_CONTROL, Constants::STATIC_NPC_WEIGHT,
                 Constants::STATIC_NPC_MAX_SPEED, Constants::STATIC_NPC_MAX_REVERSE_SPEED,
-                Constants::STATIC_NPC_HEALTH, 1.20f / 2.0f, 1.28f / 2.0f);
+                Constants::STATIC_NPC_HEALTH, Constants::FORD_HEIGHT_SPRITE, Constants::FORD_WIDTH_SPRITE);
             break;
         case Constants::MAZDA:
             car =  std::make_shared<Car>(world, basePosition, carType, Constants::STATIC_NPC_ACCELERATION,
                 Constants::STATIC_NPC_CONTROL, Constants::STATIC_NPC_WEIGHT,
                 Constants::STATIC_NPC_MAX_SPEED, Constants::STATIC_NPC_MAX_REVERSE_SPEED,
-                Constants::STATIC_NPC_HEALTH, 1.55f/2.0f,1.64f/2.0f);
+                Constants::STATIC_NPC_HEALTH, Constants::MAZDA_HEIGHT_SPRITE, Constants::MAZDA_WIDTH_SPRITE);
             break;
         case Constants::CORROLLA:
             car =  std::make_shared<Car>(world, basePosition, carType, Constants::STATIC_NPC_ACCELERATION,
                 Constants::STATIC_NPC_CONTROL, Constants::STATIC_NPC_WEIGHT,
                 Constants::STATIC_NPC_MAX_SPEED, Constants::STATIC_NPC_MAX_REVERSE_SPEED,
-                Constants::STATIC_NPC_HEALTH, 1.45f/2.0f,1.64f/2.0f);
+                Constants::STATIC_NPC_HEALTH, Constants::CORROLLA_HEIGHT_SPRITE, Constants::CORROLLA_WIDTH_SPRITE);
             break;
         case Constants::BMW:
             car =  std::make_shared<Car>(world, basePosition, carType, Constants::STATIC_NPC_ACCELERATION,
                 Constants::STATIC_NPC_CONTROL, Constants::STATIC_NPC_WEIGHT,
                 Constants::STATIC_NPC_MAX_SPEED, Constants::STATIC_NPC_MAX_REVERSE_SPEED,
-                Constants::STATIC_NPC_HEALTH, 1.48f/2.0f,1.68f/2.0f);
+                Constants::STATIC_NPC_HEALTH, Constants::BMW_HEIGHT_SPRITE, Constants::BMW_WIDTH_SPRITE);
             break;
         case Constants::JEEP:
             car =  std::make_shared<Car>(world, basePosition, carType, Constants::STATIC_NPC_ACCELERATION,
                 Constants::STATIC_NPC_CONTROL, Constants::STATIC_NPC_WEIGHT,
                 Constants::STATIC_NPC_MAX_SPEED, Constants::STATIC_NPC_MAX_REVERSE_SPEED,
-                Constants::STATIC_NPC_HEALTH, 1.48f/2.0f,1.68f/2.0f);
+                Constants::STATIC_NPC_HEALTH, Constants::JEEP_HEIGHT_SPRITE, Constants::JEEP_WIDTH_SPRITE);
             break;
         case Constants::CIVIC:
             car =  std::make_shared<Car>(world, basePosition, carType, Constants::STATIC_NPC_ACCELERATION,
                 Constants::STATIC_NPC_CONTROL, Constants::STATIC_NPC_WEIGHT,
                 Constants::STATIC_NPC_MAX_SPEED, Constants::STATIC_NPC_MAX_REVERSE_SPEED,
-                Constants::STATIC_NPC_HEALTH, 1.48f/2.0f,1.64f/2.0f);
+                Constants::STATIC_NPC_HEALTH, Constants::CIVIC_HEIGHT_SPRITE, Constants::CIVIC_WIDTH_SPRITE);
             break;
         case Constants::TRUCK:
             car =  std::make_shared<Car>(world, basePosition, carType, Constants::STATIC_NPC_ACCELERATION,
                 Constants::STATIC_NPC_CONTROL, Constants::STATIC_NPC_WEIGHT,
                 Constants::STATIC_NPC_MAX_SPEED, Constants::STATIC_NPC_MAX_REVERSE_SPEED,
-                Constants::STATIC_NPC_HEALTH, 1.77f/2.0f,2.04f/2.0f);
+                Constants::STATIC_NPC_HEALTH, Constants::TRUCK_HEIGHT_SPRITE, Constants::TRUCK_WIDTH_SPRITE);
             break;    
         default:
             std::cerr << "Tipo de auto desconocido para NPC estático: " << carType << std::endl;
