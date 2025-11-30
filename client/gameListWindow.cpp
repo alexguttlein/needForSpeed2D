@@ -27,6 +27,8 @@ GameListWindow::GameListWindow(Client* client, QWidget* parent)
     connect(refreshButton, &QPushButton::clicked, this, &GameListWindow::onRefreshClicked);
     connect(cancelButton, &QPushButton::clicked, this, &GameListWindow::onCancelClicked);
 
+    refreshButton->hide();
+
     layout->addWidget(table);
     layout->addWidget(refreshButton);
     layout->addWidget(cancelButton);

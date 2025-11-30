@@ -259,19 +259,16 @@ void ClientQtManager::waitForGameEvents(WaitingWindow* waiting, LobbyMenuWindow*
         });
 
         // start game button
-        QObject::connect(waiting, &WaitingWindow::startGamePressed, [this, lobby, waiting]() {
+        QObject::connect(waiting, &WaitingWindow::startGamePressed, [this, waiting]() {
 
             bool ok = client->sendLobbyOption(Constants::INPUT_START_GAME,
-                                              client->getPlayerName(),
+                                              "",
                                               client->getGameId());
 
             if (!ok) {
                 QMessageBox::warning(waiting, Constants::ERROR_TXT.data(),
                                      Constants::START_GAME_ERROR.data());
-                return;
             }
-            lobby->close();
-            waiting->close();
         });
     }
 
@@ -311,18 +308,18 @@ void ClientQtManager::waitForGameEvents(WaitingWindow* waiting, LobbyMenuWindow*
 
             // evento para comenzar partida
             if (event.type == EventType::GAME_START) {
-                waiting->close();
-                lobby->close();
                 client->changePlayingStatus();
                 emit waiting->gameShouldStart();
-                return;
+                waiting->close();
+                lobby->close();
+                app->quit();
             }
 
             // ERROR
             QMessageBox::warning(lobby, Constants::ERROR_TXT.data(),
                                  Constants::SERVER_ERROR.data());
-            lobby->close();
             waiting->close();
+            lobby->close();
             app->quit();
         }, Qt::QueuedConnection);
     });
