@@ -202,6 +202,11 @@ std::optional<Snapshot> ClientProtocol::receiveSnapshotFromServer() {
             socket.recvall(&currentRaceIdBE, sizeof(currentRaceIdBE));
             rs.currentRaceId = static_cast<int>(ntohl(currentRaceIdBE));
 
+            // checkpointsSize
+            uint32_t checkpointsSizeBE = 0;
+            socket.recvall(&checkpointsSizeBE, sizeof(checkpointsSizeBE));
+            rs.checkpointsSize = static_cast<int>(ntohl(checkpointsSizeBE));
+
             // nextCheckpoint
             uint32_t nextCheckpointXBE = 0;
             socket.recvall(&nextCheckpointXBE, sizeof(nextCheckpointXBE));

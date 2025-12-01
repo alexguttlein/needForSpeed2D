@@ -14,6 +14,7 @@ struct RaceStateDTO {
     int playerId;
     std::string timeLeftRace; // Formato "MM:SS"
     int currentRaceId;
+    int checkpointsSize;
     Vector2D<float> nextCheckpoint;
     std::vector<Vector2D<float>> currentHints;
     bool hasFinished;
