@@ -108,11 +108,11 @@ private:
     float facingDeg = 0.0f;
     int lastX = -1, lastY = -1;
 
-    int   currentRace = 1;      
-    int   raceMax   = 2; 
-    int   hudHp_        = 100;     // vida actual
-    int   hudMaxHp_     = 100;    // vida máxima
-    float hudSpeedKph_  = 128.f;  // velocidad simulada (km/h)
+    int   currentCheckpoint = 0;      
+    int   numberOfCheckpoints = Constants::NUMBER_OF_CHECKPOINTS;
+    int   hudHp_        = 100;
+    int   hudMaxHp_     = 100;
+    float hudSpeedKph_  = 0.0f;
 
     Uint32 raceStartTicks_ = 0;
     bool   raceStarted_    = false;

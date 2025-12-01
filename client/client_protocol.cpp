@@ -287,6 +287,23 @@ std::optional<Snapshot> ClientProtocol::receiveSnapshotFromServer() {
             snapshot.leaderboards.push_back(pt);
         }
 
+        // Leer eventos de colisión
+        uint32_t collisionCountBE = 0;
+        socket.recvall(&collisionCountBE, sizeof(collisionCountBE));
+        uint32_t collisionCount = ntohl(collisionCountBE);
+        
+        for (uint32_t c = 0; c < collisionCount; ++c) {
+            uint32_t playerIdBE = 0;
+            socket.recvall(&playerIdBE, sizeof(playerIdBE));
+            int playerId = static_cast<int>(ntohl(playerIdBE));
+            
+            uint8_t collisionTypeByte = 0;
+            socket.recvall(&collisionTypeByte, sizeof(collisionTypeByte));
+            EventType collisionType = static_cast<EventType>(collisionTypeByte);
+            
+            snapshot.collisions.emplace_back(playerId, collisionType);
+        }
+
         return snapshot;
     }
 

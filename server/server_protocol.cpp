@@ -127,7 +127,7 @@ void ServerProtocol::sendSnapshot(std::shared_ptr<Snapshot>& snapshot) {
 
     //players size
     appendUInt32(buffer, snapshot->playersSize);
-   
+
     for (const auto& carState : snapshot->cars) {
         
         // car_id (int, típicamente 4 bytes)
@@ -171,7 +171,7 @@ void ServerProtocol::sendSnapshot(std::shared_ptr<Snapshot>& snapshot) {
         // playerId
         addIntToUint8tVector(buffer, rs.playerId);
 
-
+        
         // timeLeftRace (string: uint16_t length + chars)
         uint16_t timeLen = static_cast<uint16_t>(rs.timeLeftRace.size());
         uint16_t timeLenBE = htons(timeLen);
@@ -228,6 +228,15 @@ void ServerProtocol::sendSnapshot(std::shared_ptr<Snapshot>& snapshot) {
         const uint8_t* nameLenBytes = reinterpret_cast<const uint8_t*>(&nameLenBE);
         buffer.insert(buffer.end(), nameLenBytes, nameLenBytes + sizeof(nameLenBE));
         buffer.insert(buffer.end(), reinterpret_cast<const uint8_t*>(playerTime.playerName.data()), reinterpret_cast<const uint8_t*>(playerTime.playerName.data()) + nameLen);
+    }
+
+    // Enviar eventos de colisión
+    uint32_t collisionCount = static_cast<uint32_t>(snapshot->collisions.size());
+    appendUInt32(buffer, collisionCount);
+    
+    for (const auto& collision : snapshot->collisions) {
+        addIntToUint8tVector(buffer, collision.playerId);
+        buffer.push_back(static_cast<uint8_t>(collision.collisionType));
     }
 
     socket.sendall(buffer.data(), buffer.size());

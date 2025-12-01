@@ -159,5 +159,7 @@ namespace  Constants {
     static const std::string NFS_TITLE = "Need For Speed 2D";
     static const std::string START_BUTTON = "START ENGINE";
 
+    static const int NUMBER_OF_CHECKPOINTS = 5;
+
 }
 #endif //CONSTANTS_H

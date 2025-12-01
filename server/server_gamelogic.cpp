@@ -137,6 +137,11 @@ std::shared_ptr<Snapshot> GameLogic::getSnapshot(EventType controlEvent) const {
         snapshot->leaderboards = leaderboard;
     }
 
+    // Incluir eventos de colisión del frame actual
+    snapshot->collisions = currentFrameCollisions;
+    // Limpiar las colisiones para el próximo frame
+    currentFrameCollisions.clear();
+
     return snapshot;
 }
 
@@ -178,9 +183,34 @@ void GameLogic::checkCollisions() {
                  
                 float hitSpeed = getCollisionSpeed(bodyA, bodyB);
 
+                if (carA && carB) {
+                    // Colisión entre dos autos
+                    int idA = getCarId(carA);
+                    int idB = getCarId(carB);
+                    if (idA != -1) {
+                        currentFrameCollisions.emplace_back(idA, EventType::COLLISION_CAR);
+                    }
+                    if (idB != -1) {
+                        currentFrameCollisions.emplace_back(idB, EventType::COLLISION_CAR);
+                    }
+                } else if (carA) {
+                    // carA chocó con un edificio/objeto estático
+                    int idA = getCarId(carA);
+                    if (idA != -1) {
+                        currentFrameCollisions.emplace_back(idA, EventType::COLLISION_BUILDING);
+                    }
+                } else if (carB) {
+                    // carB chocó con un edificio/objeto estático
+                    int idB = getCarId(carB);
+                    if (idB != -1) {
+                        currentFrameCollisions.emplace_back(idB, EventType::COLLISION_BUILDING);
+                    }
+                }
+
+                // Verificar velocidad mínima para aplicar daño
                 const float MIN_HIT_SPEED = 1.0f; 
                 if (hitSpeed < MIN_HIT_SPEED) {
-                    continue; // No es un impacto severo, ignorar
+                    continue; // No es un impacto severo, no aplicar daño
                 }
                 
                 b2Vec2 normal = getCollisionNormal(bodyA, bodyB);
@@ -467,6 +497,17 @@ std::string GameLogic::getMinuteSecondFromTicks(int playerId, bool finished) {
 void GameLogic::resetRaceTemporizer() {
     remainingFinishTicks = Constants::MAX_TICKS;
     lastTickChecked = 0;
+}
+
+int GameLogic::getCarId(Car* car) const {
+    if (!car) return -1;
+    
+    for (const auto& [id, carPtr] : cars) {
+        if (carPtr.get() == car) {
+            return id;
+        }
+    }
+    return -1;
 }
 
 

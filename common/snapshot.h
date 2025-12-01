@@ -8,6 +8,14 @@
 #include <vector>
 #include "gameInfo.h"
 
+struct CollisionEvent {
+    int playerId;
+    EventType collisionType; // COLLISION_CAR o COLLISION_BUILDING
+    
+    CollisionEvent(int id, EventType type) 
+        : playerId(id), collisionType(type) {}
+};
+
 #pragma pack(push, 1)  // para evitar padding
 struct Snapshot {
     EventType controlEvent;
@@ -19,6 +27,7 @@ struct Snapshot {
     bool raceFinished = false;      // true cuando todos los jugadores terminaron
     bool gameFinished = false;  // true cuando no hay más circuitos
     std::vector<PlayerTime> leaderboards; // Leaderboard final partida
+    std::vector<CollisionEvent> collisions; // Eventos de colisión en este frame
     Snapshot () = default;
 };
 #pragma pack(pop)

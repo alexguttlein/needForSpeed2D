@@ -6,6 +6,7 @@
 #include <SDL_image.h>
 #include <cstdio>
 #include <chrono>
+#include <cstdlib>
 
 using ms = std::chrono::milliseconds;
 constexpr int FPS = 60;
@@ -19,11 +20,21 @@ void Client::run() {
     receiver.start();
     sender.start();
 
+    initAudio_();
+    
+    if (audioManager_) {
+        audioManager_->playMusic(AudioManager::MUSIC_LOBBY, 1000);
+    }
+
     // menu inicial Qt
     ClientQtManager qt(this);
     qt.start();
 
     std::cout << "debug: auto elegido = " << selectedCarId << std::endl;
+
+    if (audioManager_) {
+        audioManager_->stopMusic(500);
+    }
 
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         std::fprintf(stderr, "SDL_Init error: %s\n", SDL_GetError());
@@ -65,7 +76,8 @@ void Client::run() {
 
     // bool haveSnapshot = false;
     Snapshot snapshot;
-    bool lastRaceFinished = false; 
+    bool lastRaceFinished = false;
+    bool musicGameplayStarted = false; 
 
     while (running) {
         auto start = std::chrono::steady_clock::now();
@@ -78,12 +90,22 @@ void Client::run() {
                     case SDLK_ESCAPE: running = false; break;
                     case SDLK_q: running = false; break;
                     case SDLK_w: 
-                        if (!dib.hasPlayerFinishedRace()) 
-                            commandQueue.push({ SDLK_w, true }); 
+                        if (!dib.hasPlayerFinishedRace()) {
+                            commandQueue.push({ SDLK_w, true });
+                            if (audioManager_ && accelerationChannel_ == -1) {
+                                accelerationChannel_ = audioManager_->playSound(
+                                    AudioManager::SFX_ACCELERATION, -1); // -1 = loop infinito
+                            }
+                        }
                         break;
                     case SDLK_s: 
-                        if (!dib.hasPlayerFinishedRace()) 
-                            commandQueue.push({ SDLK_s, true }); 
+                        if (!dib.hasPlayerFinishedRace()) {
+                            commandQueue.push({ SDLK_s, true });
+                            if (audioManager_ && accelerationChannel_ == -1) {
+                                accelerationChannel_ = audioManager_->playSound(
+                                    AudioManager::SFX_ACCELERATION, -1); // -1 = loop infinito
+                            }
+                        }
                         break;
                     case SDLK_a: 
                         if (!dib.hasPlayerFinishedRace()) 
@@ -114,12 +136,22 @@ void Client::run() {
             else if (e.type == SDL_KEYUP) {
                 switch (e.key.keysym.sym) {
                     case SDLK_w: 
-                        if (!dib.hasPlayerFinishedRace()) 
-                            commandQueue.push({ SDLK_w, false }); 
+                        if (!dib.hasPlayerFinishedRace()) {
+                            commandQueue.push({ SDLK_w, false });
+                            if (audioManager_ && accelerationChannel_ != -1) {
+                                audioManager_->stopSound(accelerationChannel_);
+                                accelerationChannel_ = -1;
+                            }
+                        }
                         break;
                     case SDLK_s: 
-                        if (!dib.hasPlayerFinishedRace()) 
-                            commandQueue.push({ SDLK_s, false }); 
+                        if (!dib.hasPlayerFinishedRace()) {
+                            commandQueue.push({ SDLK_s, false });
+                            if (audioManager_ && accelerationChannel_ != -1) {
+                                audioManager_->stopSound(accelerationChannel_);
+                                accelerationChannel_ = -1;
+                            }
+                        }
                         break;
                     case SDLK_a: 
                         if (!dib.hasPlayerFinishedRace()) 
@@ -158,9 +190,17 @@ void Client::run() {
             if (myRace) {
                 dib.updateRaceState(*myRace);
             }
+            
+            if (!musicGameplayStarted && !snapshot.raceFinished && audioManager_) {
+                audioManager_->playMusic(AudioManager::MUSIC_GAMEPLAY, 1500);
+                musicGameplayStarted = true;
+            }
 
             if (snapshot.gameFinished) {
                 dib.setGameFinished(true, snapshot.leaderboards);
+                if (audioManager_) {
+                    audioManager_->stopMusic(1000);
+                }
             }
             
             if (snapshot.raceFinished && !lastRaceFinished) {
@@ -173,10 +213,20 @@ void Client::run() {
                 }
             }
             lastRaceFinished = snapshot.raceFinished;
+            
+            if (audioManager_) {
+                for (const auto& collision : snapshot.collisions) {
+                    if (collision.playerId == myId) {
+                        if (collision.collisionType == EventType::COLLISION_CAR) {
+                            audioManager_->playSound(AudioManager::SFX_COLLISION_CAR);
+                        } else if (collision.collisionType == EventType::COLLISION_BUILDING) {
+                            audioManager_->playSound(AudioManager::SFX_COLLISION_BUILDING);
+                        }
+                    }
+                }
+            }
             dib.renderAll(snapshot.cars, selfId.load(), myRace->timeLeftRace);
         }
-
-
         auto end = std::chrono::steady_clock::now();
         auto elapsed = std::chrono::duration_cast<ms>(end - start);
         if (elapsed < FRAME_MS) {
@@ -226,4 +276,26 @@ void Client::loadTexturesAndAssets_(ClientDibujador& dib) {
     dib.setUIFont("assets/ui/FreeSans.ttf", 16);
     dib.loadCheckpoint("assets/ui/checkpoint.png");
     dib.loadHint("assets/ui/hint.png");
+}
+
+void Client::initAudio_() {
+    try {
+        audioManager_ = std::make_unique<AudioManager>();
+        
+        audioManager_->loadMusic(AudioManager::MUSIC_LOBBY, "assets/sound/musica-menu.mp3");
+        audioManager_->loadMusic(AudioManager::MUSIC_GAMEPLAY, "assets/sound/musica-carrera.mp3");
+        
+        audioManager_->loadSound(AudioManager::SFX_ACCELERATION, "assets/sound/aceleracion.mp3");
+        audioManager_->loadSound(AudioManager::SFX_COLLISION_CAR, "assets/sound/colision-autos.mp3");
+        audioManager_->loadSound(AudioManager::SFX_COLLISION_BUILDING, "assets/sound/colision-edificios.mp3");
+        
+        audioManager_->setMusicVolume(50);
+        audioManager_->setSoundVolume(100);
+        
+        std::cout << "[Client] Sistema de audio inicializado correctamente" << std::endl;
+        
+    } catch (const std::exception& e) {
+        std::cerr << "[Client] Error al inicializar audio: " << e.what() << std::endl;
+        std::cerr << "[Client] El juego continuará sin audio" << std::endl;
+    }
 }
