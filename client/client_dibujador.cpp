@@ -214,6 +214,7 @@ void ClientDibujador::renderAll(const std::vector<CarStateDTO>& cars, int selfId
         const Uint32 SHOW_RESULTS_MS = 15000;
 
         if (now - resultsStartTicks_ < SHOW_RESULTS_MS) {
+            currentCheckpoint = 0;
             renderResultsTable();
             return;
         } else {
@@ -576,19 +577,28 @@ void ClientDibujador::drawHudRace_(int panelX, int panelY) {
         value,
         sizeof(value),
         "%d/%d",
-        currentRace,
-        raceMax
+        currentCheckpoint,
+        numberOfCheckpoints
     );
 
     int x = panelX + 12;
     int y = panelY + 12;
 
-    drawBadge_(x, y, "Race: ", value);
+    drawBadge_(x, y, "Checkpoints: ", value);
 }
 
 void ClientDibujador::updateRaceState(const RaceStateDTO& raceState) {
-    hudNextCheckpoint_.x = raceState.nextCheckpoint.x * Constants::SCALE_METER_TO_PIXEL;
-    hudNextCheckpoint_.y = raceState.nextCheckpoint.y * Constants::SCALE_METER_TO_PIXEL;
+    Vector2D<float> newCheckpoint;
+    newCheckpoint.x = raceState.nextCheckpoint.x * Constants::SCALE_METER_TO_PIXEL;
+    newCheckpoint.y = raceState.nextCheckpoint.y * Constants::SCALE_METER_TO_PIXEL;
+    
+    // Si el checkpoint cambió, incrementar el contador
+    if ((hudNextCheckpoint_.x != newCheckpoint.x || hudNextCheckpoint_.y != newCheckpoint.y) &&
+        hudNextCheckpoint_.x != 0.0f && hudNextCheckpoint_.y != 0.0f) {
+        currentCheckpoint++;
+    }
+    
+    hudNextCheckpoint_ = newCheckpoint;
 
     hudHints_.clear();
     hudHints_.reserve(raceState.currentHints.size());
@@ -598,8 +608,6 @@ void ClientDibujador::updateRaceState(const RaceStateDTO& raceState) {
         p.y = h.y * Constants::SCALE_METER_TO_PIXEL;
         hudHints_.push_back(p);
     }
-    
-    currentRace = raceState.currentRaceId;
     
     playerFinishedRace_ = raceState.hasFinished;
 }

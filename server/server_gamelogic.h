@@ -55,7 +55,9 @@ private:
     int lastCommandPlayerId = 0;
 
     std::map<int, bool> hasSelectedUpgrade;
-    std::map<int, int> selectedUpgradeId;
+    std::map<int, int> selectedUpgradeId;    
+
+    mutable std::vector<CollisionEvent> currentFrameCollisions;
 
 public:
 
@@ -227,6 +229,12 @@ public:
     *
     * */
     float getPenalizedTimeUpgrade(int upgradeId) const;
+
+    /*
+    * Obtiene el ID del jugador asociado a un Car*
+    * Devuelve -1 si el car no pertenece a ningún jugador
+    * */
+    int getCarId(Car* car) const;
 
     /*
     * Destructor de GameLogic.

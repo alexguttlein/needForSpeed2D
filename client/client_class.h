@@ -12,9 +12,13 @@
 #include "client_receiverThread.h"
 #include "client_senderThread.h"
 #include "client_dibujador.h"
+#include "client_audioManager.h"
 #include <SDL.h>
 #include "../common/eventType.h"
 #include "commandMessage.h"
+#include <memory>
+#include <unordered_map>
+#include <chrono>
 
 class Client {
 public:
@@ -45,9 +49,12 @@ private:
     std::atomic<int> selfId{-1};
     int selectedCarId = -1;
     std::string playerName;
-    int gameId = 0;
+    std::unique_ptr<AudioManager> audioManager_;
+    int accelerationChannel_ = -1;
+        int gameId = 0;
 
     void loadTexturesAndAssets_(ClientDibujador& dib);
+    void initAudio_();
 };
 
 #endif //CLIENT_H

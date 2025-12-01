@@ -7,6 +7,7 @@ target_sources(taller_client
     client_receiverThread.cpp
     client_dibujador.cpp
     client_senderThread.cpp
+    client_audioManager.cpp
     lobbyMenuWindow.cpp
     waitingWindow.cpp
     gameListWindow.cpp
@@ -20,6 +21,7 @@ target_sources(taller_client
     client_receiverThread.h
     client_dibujador.h
     client_senderThread.h
+    client_audioManager.h
     lobbyMenuWindow.h
     waitingWindow.h
     gameListWindow.h

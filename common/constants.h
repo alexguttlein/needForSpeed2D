@@ -231,5 +231,7 @@ namespace Constants {
     inline float DYNAMIC_NPC_HEALTH;
     inline float DYNAMIC_NPC_FRICTION;
     inline float DYNAMIC_NPC_WEIGHT;
+
+    static const int NUMBER_OF_CHECKPOINTS = 5;
 };
 #endif //CONSTANTS_H
