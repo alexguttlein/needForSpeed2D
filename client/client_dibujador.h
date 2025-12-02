@@ -29,7 +29,8 @@ public:
 
     void setFacingDeg(float deg) { facingDeg = deg; }
 
-    void renderAll(const std::vector<CarStateDTO>& cars, int selfId, std::string timeLeftRace);
+    void renderAll(const std::vector<CarStateDTO>& cars, int selfId, std::string timeLeftRace, 
+                   const std::vector<RaceStateDTO>& raceStates = {});
     void updateRaceState(const RaceStateDTO& raceState);
     bool loadCarAtlasForId(int carTypeId, const std::string& pathPng,
                            int cols, int rows, float angle0Deg, bool cw);

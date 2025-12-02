@@ -53,9 +53,22 @@ private:
     int accelerationChannel_ = -1;
     int brakeChannel_ = -1;
     int gameId = 0;
+    bool hasFinished_ = false;
 
     void loadTexturesAndAssets_(ClientDibujador& dib);
     void initAudio_();
+    
+    void handleSDLEvents_(bool& running, ClientDibujador& dib, const Snapshot& snapshot);
+    void handleKeyDown_(SDL_Keycode key, ClientDibujador& dib, bool raceFinished, bool playerFinished);
+    void handleKeyUp_(SDL_Keycode key, ClientDibujador& dib, bool raceFinished, bool playerFinished);
+    void handleMovementKey_(SDL_Keycode key, bool pressed, ClientDibujador& dib);
+    void handleUpgradeKey_(int upgradeId, ClientDibujador& dib);
+    void processGameEvents_(bool& running);
+    void updateGameState_(Snapshot& snapshot, bool& havePos);
+    void updateRaceState_(const Snapshot& snapshot, ClientDibujador& dib, bool& musicGameplayStarted, bool& lastRaceFinished);
+    void handleAudioEffects_(const Snapshot& snapshot, int myId);
+    void handleCollisionSounds_(const Snapshot& snapshot, int myId);
+    void handleBrakeSound_(const Snapshot& snapshot, int myId);
 };
 
 #endif //CLIENT_H

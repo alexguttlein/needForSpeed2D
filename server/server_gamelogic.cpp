@@ -285,7 +285,14 @@ void GameLogic::simulateRaceInTransition(int currentTick){
             resetFinishRace();
             applyUpgradeToCar();
             hasSelectedUpgrade.clear();
-            selectedUpgradeId.clear();
+            selectedUpgradeId.clear();            
+            // Re-habilitar los cuerpos físicos de todos los autos para la nueva carrera
+            for (auto const& [id, car] : cars) {
+                b2BodyId bodyId = car->getBodyId();
+                if (B2_IS_NON_NULL(bodyId)) {
+                    b2Body_Enable(bodyId);
+                }
+            }
 
             raceStartTick = currentTick;
             raceState = IN_PROGRESS; 
@@ -388,6 +395,17 @@ void GameLogic::simulateRaceInProgress(int currentTick, float currentRaceTime) {
             if (justFinished) {
                 raceLogic.setCurrentRaceTimeSeconds(currentRaceTime);
                 raceLogic.addTimeFinishPlayer(currentRaceTime, id); // actualizo tiempo en carrera total
+                
+                // Frenar el auto completamente y deshabilitar el cuerpo físico
+                b2BodyId bodyId = car->getBodyId();
+                if (B2_IS_NON_NULL(bodyId)) {
+                    // Detener la velocidad del auto
+                    b2Vec2 zeroVelocity = {0.0f, 0.0f};
+                    b2Body_SetLinearVelocity(bodyId, zeroVelocity);
+                    b2Body_SetAngularVelocity(bodyId, 0.0f);
+                    // Deshabilitar el cuerpo físico
+                    b2Body_Disable(bodyId);
+                }
             }
         }
     }

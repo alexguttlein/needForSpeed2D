@@ -89,7 +89,6 @@ bool ClientDibujador::loadCarAtlasForId(int carTypeId, const std::string& path,
     std::fprintf(stderr, "[DEBUG] Atlas cargado para carTypeId=%d: cellW=%d cellH=%d\n", 
                 carTypeId, atlas.cellW, atlas.cellH);
 
-    // IMPORTANTÍSIMO: si es el default (0), también seteá los miembros viejos
     if (carTypeId == 0) {
         carTex = atlas.tex;
         atlasCols = cols;
@@ -215,7 +214,8 @@ void ClientDibujador::setRaceFinished(bool finished, const std::vector<RaceState
 
 }
 
-void ClientDibujador::renderAll(const std::vector<CarStateDTO>& cars, int selfId, std::string timeLeftRace) {
+void ClientDibujador::renderAll(const std::vector<CarStateDTO>& cars, int selfId, std::string timeLeftRace, 
+                                  const std::vector<RaceStateDTO>& raceStates) {
     if (gameFinished_) {
         renderGameOver_();
         return;
@@ -278,6 +278,20 @@ void ClientDibujador::renderAll(const std::vector<CarStateDTO>& cars, int selfId
 
     // Autos
     for (const auto& carState : cars) {
+        // Verificar si el jugador ha terminado la carrera
+        bool hasFinished = false;
+        for (const auto& raceState : raceStates) {
+            if (raceState.playerId == carState.car_id && raceState.hasFinished) {
+                hasFinished = true;
+                break;
+            }
+        }
+        
+        // No renderizar autos que ya terminaron (incluyendo el propio)
+        if (hasFinished) {
+            continue;
+        }
+        
         int px = int(carState.position.x * Constants::SCALE_METER_TO_PIXEL);
         int py = int(carState.position.y * Constants::SCALE_METER_TO_PIXEL);
 
@@ -350,13 +364,13 @@ void ClientDibujador::renderResultsTable() {
     const int margin = 40;
 
     SDL_Rect tableRect;
-    tableRect.w = static_cast<int>(winW * 0.65f); 
-    tableRect.h = static_cast<int>(winH * 0.6f);
+    tableRect.w = static_cast<int>(winW * 0.5f);
+    tableRect.h = static_cast<int>(winH * 0.7f);
     tableRect.x = margin;
     tableRect.y = (winH - tableRect.h) / 2;
 
     SDL_Rect upgradesRect;
-    upgradesRect.w = static_cast<int>(winW * 0.22f);
+    upgradesRect.w = static_cast<int>(winW * 0.35f);
     upgradesRect.h = tableRect.h;
     upgradesRect.x = winW - upgradesRect.w - margin;
     upgradesRect.y = tableRect.y;
@@ -439,56 +453,55 @@ void ClientDibujador::renderResultsTablePanel_(const SDL_Rect& tableRect) {
 void ClientDibujador::renderResultsUpgradesPanel_(const SDL_Rect& panelRect) {
     drawPanel_(panelRect.x, panelRect.y, panelRect.w, panelRect.h, 180);
 
-    SDL_Color titleColor{255, 255, 255, 255};
-    SDL_Color nameColor{230, 230, 230, 255};
-    SDL_Color costColor{190, 190, 190, 255};
+    SDL_Color nameColor{255, 255, 255, 255};
+    SDL_Color costColor{255, 200, 80, 255};
 
-    const int marginX   = 18;
+    const int marginX   = 25;
     const int titleY    = panelRect.y + 18;
-    const int startY    = panelRect.y + 55;
-    const int iconSize  = 32;
-    const int iconTextGap = 8;
-    const int blockGap  = 20;
+    const int startY    = panelRect.y + 60;
+    const int iconSize  = 42;
+    const int iconTextGap = 5;
+    const int blockGap  = 40;
 
     int x = panelRect.x + marginX;
     int y = startY;
 
-    drawText_("Mejoras", x, titleY, titleColor, false);
+    drawText_("Mejoras Disponibles", x - 5, titleY, nameColor, false);
 
     if (upgradeIconShield_) {
         SDL_Rect iconRect{x, y, iconSize, iconSize};
         SDL_RenderCopy(ren, upgradeIconShield_, nullptr, &iconRect);
     }
-    drawText_("[1] Escudo", x + iconSize + iconTextGap, y + iconSize / 2 - uiFontSize / 2, nameColor, false);
-    y += iconSize + 4;
-    drawText_("Costo: 8 s", x + 10, y, costColor, false);
+    drawText_("[1] Escudo", x + iconSize + iconTextGap, y, nameColor, false);
+    y += 30;
+    drawText_("Costo: +8 segundos", x + iconSize + iconTextGap, y, costColor, false);
     y += blockGap;
 
     if (upgradeIconAccel_) {
         SDL_Rect iconRect{x, y, iconSize, iconSize};
         SDL_RenderCopy(ren, upgradeIconAccel_, nullptr, &iconRect);
     }
-    drawText_("[2] Aceleracion", x + iconSize + iconTextGap, y + iconSize / 2 - uiFontSize / 2, nameColor, false);
-    y += iconSize + 4;
-    drawText_("Costo: 6 s", x + 10, y, costColor, false);
+    drawText_("[2] Aceleracion", x + iconSize + iconTextGap, y, nameColor, false);
+    y += 30;
+    drawText_("Costo: +6 segundos", x + iconSize + iconTextGap, y, costColor, false);
     y += blockGap;
 
     if (upgradeIconControl_) {
         SDL_Rect iconRect{x, y, iconSize, iconSize};
         SDL_RenderCopy(ren, upgradeIconControl_, nullptr, &iconRect);
     }
-    drawText_("[3] Control", x + iconSize + iconTextGap, y + iconSize / 2 - uiFontSize / 2, nameColor, false);
-    y += iconSize + 4;
-    drawText_("Costo: 10 s", x + 10, y, costColor, false);
+    drawText_("[3] Control", x + iconSize + iconTextGap, y, nameColor, false);
+    y += 30;
+    drawText_("Costo: +10 segundos", x + iconSize + iconTextGap, y, costColor, false);
     y += blockGap;
 
     if (upgradeIconSpeed_) {
         SDL_Rect iconRect{x, y, iconSize, iconSize};
         SDL_RenderCopy(ren, upgradeIconSpeed_, nullptr, &iconRect);
     }
-    drawText_("[4] MAX Velocidad", x + iconSize + iconTextGap, y + iconSize / 2 - uiFontSize / 2, nameColor, false);
-    y += iconSize + 4;
-    drawText_("Costo: 12 s", x + 10, y, costColor, false);
+    drawText_("[4] MAX Velocidad", x + iconSize + iconTextGap, y, nameColor, false);
+    y += 30;
+    drawText_("Costo: +12 segundos", x + iconSize + iconTextGap, y, costColor, false);
 }
 
 
