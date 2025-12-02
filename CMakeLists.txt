@@ -230,6 +230,7 @@ if(TALLER_TESTS)
             PUBLIC
             ${gtest_SOURCE_DIR}/include
             ${gmock_SOURCE_DIR}/include
+            tests/fakes
     )
 
     # HEY!! TODO XXX: I'm assuming that the code under testing is in taller_common
@@ -237,5 +238,8 @@ if(TALLER_TESTS)
     target_link_libraries(taller_tests
             taller_common
             GTest::gtest_main
+            gtest
+            gmock
+            gmock_main
     )
 endif()

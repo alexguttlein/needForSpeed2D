@@ -8,7 +8,6 @@ target_sources(taller_server
     server_protocol.cpp
     server_senderThread.cpp
     server_receiverThread.cpp
-    server_monitorClients.cpp
     server_gameloop.cpp
     server_gameMonitor.cpp
     server_game.cpp
@@ -28,7 +27,6 @@ target_sources(taller_server
     server_protocol.h
     server_senderThread.h
     server_receiverThread.h
-    server_monitorClients.h
     server_gameloop.h
     server_gameMonitor.h
     server_game.h
