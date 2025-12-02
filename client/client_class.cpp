@@ -75,6 +75,7 @@ void Client::run() {
     bool havePos = false;
     bool lastRaceFinished = false;
     bool musicGameplayStarted = false;
+    bool musicGameOverStarted = false;
     Snapshot snapshot;
 
     while (running) {
@@ -85,7 +86,7 @@ void Client::run() {
         updateGameState_(snapshot, havePos);
         
         if (havePos) {
-            updateRaceState_(snapshot, dib, musicGameplayStarted, lastRaceFinished);
+            updateRaceState_(snapshot, dib, musicGameplayStarted, lastRaceFinished, musicGameOverStarted);
         }
         
         auto end = std::chrono::steady_clock::now();
@@ -136,6 +137,7 @@ void Client::loadTexturesAndAssets_(ClientDibujador& dib) {
     }
     dib.setUIFont("assets/ui/FreeSans.ttf", 16);
     dib.loadCheckpoint("assets/ui/checkpoint.png");
+    dib.loadCheckpointFinish("assets/ui/fin-carrera.png");
     dib.loadHint("assets/ui/hint.png");
     dib.loadUpgradeIcons("assets/ui/escudo.png", "assets/ui/aceleracion.png",
                          "assets/ui/control.png", "assets/ui/velocidad-maxima.png");
@@ -153,8 +155,8 @@ void Client::initAudio_() {
         audioManager_->loadSound(AudioManager::SFX_COLLISION_CAR, "assets/sound/colision-autos.mp3");
         audioManager_->loadSound(AudioManager::SFX_COLLISION_BUILDING, "assets/sound/colision-edificios.mp3");
         
-        audioManager_->setMusicVolume(1);
-        audioManager_->setSoundVolume(20);
+        audioManager_->setMusicVolume(15);
+        audioManager_->setSoundVolume(40);
         
         std::cout << "[Client] Sistema de audio inicializado correctamente" << std::endl;
         
@@ -344,7 +346,7 @@ void Client::handleAudioEffects_(const Snapshot& snapshot, int myId) {
 }
 
 void Client::updateRaceState_(const Snapshot& snapshot, ClientDibujador& dib, 
-                               bool& musicGameplayStarted, bool& lastRaceFinished) {
+                               bool& musicGameplayStarted, bool& lastRaceFinished, bool& musicGameOverStarted) {
     // Encontrar el estado de carrera del jugador
     int myId = selfId.load();
     const RaceStateDTO* myRace = nullptr;
@@ -368,9 +370,10 @@ void Client::updateRaceState_(const Snapshot& snapshot, ClientDibujador& dib,
 
     // Juego terminado
     if (snapshot.gameFinished) {
-        dib.setGameFinished(true, snapshot.leaderboards);
-        if (audioManager_) {
-            audioManager_->stopMusic(1000);
+        dib.setGameFinished(true, snapshot.leaderboards, playerName);
+        if (!musicGameOverStarted && audioManager_) {
+            audioManager_->playMusic(AudioManager::MUSIC_LOBBY, 1500);
+            musicGameOverStarted = true;
         }
     }
 

@@ -39,6 +39,7 @@ public:
     void setHUDHp(int hp, int maxHp)        { hudHp_ = hp; hudMaxHp_ = maxHp; }
 
     bool loadCheckpoint(const std::string& pathPng);
+    bool loadCheckpointFinish(const std::string& pathPng);
     bool loadHint(const std::string& pathPng);
     bool loadUpgradeIcons(const std::string& shieldPath, const std::string& accelPath,
                           const std::string& controlPath, const std::string& speedPath);
@@ -49,7 +50,7 @@ public:
     void hideUpgradePopup();
     bool isUpgradePopupVisible() const { return showUpgradePopup_; }
     
-    void setGameFinished(bool finished, const std::vector<PlayerTime>& leaderboard);
+    void setGameFinished(bool finished, const std::vector<PlayerTime>& leaderboard, const std::string& playerName);
     bool isGameFinished() const { return gameFinished_; }
     
     bool hasPlayerFinishedRace() const { return playerFinishedRace_; }
@@ -125,6 +126,7 @@ private:
     bool   hudMaxHpInitialized_ = false;
 
     SDL_Texture* checkpointTex = nullptr;
+    SDL_Texture* checkpointFinishTex = nullptr;
     SDL_Texture* hintTex       = nullptr;
 
     // Texturas de iconos de mejoras
@@ -151,6 +153,7 @@ private:
     
     bool gameFinished_ = false;
     std::vector<PlayerTime> finalLeaderboard_;
+    std::string selfPlayerName_;
     
     bool playerFinishedRace_ = false;
 

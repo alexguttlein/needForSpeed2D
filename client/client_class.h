@@ -65,7 +65,7 @@ private:
     void handleUpgradeKey_(int upgradeId, ClientDibujador& dib);
     void processGameEvents_(bool& running);
     void updateGameState_(Snapshot& snapshot, bool& havePos);
-    void updateRaceState_(const Snapshot& snapshot, ClientDibujador& dib, bool& musicGameplayStarted, bool& lastRaceFinished);
+    void updateRaceState_(const Snapshot& snapshot, ClientDibujador& dib, bool& musicGameplayStarted, bool& lastRaceFinished, bool& musicGameOverStarted);
     void handleAudioEffects_(const Snapshot& snapshot, int myId);
     void handleCollisionSounds_(const Snapshot& snapshot, int myId);
     void handleBrakeSound_(const Snapshot& snapshot, int myId);

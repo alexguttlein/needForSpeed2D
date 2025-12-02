@@ -26,6 +26,7 @@ ClientDibujador::~ClientDibujador() {
 
     if (mapTex) SDL_DestroyTexture(mapTex);
     if (checkpointTex) SDL_DestroyTexture(checkpointTex);
+    if (checkpointFinishTex) SDL_DestroyTexture(checkpointFinishTex);
     if (hintTex) SDL_DestroyTexture(hintTex);
 }
 
@@ -127,6 +128,11 @@ int ClientDibujador::frameForAngle_(float angleDeg, const CarAtlas& atlas) const
 bool ClientDibujador::loadCheckpoint(const std::string& pathPng) {
     checkpointTex = loadTexture_(pathPng);
     return checkpointTex != nullptr;
+}
+
+bool ClientDibujador::loadCheckpointFinish(const std::string& pathPng) {
+    checkpointFinishTex = loadTexture_(pathPng);
+    return checkpointFinishTex != nullptr;
 }
 
 bool ClientDibujador::loadHint(const std::string& pathPng) {
@@ -724,9 +730,13 @@ void ClientDibujador::drawCheckpoint_() {
 
     SDL_SetRenderDrawBlendMode(ren, SDL_BLENDMODE_BLEND);
 
-    if (checkpointTex) {
+    // Determinar si es el último checkpoint
+    bool isLastCheckpoint = (numberOfCheckpoints > 0 && currentCheckpoint + 1 == numberOfCheckpoints);    
+    SDL_Texture* texToUse = isLastCheckpoint ? checkpointFinishTex : checkpointTex;
+
+    if (texToUse) {
         int texW = 0, texH = 0;
-        SDL_QueryTexture(checkpointTex, nullptr, nullptr, &texW, &texH);
+        SDL_QueryTexture(texToUse, nullptr, nullptr, &texW, &texH);
         float scale = 1.0f;
         if (texW > checkpointSizePx || texH > checkpointSizePx) {
             float sx = checkpointSizePx / static_cast<float>(texW);
@@ -737,9 +747,13 @@ void ClientDibujador::drawCheckpoint_() {
         int dstW = static_cast<int>(texW * scale);
         int dstH = static_cast<int>(texH * scale);
         SDL_Rect dst{ screenX - dstW / 2, screenY - dstH / 2, dstW, dstH };
-        SDL_RenderCopy(ren, checkpointTex, nullptr, &dst);
+        SDL_RenderCopy(ren, texToUse, nullptr, &dst);
     } else {
-        SDL_SetRenderDrawColor(ren, 250, 215, 70, 220);
+        if (isLastCheckpoint) {
+            SDL_SetRenderDrawColor(ren, 255, 50, 50, 220);  // Rojo para fin
+        } else {
+            SDL_SetRenderDrawColor(ren, 250, 215, 70, 220);  // Amarillo normal
+        }
         SDL_Rect r{ screenX - 12, screenY - 12, 24, 24 };
         SDL_RenderFillRect(ren, &r);
         SDL_SetRenderDrawColor(ren, 0, 0, 0, 255);
@@ -959,12 +973,14 @@ void ClientDibujador::renderUpgradePopup_() {
     SDL_SetRenderDrawBlendMode(ren, SDL_BLENDMODE_NONE);
 }
 
-void ClientDibujador::setGameFinished(bool finished, const std::vector<PlayerTime>& leaderboard) {
+void ClientDibujador::setGameFinished(bool finished, const std::vector<PlayerTime>& leaderboard, const std::string& playerName) {
     gameFinished_ = finished;
     if (finished) {
         finalLeaderboard_ = leaderboard;
+        selfPlayerName_ = playerName;
     } else {
         finalLeaderboard_.clear();
+        selfPlayerName_.clear();
     }
 }
 
@@ -995,26 +1011,37 @@ void ClientDibujador::renderGameOver_() {
     SDL_Rect innerBorder{panelX + 2, panelY + 2, panelW - 4, panelH - 4};
     SDL_RenderDrawRect(ren, &innerBorder);
 
-    // Título "JUEGO FINALIZADO"
-    std::string title = "JUEGO FINALIZADO";
-    int titleX = panelX + panelW / 2 - 90;
-    int titleY = panelY + 30;
-    drawText_(title, titleX, titleY, {255, 215, 0, 255}, true);
-
-    // Subtítulo
-    std::string subtitle = "Clasificacion Final";
-    int subtitleX = panelX + panelW / 2 - 80;
-    int subtitleY = panelY + 70;
-    drawText_(subtitle, subtitleX, subtitleY, {200, 200, 200, 255}, true);
-
-    // Leaderboard
     std::vector<PlayerTime> sortedLeaderboard = finalLeaderboard_;
     std::sort(sortedLeaderboard.begin(), sortedLeaderboard.end(),
               [](const PlayerTime& a, const PlayerTime& b) {
                   return a.finishTime < b.finishTime;
               });
 
-    int startY = panelY + 120;
+    bool isWinner = false;
+    if (!sortedLeaderboard.empty() && !selfPlayerName_.empty()) {
+        isWinner = (sortedLeaderboard[0].playerName == selfPlayerName_);
+    }
+    
+    if (isWinner) {
+        std::string winMsg = "GANASTE!";
+        int winMsgX = panelX + panelW / 2 - 50;
+        int winMsgY = panelY + 60;
+        drawText_(winMsg, winMsgX, winMsgY, {0, 255, 100, 255}, true);
+        
+    } else {
+        std::string loseMsg = "PERDISTE!";
+        int loseMsgX = panelX + panelW / 2 - 50;
+        int loseMsgY = panelY + 60;
+        drawText_(loseMsg, loseMsgX, loseMsgY, {255, 100, 100, 255}, true);
+    }
+    
+    std::string subtitle = "Clasificacion Final";
+    int subtitleX = panelX + panelW / 2 - 80;
+    int subtitleY = isWinner ? panelY + 110 : panelY + 95;
+    drawText_(subtitle, subtitleX, subtitleY, {200, 200, 200, 255}, true);
+
+    // Leaderboard
+    int startY = isWinner ? panelY + 155 : panelY + 140;
     int lineHeight = 40;
     int position = 1;
 
