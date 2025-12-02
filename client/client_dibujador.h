@@ -113,14 +113,15 @@ private:
     int lastX = -1, lastY = -1;
 
     int   currentCheckpoint = 0;      
-    int   numberOfCheckpoints = Constants::NUMBER_OF_CHECKPOINTS;
-    int   hudHp_        = 100;
-    int   hudMaxHp_     = 100;
+    int   numberOfCheckpoints = 0;
+    int   hudHp_        = 0;
+    int   hudMaxHp_     = 0;
     float hudSpeedKph_  = 0.0f;
     int   hudCurrentUpgradeId_ = 0;
 
     Uint32 raceStartTicks_ = 0;
     bool   raceStarted_    = false;
+    bool   hudMaxHpInitialized_ = false;
 
     SDL_Texture* checkpointTex = nullptr;
     SDL_Texture* hintTex       = nullptr;

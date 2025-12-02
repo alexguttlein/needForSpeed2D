@@ -236,6 +236,7 @@ void ClientDibujador::renderAll(const std::vector<CarStateDTO>& cars, int selfId
             raceStarted_ = false;
             raceStartTicks_ = 0;
             playerFinishedRace_ = false;
+            hudMaxHpInitialized_ = false;
         }
     }
 
@@ -254,7 +255,13 @@ void ClientDibujador::renderAll(const std::vector<CarStateDTO>& cars, int selfId
             int py = static_cast<int>(carState.position.y * Constants::SCALE_METER_TO_PIXEL);
             updateCamera_(px, py);
             hudHp_       = carState.health;
-            hudSpeedKph_ = carState.speed * 3.6f; // m/s a km/h
+            
+            if (!hudMaxHpInitialized_) {
+                hudMaxHp_ = carState.health;
+                hudMaxHpInitialized_ = true;
+            }
+            
+            hudSpeedKph_ = carState.speed * 3.6f;
             hudCurrentUpgradeId_ = carState.currentUpgradeId;
             selfScreenX_ = px - camX;
             selfScreenY_ = py - camY;
@@ -635,6 +642,7 @@ void ClientDibujador::drawHudRace_(int panelX, int panelY) {
 }
 
 void ClientDibujador::updateRaceState(const RaceStateDTO& raceState) {
+    numberOfCheckpoints = raceState.checkpointsSize;
     Vector2D<float> newCheckpoint;
     newCheckpoint.x = raceState.nextCheckpoint.x * Constants::SCALE_METER_TO_PIXEL;
     newCheckpoint.y = raceState.nextCheckpoint.y * Constants::SCALE_METER_TO_PIXEL;
@@ -838,7 +846,7 @@ void ClientDibujador::drawMinimap_(const std::vector<CarStateDTO>& cars, int sel
         if (car.car_id == selfId) {
             SDL_SetRenderDrawColor(ren, 220, 40, 40, 255);
         } else {
-            SDL_SetRenderDrawColor(ren, 0, 0, 0, 255);
+            SDL_SetRenderDrawColor(ren, 255, 255, 0, 255);        
         }
 
         SDL_Rect r{ dotX - 2, dotY - 2, 5, 5 };
