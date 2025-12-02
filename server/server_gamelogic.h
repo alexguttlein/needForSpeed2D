@@ -57,6 +57,10 @@ private:
     std::map<int, bool> hasSelectedUpgrade;
     std::map<int, int> selectedUpgradeId;    
 
+    // Estados de cheats activos por jugador
+    std::map<int, bool> playerGodMode;
+    std::map<int, bool> playerTurboMode;
+
     mutable std::vector<CollisionEvent> currentFrameCollisions;
 
 public:
@@ -72,6 +76,12 @@ public:
     *
     * */
    void processCommand(int car_id, const std::string& command, bool isPressed);
+
+    /*
+    * Procesa un cheat recibido de un jugador
+    *
+    * */
+    void processCheat(int playerId, const std::string& cheatCode);
 
     /*
     * Procesa la selección de mejora de un jugador durante el estado WAITING_FOR_TRANSITION

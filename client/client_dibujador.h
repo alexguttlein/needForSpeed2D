@@ -9,7 +9,9 @@
 #include "../common/constants.h"
 #include "../common/raceStateDTO.h"
 #include "../server/leaderBoard.h"
+#include "cheatDetector.h"
 #include <unordered_map>
+#include <functional>
 
 struct CarAtlas {
     SDL_Texture* tex = nullptr;
@@ -53,6 +55,9 @@ public:
 
     Vector2D<float> hudNextCheckpoint_{};               
     std::vector<Vector2D<float>> hudHints_{};
+
+    void setCheatCallback(std::function<void(const std::string&)> callback);
+    void processKeyForCheat(SDL_Keycode key);
 
 private:
     SDL_Texture* loadTexture_(const std::string& path);
@@ -142,6 +147,8 @@ private:
     bool playerFinishedRace_ = false;
 
     std::unordered_map<int, CarAtlas> carAtlases_;
+    
+    CheatDetector cheatDetector;
+    std::function<void(const std::string&)> cheatCallback;
 };
-
 #endif // TP_TALLER_G7_CLIENT_DIBUJADOR_H

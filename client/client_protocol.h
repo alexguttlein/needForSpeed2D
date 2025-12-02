@@ -23,6 +23,7 @@ public:
     ClientProtocol(const char* host, const char* port);
     ~ClientProtocol();
     void sendKey(const SDL_KeyCode msg, bool isPressed);
+    void sendCheat(const std::string& cheatCode);
     CommandConstants::Key sdlToKey(const SDL_KeyCode input);
     bool sendLobbyOption(const std::string& input, const std::string& playerName, const int& carId);
 

@@ -95,6 +95,25 @@ bool ClientProtocol::sendLobbyOption(const std::string& input, const std::string
     return false;
 }
 
+
+void ClientProtocol::sendCheat(const std::string& cheatCode) {
+    if (socket.is_stream_send_closed()) return;
+    
+    try {
+        // Enviar byte de comando cheat
+        uint8_t msg = Constants::CHEAT_COMMAND;
+        socket.sendall(&msg, sizeof(msg));
+        
+        // Enviar el código del cheat como string
+        sendString(cheatCode);
+        
+        std::cout << "[ClientProtocol] Cheat enviado: " << cheatCode << std::endl;
+    } catch (const std::exception& e) {
+        std::cerr << "[ClientProtocol] Error enviando cheat: " << e.what() << std::endl;
+    }
+}
+
+
 std::optional<Snapshot> ClientProtocol::receiveSnapshotFromServer() {
     // se recibio un Snapshot
     Snapshot snapshot{};

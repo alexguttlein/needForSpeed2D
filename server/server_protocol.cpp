@@ -59,6 +59,10 @@ Message ServerProtocol::receiveMessage() {
         uint32_t gameIdBE;
         socket.recvall(&gameIdBE, sizeof(gameIdBE));
         message.intValue = static_cast<int>(ntohl(gameIdBE)); //se carga el gameId en el mensaje
+        
+    } else if (message.code == Constants::CHEAT_COMMAND) {
+        message.stringValue = receiveString(); // recibe el código del cheat
+        std::cout << "[ServerProtocol] Cheat recibido: " << message.stringValue << std::endl;
     }
     return message;
 }

@@ -57,9 +57,15 @@ void GameLoop::processCommandQueue() {
     std::shared_ptr<Message> msg;
     while (commandQueue.try_pop(msg)) {
         if (!msg) continue;
-        bool is_pressed = (msg->code & 0x80) != 0;
-        char key_char = msg->key;
-        gameLogic.processCommand(msg->senderId, std::string(1, key_char), is_pressed);
+        
+        // Verificar si es un comando de cheat
+        if (msg->code == Constants::CHEAT_COMMAND) {
+            gameLogic.processCheat(msg->senderId, msg->stringValue);
+        } else {
+            bool is_pressed = (msg->code & 0x80) != 0;
+            char key_char = msg->key;
+            gameLogic.processCommand(msg->senderId, std::string(1, key_char), is_pressed);
+        }
     }
 }
 

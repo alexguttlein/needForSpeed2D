@@ -202,6 +202,15 @@ namespace Constants {
     static const std::string SELECT_CONTROL_UPGRADE = "3";
     static const std::string SELECT_MAX_SPEED_UPGRADE = "4";
 
+    // Constantes de cheats
+    static constexpr unsigned char CHEAT_COMMAND = 0x40;
+    static const std::string CHEAT_GOD_MODE = "GOD_MODE";
+    static const std::string CHEAT_INSTANT_WIN = "INSTANT_WIN";
+    static const std::string CHEAT_KILL = "KILL";
+    static const std::string CHEAT_TURBO_MODE = "TURBO_MODE";
+    static const std::string CHEAT_MAX_HEALTH = "MAX_HEALTH";
+    static const std::string CHEAT_RESET_CHEATS = "RESET_CHEATS";
+
 
     // física y autos base
     inline float DEFAULT_RESTITUTION;

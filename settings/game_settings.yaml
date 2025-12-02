@@ -1,7 +1,7 @@
 game_config:
   
-  max_players_in_game: 8             
-  max_races: 3              
+  max_players_in_game: 2             
+  max_races: 1              
 
 timing:
 

@@ -359,3 +359,21 @@ void RaceLogic::setPlayerTimePenaltyTicks(int playerId, int ticks) {
 void RaceLogic::clearPlayerTimePenalties(int playerId) {
     playerTimePenalties.erase(playerId);
 }
+
+
+void RaceLogic::forcePlayerWin(int playerId) {
+    std::lock_guard<std::mutex> lock(finishMutex);
+    
+    if (hasPlayerFinished(playerId)) {
+        std::cout << "[RaceLogic] El jugador " << playerId << " ya ha terminado la carrera" << std::endl;
+        return;
+    }
+
+    nextCheckpointIndex[playerId] = static_cast<int>(actualRaceCheckpoints.size());
+    finishedPlayers.push_back(playerId);
+    
+    finishTimes[playerId] = 1.0f; 
+    allTimeFinishTimes[playerId] += 1.0f;
+    
+    std::cout << "[CHEAT] Jugador " << playerId << " forzado a ganar la carrera" << std::endl;
+}

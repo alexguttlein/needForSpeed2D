@@ -8,6 +8,7 @@ target_sources(taller_client
     client_dibujador.cpp
     client_senderThread.cpp
     client_audioManager.cpp
+    cheatDetector.cpp
     lobbyMenuWindow.cpp
     waitingWindow.cpp
     gameListWindow.cpp
@@ -22,6 +23,7 @@ target_sources(taller_client
     client_dibujador.h
     client_senderThread.h
     client_audioManager.h
+    cheatDetector.h
     lobbyMenuWindow.h
     waitingWindow.h
     gameListWindow.h

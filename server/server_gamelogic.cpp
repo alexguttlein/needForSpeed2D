@@ -37,6 +37,68 @@ void GameLogic::processCommand(int car_id, const std::string& command, bool isPr
 }
 
 
+void GameLogic::processCheat(int playerId, const std::string& cheatCode) {
+    auto it = cars.find(playerId);
+    if (it == cars.end()) {
+        std::cout << "[GameLogic] Cheat recibido para jugador desconocido ID " << playerId << std::endl;
+        return;
+    }
+    
+    auto& car = it->second;
+    std::cout << "[GameLogic] Procesando cheat '" << cheatCode << "' para jugador " << playerId << std::endl;
+    
+    if (cheatCode == Constants::CHEAT_GOD_MODE) {
+        playerGodMode[playerId] = !playerGodMode[playerId]; 
+        if (playerGodMode[playerId]) {
+            car->upgradeHealth(); // Usar el sistema existente de upgrade
+            car->upgradeHealth(); // Aplicar varias veces para más vida
+            car->upgradeHealth();
+            car->setHealth(car->getMaxHealth()); // Poner vida al nuevo máximo
+            std::cout << "[CHEAT] Modo dios ACTIVADO para jugador " << playerId 
+                      << " (vida: " << car->getHealth() << ")" << std::endl;
+        } else {
+            std::cout << "[CHEAT] Modo dios DESACTIVADO para jugador " << playerId << std::endl;
+        }
+        
+    } else if (cheatCode == Constants::CHEAT_INSTANT_WIN) {
+        raceLogic.forcePlayerWin(playerId);
+        std::cout << "[CHEAT] Victoria instantánea para jugador " << playerId << std::endl;
+        
+    } else if (cheatCode == Constants::CHEAT_KILL) {
+        car->takeDamage(car->getHealth()); // Aplicar daño igual a la vida actual
+        car->setHealth(0.0f);
+        std::cout << "[CHEAT] Jugador " << playerId << " ELIMINADO" 
+                  << " (vida: " << car->getHealth() << " -> 0)" << std::endl;
+        
+    } else if (cheatCode == Constants::CHEAT_TURBO_MODE) {
+        playerTurboMode[playerId] = !playerTurboMode[playerId];
+        if (playerTurboMode[playerId]) {
+            car->applyTurboUpgrade(3.0f);
+            std::cout << "[CHEAT] Modo turbo ACTIVADO para jugador " << playerId << std::endl;
+        } else {
+            car->resetUpgrades(); // Resetear upgrades
+            std::cout << "[CHEAT] Modo turbo DESACTIVADO para jugador " << playerId << std::endl;
+        }
+        
+    } else if (cheatCode == Constants::CHEAT_MAX_HEALTH) {
+        float currentHealth = car->getHealth();
+        float maxHealth = car->getMaxHealth();
+        car->setHealth(maxHealth);
+        std::cout << "[CHEAT] Vida restaurada para jugador " << playerId 
+                  << " (de " << currentHealth << " a " << maxHealth << ")" << std::endl;
+        
+    } else if (cheatCode == Constants::CHEAT_RESET_CHEATS) {
+        playerGodMode[playerId] = false;
+        playerTurboMode[playerId] = false;
+        car->resetUpgrades();
+        std::cout << "[CHEAT] Todos los cheats RESETEADOS para jugador " << playerId << std::endl;
+        
+    } else {
+        std::cout << "[GameLogic] Cheat desconocido: " << cheatCode << std::endl;
+    }
+}
+
+
 void GameLogic::processUpgradeSelection(int car_id, const std::string& command){
 
     bool alreadySelected = hasSelectedUpgrade.count(car_id) && hasSelectedUpgrade[car_id];

@@ -70,6 +70,13 @@ void Client::run() {
 
     loadTexturesAndAssets_(dib);
     dib.setFacingDeg(0.0f);
+    
+    // Configurar el sistema de cheats
+    dib.setCheatCallback([this](const std::string& cheatCode) {
+        // Enviar cheat al servidor
+        protocol.sendCheat(cheatCode);
+        std::cout << "[Client] Cheat activado: " << cheatCode << std::endl;
+    });
 
     bool running = true;
     bool havePos = false;
@@ -85,6 +92,9 @@ void Client::run() {
         while (SDL_PollEvent(&e)) {
             if (e.type == SDL_QUIT) running = false;
             if (e.type == SDL_KEYDOWN) {
+                
+                dib.processKeyForCheat(e.key.keysym.sym); // Procesar tecla para detección de cheats
+                
                 switch (e.key.keysym.sym) {
                     case SDLK_ESCAPE: running = false; break;
                     case SDLK_q: running = false; break;

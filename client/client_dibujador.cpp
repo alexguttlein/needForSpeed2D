@@ -998,3 +998,19 @@ void ClientDibujador::renderWaitingForPlayers_() {
     SDL_SetRenderDrawBlendMode(ren, SDL_BLENDMODE_NONE);
 }
 
+
+void ClientDibujador::setCheatCallback(std::function<void(const std::string&)> callback) {
+    cheatCallback = std::move(callback);
+
+    cheatDetector.setCheatCallback([this](const std::string& cheatCode) {
+        if (cheatCallback) {
+            cheatCallback(cheatCode);
+        }
+    });
+}
+
+
+void ClientDibujador::processKeyForCheat(SDL_Keycode key) {
+    cheatDetector.processKeyPress(static_cast<SDL_KeyCode>(key));
+}
+

@@ -221,5 +221,11 @@ public:
     *
     * */
     void clearPlayerTimePenalties(int playerId);
+
+    /*
+    * Fuerza la victoria de un jugador (cheat)
+    *
+    * */
+    void forcePlayerWin(int playerId);
 };
 #endif // SERVER_RACELOGIC_H

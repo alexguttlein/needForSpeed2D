@@ -140,6 +140,18 @@ public:
     float getHealth() const;
 
     /*
+    * Establece la salud del auto
+    *
+    * */
+    void setHealth(float newHealth);
+
+    /*
+    * Obtiene la salud máxima del auto
+    *
+    * */
+    float getMaxHealth() const;
+
+    /*
     * Verifica si el auto está destruido
     *
     * */
@@ -283,5 +295,17 @@ public:
     *
     * */
     int getCarType() const;
+
+    /*
+    * Aplica mejora de turbo (multiplicador de velocidad)
+    * 
+    * */
+    void applyTurboUpgrade(float multiplier);
+
+    /*
+    * Resetea todas las mejoras del auto
+    *
+    * */
+    void resetUpgrades();
 };
 #endif // CAR_H

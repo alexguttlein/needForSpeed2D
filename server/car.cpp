@@ -235,6 +235,16 @@ void Car::upgradeHealth(){
 }
 
 
+void Car::setHealth(float newHealth) {
+    health = std::max(0.0f, std::min(newHealth, maxHealth)); 
+}
+
+
+float Car::getMaxHealth() const {
+    return maxHealth;
+}
+
+
 void Car::upgradeSpeed() {
     speedMultiplier *= Constants::MAX_SPEED_UPGRADE_VALUE;
     b2Body_SetLinearDamping(body, b2Body_GetLinearDamping(body) * 0.8f);
@@ -304,4 +314,20 @@ int Car::getCurrentUpgradeId() {
 
 int Car::getCarType() const {
     return carType;
+}
+
+
+void Car::applyTurboUpgrade(float multiplier) {
+    speedMultiplier = multiplier;
+    accelerationMultiplier = multiplier * 0.8f; // Un poco menos de aceleración para balancear
+    std::cout << "[Car] Turbo aplicado con multiplicador " << multiplier << std::endl;
+}
+
+
+void Car::resetUpgrades() {
+    clearUpgradeEffects();
+    speedMultiplier = 1.0f;
+    accelerationMultiplier = 1.0f;
+    controlMultiplier = 1.0f;
+    std::cout << "[Car] Upgrades reseteados" << std::endl;
 }
