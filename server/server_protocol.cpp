@@ -141,6 +141,9 @@ void ServerProtocol::sendSnapshot(std::shared_ptr<Snapshot>& snapshot) {
 
         // speed (float, 4 bytes)
         appendUInt32(buffer, *reinterpret_cast<const uint32_t*>(&carState.speed));
+
+        // isBraking (bool, 1 byte)
+        buffer.push_back(static_cast<uint8_t>(carState.isBraking));
         
         // position (Vector2D<float>, 8 bytes total)
         appendUInt32(buffer, *reinterpret_cast<const uint32_t*>(&carState.position.x));

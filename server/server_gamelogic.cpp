@@ -126,7 +126,8 @@ std::shared_ptr<Snapshot> GameLogic::getSnapshot(EventType controlEvent) const {
         dto.health   = car->getHealth();
         dto.position = car->getPosition();
         dto.angle    = car->getDirection();
-        dto.speed    = car->getSpeed();       
+        dto.speed    = car->getSpeed();
+        dto.isBraking = car->getIsBraking();
         snapshot->cars.push_back(dto);
     }
     

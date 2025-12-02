@@ -226,6 +226,20 @@ void Client::run() {
                         }
                     }
                 }
+
+                bool playerIsBraking = false;
+                for (const auto& car : snapshot.cars) {
+                    if (car.car_id == myId && car.isBraking) {
+                        playerIsBraking = true;
+                        break;
+                    }
+                }
+                if (playerIsBraking && brakeChannel_ == -1) {
+                    brakeChannel_ = audioManager_->playSound(AudioManager::SFX_BRAKE, 0); // 0 = reproducir una vez
+                } else if (!playerIsBraking && brakeChannel_ != -1) {
+                    audioManager_->stopSound(brakeChannel_);
+                    brakeChannel_ = -1;
+                }
             }
             dib.renderAll(snapshot.cars, selfId.load(), myRace->timeLeftRace);
         }
@@ -278,6 +292,8 @@ void Client::loadTexturesAndAssets_(ClientDibujador& dib) {
     dib.setUIFont("assets/ui/FreeSans.ttf", 16);
     dib.loadCheckpoint("assets/ui/checkpoint.png");
     dib.loadHint("assets/ui/hint.png");
+    dib.loadUpgradeIcons("assets/ui/escudo.png", "assets/ui/aceleracion.png",
+                         "assets/ui/control.png", "assets/ui/velocidad-maxima.png");
 }
 
 void Client::initAudio_() {
@@ -288,11 +304,12 @@ void Client::initAudio_() {
         audioManager_->loadMusic(AudioManager::MUSIC_GAMEPLAY, "assets/sound/musica-carrera.mp3");
         
         audioManager_->loadSound(AudioManager::SFX_ACCELERATION, "assets/sound/aceleracion.mp3");
+        audioManager_->loadSound(AudioManager::SFX_BRAKE, "assets/sound/freno.mp3");
         audioManager_->loadSound(AudioManager::SFX_COLLISION_CAR, "assets/sound/colision-autos.mp3");
         audioManager_->loadSound(AudioManager::SFX_COLLISION_BUILDING, "assets/sound/colision-edificios.mp3");
         
-        audioManager_->setMusicVolume(50);
-        audioManager_->setSoundVolume(100);
+        audioManager_->setMusicVolume(1);
+        audioManager_->setSoundVolume(20);
         
         std::cout << "[Client] Sistema de audio inicializado correctamente" << std::endl;
         

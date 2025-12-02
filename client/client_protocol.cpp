@@ -140,6 +140,10 @@ std::optional<Snapshot> ClientProtocol::receiveSnapshotFromServer() {
         uint32_t speedHost = ntohl(speedBE);
         dto.speed = *reinterpret_cast<float*>(&speedHost);
 
+        uint8_t isBrakingByte = 0;
+        socket.recvall(&isBrakingByte, sizeof(isBrakingByte));
+        dto.isBraking = static_cast<bool>(isBrakingByte);
+
 
         uint32_t posXBE = 0;
         socket.recvall(&posXBE, sizeof(posXBE));

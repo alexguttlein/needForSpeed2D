@@ -135,6 +135,16 @@ bool ClientDibujador::loadHint(const std::string& pathPng) {
     return hintTex != nullptr;
 }
 
+bool ClientDibujador::loadUpgradeIcons(const std::string& shieldPath, const std::string& accelPath,
+                                        const std::string& controlPath, const std::string& speedPath) {
+    upgradeIconShield_ = loadTexture_(shieldPath);
+    upgradeIconAccel_ = loadTexture_(accelPath);
+    upgradeIconControl_ = loadTexture_(controlPath);
+    upgradeIconSpeed_ = loadTexture_(speedPath);
+    
+    return upgradeIconShield_ && upgradeIconAccel_ && upgradeIconControl_ && upgradeIconSpeed_;
+}
+
 bool ClientDibujador::setUIFont(const std::string& ttfPath, int size) {
     if (uiFont) { TTF_CloseFont(uiFont); uiFont = nullptr; }
     uiFont = TTF_OpenFont(ttfPath.c_str(), size);
@@ -201,6 +211,8 @@ void ClientDibujador::setRaceFinished(bool finished, const std::vector<RaceState
         finalStandings_.clear();
         resultsStartTicks_ = 0;
     }
+    currentCheckpoint = 0;  // Reiniciar para la próxima carrera
+
 }
 
 void ClientDibujador::renderAll(const std::vector<CarStateDTO>& cars, int selfId, std::string timeLeftRace) {
@@ -214,7 +226,6 @@ void ClientDibujador::renderAll(const std::vector<CarStateDTO>& cars, int selfId
         const Uint32 SHOW_RESULTS_MS = 15000;
 
         if (now - resultsStartTicks_ < SHOW_RESULTS_MS) {
-            currentCheckpoint = 0;
             renderResultsTable();
             return;
         } else {
@@ -244,6 +255,7 @@ void ClientDibujador::renderAll(const std::vector<CarStateDTO>& cars, int selfId
             updateCamera_(px, py);
             hudHp_       = carState.health;
             hudSpeedKph_ = carState.speed * 3.6f; // m/s a km/h
+            hudCurrentUpgradeId_ = carState.currentUpgradeId;
             selfScreenX_ = px - camX;
             selfScreenY_ = py - camY;
             break;
@@ -427,36 +439,48 @@ void ClientDibujador::renderResultsUpgradesPanel_(const SDL_Rect& panelRect) {
     const int marginX   = 18;
     const int titleY    = panelRect.y + 18;
     const int startY    = panelRect.y + 55;
-    const int lineGap   = uiFontSize + 4;
-    const int blockGap  = uiFontSize + 10;
+    const int iconSize  = 32;
+    const int iconTextGap = 8;
+    const int blockGap  = 20;
 
     int x = panelRect.x + marginX;
     int y = startY;
 
-    // Título
     drawText_("Mejoras", x, titleY, titleColor, false);
 
-    drawText_("[1] + Escudo", x, y, nameColor, false);
-    y += lineGap;
-
+    if (upgradeIconShield_) {
+        SDL_Rect iconRect{x, y, iconSize, iconSize};
+        SDL_RenderCopy(ren, upgradeIconShield_, nullptr, &iconRect);
+    }
+    drawText_("[1] Escudo", x + iconSize + iconTextGap, y + iconSize / 2 - uiFontSize / 2, nameColor, false);
+    y += iconSize + 4;
     drawText_("Costo: 8 s", x + 10, y, costColor, false);
     y += blockGap;
 
-    drawText_("[2] + Aceleracion", x, y, nameColor, false);
-    y += lineGap;
-
+    if (upgradeIconAccel_) {
+        SDL_Rect iconRect{x, y, iconSize, iconSize};
+        SDL_RenderCopy(ren, upgradeIconAccel_, nullptr, &iconRect);
+    }
+    drawText_("[2] Aceleracion", x + iconSize + iconTextGap, y + iconSize / 2 - uiFontSize / 2, nameColor, false);
+    y += iconSize + 4;
     drawText_("Costo: 6 s", x + 10, y, costColor, false);
     y += blockGap;
 
-    drawText_("[3] + Control", x, y, nameColor, false);
-    y += lineGap;
-
+    if (upgradeIconControl_) {
+        SDL_Rect iconRect{x, y, iconSize, iconSize};
+        SDL_RenderCopy(ren, upgradeIconControl_, nullptr, &iconRect);
+    }
+    drawText_("[3] Control", x + iconSize + iconTextGap, y + iconSize / 2 - uiFontSize / 2, nameColor, false);
+    y += iconSize + 4;
     drawText_("Costo: 10 s", x + 10, y, costColor, false);
     y += blockGap;
 
-    drawText_("[4] + MAX Velocidad", x, y, nameColor, false);
-    y += lineGap;
-
+    if (upgradeIconSpeed_) {
+        SDL_Rect iconRect{x, y, iconSize, iconSize};
+        SDL_RenderCopy(ren, upgradeIconSpeed_, nullptr, &iconRect);
+    }
+    drawText_("[4] MAX Velocidad", x + iconSize + iconTextGap, y + iconSize / 2 - uiFontSize / 2, nameColor, false);
+    y += iconSize + 4;
     drawText_("Costo: 12 s", x + 10, y, costColor, false);
 }
 
@@ -518,6 +542,7 @@ void ClientDibujador::drawHUD_(std::string timeLeftRace) {
 
     drawHudSpeed_(leftPx, leftPy);
     drawHudHealth_(leftPx, leftPy);
+    drawHudUpgrade_(leftPx, leftPy);
 
     const int rightPanelW = 300;
     const int rightPx     = winW - rightPanelW - pad;
@@ -571,6 +596,28 @@ void ClientDibujador::drawHudHealth_(int panelX, int panelY) {
     drawText_(buf,   baseX + padX + lw + 8, cy, valueColor, true);
 }
 
+void ClientDibujador::drawHudUpgrade_(int panelX, int panelY) {
+    if (hudCurrentUpgradeId_ <= 0) return;
+    
+    SDL_Texture* upgradeIcon = getUpgradeIcon_(hudCurrentUpgradeId_);
+    if (!upgradeIcon) return;
+    
+    const int iconSize = 42;
+    const int x = panelX + 12;
+    const int y = panelY + 12 + 42;
+    
+    drawPanel_(x, y, iconSize + 8, iconSize + 8, 100);
+    
+    // Renderizar el icono
+    SDL_Rect iconRect{
+        x + 4,
+        y + 4,
+        iconSize,
+        iconSize
+    };
+    SDL_RenderCopy(ren, upgradeIcon, nullptr, &iconRect);
+}
+
 void ClientDibujador::drawHudRace_(int panelX, int panelY) {
     char value[32];
     std::snprintf(
@@ -596,6 +643,11 @@ void ClientDibujador::updateRaceState(const RaceStateDTO& raceState) {
     if ((hudNextCheckpoint_.x != newCheckpoint.x || hudNextCheckpoint_.y != newCheckpoint.y) &&
         hudNextCheckpoint_.x != 0.0f && hudNextCheckpoint_.y != 0.0f) {
         currentCheckpoint++;
+    }
+    
+    // Si el jugador terminó y aún no llegó al número máximo, es porque pasó el último checkpoint
+    if (raceState.hasFinished && currentCheckpoint < numberOfCheckpoints) {
+        currentCheckpoint = numberOfCheckpoints;
     }
     
     hudNextCheckpoint_ = newCheckpoint;
@@ -817,7 +869,7 @@ std::string ClientDibujador::getUpgradeName_(int upgradeId) const {
 
 std::string ClientDibujador::getUpgradeDescription_(int upgradeId) const {
     switch (upgradeId) {
-        case 1: return "proporciona un escudo que absorbe daño";
+        case 1: return "Proporciona un escudo que absorbe daño";
         case 2: return "Mejora la aceleracion del vehiculo";
         case 3: return "Mejora el manejo del vehiculo";
         case 4: return "Aumenta la velocidad maxima";
@@ -825,11 +877,21 @@ std::string ClientDibujador::getUpgradeDescription_(int upgradeId) const {
     }
 }
 
+SDL_Texture* ClientDibujador::getUpgradeIcon_(int upgradeId) const {
+    switch (upgradeId) {
+        case 1: return upgradeIconShield_;
+        case 2: return upgradeIconAccel_;
+        case 3: return upgradeIconControl_;
+        case 4: return upgradeIconSpeed_;
+        default: return nullptr;
+    }
+}
+
 void ClientDibujador::renderUpgradePopup_() {
     if (!uiFont) return;
 
-    const int popupW = 400;
-    const int popupH = 200;
+    const int popupW = 450;
+    const int popupH = 250;
     const int popupX = (winW - popupW) / 2;
     const int popupY = (winH - popupH) / 2;
 
@@ -849,16 +911,29 @@ void ClientDibujador::renderUpgradePopup_() {
     SDL_RenderDrawRect(ren, &innerBorder);
 
     std::string title = "MEJORA SELECCIONADA";
-    drawText_(title, popupX + popupW / 2 - 80, popupY + 30, {100, 200, 255, 255}, true);
+    drawText_(title, popupX + popupW / 2 - 90, popupY + 25, {100, 200, 255, 255}, true);
+
+    // Dibujar icono de la mejora
+    SDL_Texture* icon = getUpgradeIcon_(selectedUpgradeId_);
+    if (icon) {
+        const int iconSize = 64;
+        SDL_Rect iconRect{
+            popupX + popupW / 2 - iconSize / 2,
+            popupY + 70,
+            iconSize,
+            iconSize
+        };
+        SDL_RenderCopy(ren, icon, nullptr, &iconRect);
+    }
 
     std::string upgradeName = getUpgradeName_(selectedUpgradeId_);
-    drawText_(upgradeName, popupX + popupW / 2 - 50, popupY + 80, {255, 255, 100, 255}, true);
+    drawText_(upgradeName, popupX + popupW / 2 - 50, popupY + 145, {255, 255, 100, 255}, true);
 
     std::string description = getUpgradeDescription_(selectedUpgradeId_);
-    drawText_(description, popupX + popupW / 2 - 120, popupY + 120, {200, 200, 200, 255}, true);
+    drawText_(description, popupX + popupW / 2 - 130, popupY + 175, {200, 200, 200, 255}, true);
 
     std::string waitMsg = "Esperando proxima carrera...";
-    drawText_(waitMsg, popupX + popupW / 2 - 100, popupY + 160, {150, 150, 150, 255}, true);
+    drawText_(waitMsg, popupX + popupW / 2 - 105, popupY + 210, {150, 150, 150, 255}, true);
     
     SDL_SetRenderDrawBlendMode(ren, SDL_BLENDMODE_NONE);
 }

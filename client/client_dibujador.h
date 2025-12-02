@@ -39,6 +39,8 @@ public:
 
     bool loadCheckpoint(const std::string& pathPng);
     bool loadHint(const std::string& pathPng);
+    bool loadUpgradeIcons(const std::string& shieldPath, const std::string& accelPath,
+                          const std::string& controlPath, const std::string& speedPath);
 
     void setRaceFinished(bool finished, const std::vector<RaceStateDTO>& standings);
     
@@ -61,6 +63,7 @@ private:
     void drawHUD_(std::string timeLeftRace);
     void drawHudSpeed_(int panelX, int panelY);
     void drawHudHealth_(int panelX, int panelY);
+    void drawHudUpgrade_(int panelX, int panelY);
     void drawHudRace_(int panelX, int panelY);
     void drawHudTime_(int panelX, int panelY, int panelW, std::string timeLeftRace);
     void drawMinimap_(const std::vector<CarStateDTO>& cars, int selfId);
@@ -80,6 +83,7 @@ private:
     void renderResultsUpgradesPanel_(const SDL_Rect& panelRect);
     
     void renderUpgradePopup_();
+    SDL_Texture* getUpgradeIcon_(int upgradeId) const;
     std::string getUpgradeName_(int upgradeId) const;
     std::string getUpgradeDescription_(int upgradeId) const;
     
@@ -113,12 +117,19 @@ private:
     int   hudHp_        = 100;
     int   hudMaxHp_     = 100;
     float hudSpeedKph_  = 0.0f;
+    int   hudCurrentUpgradeId_ = 0;
 
     Uint32 raceStartTicks_ = 0;
     bool   raceStarted_    = false;
 
     SDL_Texture* checkpointTex = nullptr;
     SDL_Texture* hintTex       = nullptr;
+
+    // Texturas de iconos de mejoras
+    SDL_Texture* upgradeIconShield_ = nullptr;
+    SDL_Texture* upgradeIconAccel_ = nullptr;
+    SDL_Texture* upgradeIconControl_ = nullptr;
+    SDL_Texture* upgradeIconSpeed_ = nullptr;
 
     int selfScreenX_ = 0;
     int selfScreenY_ = 0;

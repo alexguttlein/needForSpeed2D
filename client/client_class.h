@@ -51,7 +51,8 @@ private:
     std::string playerName;
     std::unique_ptr<AudioManager> audioManager_;
     int accelerationChannel_ = -1;
-        int gameId = 0;
+    int brakeChannel_ = -1;
+    int gameId = 0;
 
     void loadTexturesAndAssets_(ClientDibujador& dib);
     void initAudio_();
