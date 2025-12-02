@@ -17,6 +17,10 @@ std::vector<Vector2D<float>> RaceLogic::getActualRaceCheckpoints() {
 }
 
 
+int RaceLogic::getCheckpointsSize() const {
+    return static_cast<int>(actualRaceCheckpoints.size());
+}
+
 void RaceLogic::setCurrentRace() {
     
     std::cout << "tiempo que hizo en la carrera: " << std::endl;

@@ -46,6 +46,12 @@ public:
     std::vector<Vector2D<float>> getActualRaceCheckpoints();
 
     /*
+    * obtiene el size de los checkpoints del circuito actual
+    *
+    * */ 
+    int getCheckpointsSize() const;
+
+    /*
     * Configura el circuito de carrera actual
     *
     * */

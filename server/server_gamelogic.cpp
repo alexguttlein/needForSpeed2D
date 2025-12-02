@@ -96,6 +96,7 @@ std::shared_ptr<Snapshot> GameLogic::getSnapshot(EventType controlEvent) const {
         raceState.playerId      = id;
         raceState.timeLeftRace = const_cast<GameLogic*>(this)->getRaceTimerForPlayer(id);
         raceState.currentRaceId = raceLogic.getCurrentRaceId();
+        raceState.checkpointsSize = raceLogic.getCheckpointsSize();
         raceState.nextCheckpoint = raceLogic.getNextCheckpointPosition(id);
         raceState.currentHints   = raceLogic.getHintsForPlayer(id, car->getPosition());
         raceState.hasFinished    = raceLogic.hasPlayerFinished(id);

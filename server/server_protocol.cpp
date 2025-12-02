@@ -182,6 +182,9 @@ void ServerProtocol::sendSnapshot(std::shared_ptr<Snapshot>& snapshot) {
         // currentRaceId
         addIntToUint8tVector(buffer, rs.currentRaceId);
 
+        // checkpointsSize
+        addIntToUint8tVector(buffer, rs.checkpointsSize);
+
         // nextCheckpoint (Vector2D<float>, 8 bytes total)
         appendUInt32(buffer, *reinterpret_cast<const uint32_t*>(&rs.nextCheckpoint.x));
         appendUInt32(buffer, *reinterpret_cast<const uint32_t*>(&rs.nextCheckpoint.y));
