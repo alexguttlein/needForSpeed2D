@@ -17,5 +17,6 @@ struct CarStateDTO {
     Vector2D<float> position; 
     Vector2D<float> angle;
     float speed;
+    bool isBraking;
 };
 #endif // CARSTATEDTO_H

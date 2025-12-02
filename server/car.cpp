@@ -111,6 +111,11 @@ float Car::getSpeed() const {
 }
 
 
+bool Car::getIsBraking() const {
+    return isBraking;
+}
+
+
 float Car::getBoxSpeed() const {
     b2Vec2 velocity = b2Body_GetLinearVelocity(body);
     b2Rot rotation = b2Body_GetRotation(body);

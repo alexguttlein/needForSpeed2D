@@ -48,7 +48,7 @@ void Client::run() {
 
     const int W = 640, H = 480;
     SDL_Window* win = SDL_CreateWindow(
-        "Cliente - Mapa + Auto",
+        "NEED FOR SPEED",
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, W, H, 0);
     if (!win) {
         std::fprintf(stderr, "SDL_CreateWindow: %s\n", SDL_GetError());
@@ -80,165 +80,22 @@ void Client::run() {
 
     bool running = true;
     bool havePos = false;
-
-    Snapshot snapshot;
     bool lastRaceFinished = false;
-    bool musicGameplayStarted = false; 
+    bool musicGameplayStarted = false;
+    bool musicGameOverStarted = false;
+    Snapshot snapshot;
 
     while (running) {
         auto start = std::chrono::steady_clock::now();
 
-        SDL_Event e;
-        while (SDL_PollEvent(&e)) {
-            if (e.type == SDL_QUIT) running = false;
-            if (e.type == SDL_KEYDOWN) {
-                
-                dib.processKeyForCheat(e.key.keysym.sym); // Procesar tecla para detección de cheats
-                
-                switch (e.key.keysym.sym) {
-                    case SDLK_ESCAPE: running = false; break;
-                    case SDLK_q: running = false; break;
-                    case SDLK_w: 
-                        if (!dib.hasPlayerFinishedRace()) {
-                            commandQueue.push({ SDLK_w, true });
-                            if (audioManager_ && accelerationChannel_ == -1) {
-                                accelerationChannel_ = audioManager_->playSound(
-                                    AudioManager::SFX_ACCELERATION, -1); // -1 = loop infinito
-                            }
-                        }
-                        break;
-                    case SDLK_s: 
-                        if (!dib.hasPlayerFinishedRace()) {
-                            commandQueue.push({ SDLK_s, true });
-                            if (audioManager_ && accelerationChannel_ == -1) {
-                                accelerationChannel_ = audioManager_->playSound(
-                                    AudioManager::SFX_ACCELERATION, -1); // -1 = loop infinito
-                            }
-                        }
-                        break;
-                    case SDLK_a:
-                        if (!dib.hasPlayerFinishedRace())
-                            commandQueue.push({ SDLK_a, true });
-                        break;
-                    case SDLK_d:
-                        if (!dib.hasPlayerFinishedRace())
-                            commandQueue.push({ SDLK_d, true });
-                        break;
-                    case SDLK_1:
-                        commandQueue.push({ SDLK_1, true });
-                        dib.showUpgradePopup(1);
-                        break;
-                    case SDLK_2:
-                        commandQueue.push({ SDLK_2, true });
-                        dib.showUpgradePopup(2);
-                        break;
-                    case SDLK_3:
-                        commandQueue.push({ SDLK_3, true });
-                        dib.showUpgradePopup(3);
-                        break;
-                    case SDLK_4:
-                        commandQueue.push({ SDLK_4, true });
-                        dib.showUpgradePopup(4);
-                        break;
-                }
-            }
-            else if (e.type == SDL_KEYUP) {
-                switch (e.key.keysym.sym) {
-                    case SDLK_w: 
-                        if (!dib.hasPlayerFinishedRace()) {
-                            commandQueue.push({ SDLK_w, false });
-                            if (audioManager_ && accelerationChannel_ != -1) {
-                                audioManager_->stopSound(accelerationChannel_);
-                                accelerationChannel_ = -1;
-                            }
-                        }
-                        break;
-                    case SDLK_s: 
-                        if (!dib.hasPlayerFinishedRace()) {
-                            commandQueue.push({ SDLK_s, false });
-                            if (audioManager_ && accelerationChannel_ != -1) {
-                                audioManager_->stopSound(accelerationChannel_);
-                                accelerationChannel_ = -1;
-                            }
-                        }
-                        break;
-                    case SDLK_a:
-                        if (!dib.hasPlayerFinishedRace())
-                            commandQueue.push({ SDLK_a, false });
-                        break;
-                    case SDLK_d:
-                        if (!dib.hasPlayerFinishedRace())
-                            commandQueue.push({ SDLK_d, false });
-                        break;
-                }
-            }
-        }
-
-        Snapshot snapTmp;
-        while (snapshotQueue.try_pop(snapTmp)) {
-            snapshot = std::move(snapTmp); // Siempre guardamos el más reciente
-            havePos = true;
-        }
-
-        //se revisa la queue de eventos para ver si el server se desconecto
-        Event evt;
-        while (eventQueue.try_pop(evt)) {
-            if (evt.type == EventType::SERVER_DISCONNECTED) {
-                std::cout << "debug: Servidor desconectado, cerrando cliente..." << std::endl;
-                running = false;
-            }
-        }
-
+        handleSDLEvents_(running, dib, snapshot);
+        processGameEvents_(running);
+        updateGameState_(snapshot, havePos);
+        
         if (havePos) {
-            int myId = selfId.load();
-            const RaceStateDTO* myRace = nullptr;
-            for (const auto& rs : snapshot.raceStates) {
-                if (rs.playerId == myId) {
-                    myRace = &rs;
-                    break;
-                }
-            }
-
-            if (myRace) {
-                dib.updateRaceState(*myRace);
-            }
-            
-            if (!musicGameplayStarted && !snapshot.raceFinished && audioManager_) {
-                audioManager_->playMusic(AudioManager::MUSIC_GAMEPLAY, 1500);
-                musicGameplayStarted = true;
-            }
-
-            if (snapshot.gameFinished) {
-                dib.setGameFinished(true, snapshot.leaderboards);
-                if (audioManager_) {
-                    audioManager_->stopMusic(1000);
-                }
-            }
-
-            if (snapshot.raceFinished && !lastRaceFinished) {
-                dib.setRaceFinished(true, snapshot.raceStates);
-            }
-            if (!snapshot.raceFinished && lastRaceFinished) {
-                dib.setRaceFinished(false, {});
-                if (dib.isUpgradePopupVisible()) {
-                    dib.hideUpgradePopup();
-                }
-            }
-            lastRaceFinished = snapshot.raceFinished;
-            
-            if (audioManager_) {
-                for (const auto& collision : snapshot.collisions) {
-                    if (collision.playerId == myId) {
-                        if (collision.collisionType == EventType::COLLISION_CAR) {
-                            audioManager_->playSound(AudioManager::SFX_COLLISION_CAR);
-                        } else if (collision.collisionType == EventType::COLLISION_BUILDING) {
-                            audioManager_->playSound(AudioManager::SFX_COLLISION_BUILDING);
-                        }
-                    }
-                }
-            }
-            dib.renderAll(snapshot.cars, selfId.load(), myRace->timeLeftRace);
+            updateRaceState_(snapshot, dib, musicGameplayStarted, lastRaceFinished, musicGameOverStarted);
         }
+        
         auto end = std::chrono::steady_clock::now();
         auto elapsed = std::chrono::duration_cast<ms>(end - start);
         if (elapsed < FRAME_MS) {
@@ -287,7 +144,10 @@ void Client::loadTexturesAndAssets_(ClientDibujador& dib) {
     }
     dib.setUIFont("assets/ui/FreeSans.ttf", 16);
     dib.loadCheckpoint("assets/ui/checkpoint.png");
+    dib.loadCheckpointFinish("assets/ui/fin-carrera.png");
     dib.loadHint("assets/ui/hint.png");
+    dib.loadUpgradeIcons("assets/ui/escudo.png", "assets/ui/aceleracion.png",
+                         "assets/ui/control.png", "assets/ui/velocidad-maxima.png");
 }
 
 void Client::initAudio_() {
@@ -298,11 +158,12 @@ void Client::initAudio_() {
         audioManager_->loadMusic(AudioManager::MUSIC_GAMEPLAY, "assets/sound/musica-carrera.mp3");
         
         audioManager_->loadSound(AudioManager::SFX_ACCELERATION, "assets/sound/aceleracion.mp3");
+        audioManager_->loadSound(AudioManager::SFX_BRAKE, "assets/sound/freno.mp3");
         audioManager_->loadSound(AudioManager::SFX_COLLISION_CAR, "assets/sound/colision-autos.mp3");
         audioManager_->loadSound(AudioManager::SFX_COLLISION_BUILDING, "assets/sound/colision-edificios.mp3");
         
-        audioManager_->setMusicVolume(50);
-        audioManager_->setSoundVolume(100);
+        audioManager_->setMusicVolume(15);
+        audioManager_->setSoundVolume(40);
         
         std::cout << "[Client] Sistema de audio inicializado correctamente" << std::endl;
         
@@ -322,4 +183,227 @@ void Client::setGameId(int id) {
 
 int Client::getGameId() {
     return gameId;
+}
+
+void Client::handleMovementKey_(SDL_Keycode key, bool pressed, ClientDibujador& dib) {
+    if (dib.hasPlayerFinishedRace()) return;
+    
+    commandMessage cmd;
+    cmd.key = static_cast<SDL_KeyCode>(key);
+    cmd.isPressed = pressed;
+    commandQueue.push(cmd);
+    
+    // Manejar sonido de aceleración para W y S
+    if ((key == SDLK_w || key == SDLK_s) && audioManager_) {
+        if (pressed && accelerationChannel_ == -1) {
+            accelerationChannel_ = audioManager_->playSound(AudioManager::SFX_ACCELERATION, -1);
+        } else if (!pressed && accelerationChannel_ != -1) {
+            audioManager_->stopSound(accelerationChannel_);
+            accelerationChannel_ = -1;
+        }
+    }
+}
+
+void Client::handleUpgradeKey_(int upgradeId, ClientDibujador& dib) {
+    commandMessage cmd;
+    cmd.key = static_cast<SDL_KeyCode>(SDLK_0 + upgradeId);
+    cmd.isPressed = true;
+    commandQueue.push(cmd);
+    dib.showUpgradePopup(upgradeId);
+}
+
+void Client::handleKeyDown_(SDL_Keycode key, ClientDibujador& dib, bool raceFinished, bool playerFinished) {
+    switch (key) {
+        case SDLK_w:
+        case SDLK_s:
+        case SDLK_a:
+        case SDLK_d:
+            // Solo permitir movimiento durante la carrera (no terminada) y el jugador no ha terminado
+            if (!raceFinished && !playerFinished) {
+                handleMovementKey_(key, true, dib);
+            }
+            break;
+        case SDLK_1: 
+            // Solo permitir mejoras en fase de compras (carrera terminada, juego no terminado)
+            if (raceFinished) handleUpgradeKey_(1, dib); 
+            break;
+        case SDLK_2: 
+            if (raceFinished) handleUpgradeKey_(2, dib); 
+            break;
+        case SDLK_3: 
+            if (raceFinished) handleUpgradeKey_(3, dib); 
+            break;
+        case SDLK_4: 
+            if (raceFinished) handleUpgradeKey_(4, dib); 
+            break;
+        default: break;
+    }
+}
+
+void Client::handleKeyUp_(SDL_Keycode key, ClientDibujador& dib, bool raceFinished, bool playerFinished) {
+    // Solo procesar key up durante la carrera
+    if (!raceFinished && !playerFinished) {
+        switch (key) {
+            case SDLK_w:
+            case SDLK_s:
+            case SDLK_a:
+            case SDLK_d:
+                handleMovementKey_(key, false, dib);
+                break;
+            default: break;
+        }
+    }
+}
+
+void Client::handleSDLEvents_(bool& running, ClientDibujador& dib, const Snapshot& snapshot) {
+    SDL_Event e;
+    while (SDL_PollEvent(&e)) {
+        if (e.type == SDL_QUIT || 
+            (e.type == SDL_KEYDOWN && (e.key.keysym.sym == SDLK_ESCAPE || e.key.keysym.sym == SDLK_q))) {
+            running = false;
+        } else if (e.type == SDL_KEYDOWN) {
+            dib.processKeyForCheat(e.key.keysym.sym); 
+            handleKeyDown_(e.key.keysym.sym, dib, snapshot.raceFinished, hasFinished_);
+        } else if (e.type == SDL_KEYUP) {
+            handleKeyUp_(e.key.keysym.sym, dib, snapshot.raceFinished, hasFinished_);
+        }
+    }
+}
+
+void Client::processGameEvents_(bool& running) {
+    Event evt;
+    while (eventQueue.try_pop(evt)) {
+        if (evt.type == EventType::SERVER_DISCONNECTED) {
+            std::cout << "debug: Servidor desconectado, cerrando cliente..." << std::endl;
+            running = false;
+        }
+    }
+}
+
+void Client::updateGameState_(Snapshot& snapshot, bool& havePos) {
+    Snapshot snapTmp;
+    while (snapshotQueue.try_pop(snapTmp)) {
+        snapshot = std::move(snapTmp);
+        havePos = true;
+    }
+}
+
+void Client::handleCollisionSounds_(const Snapshot& snapshot, int myId) {
+    if (!audioManager_) return;
+    
+    for (const auto& collision : snapshot.collisions) {
+        if (collision.playerId == myId) {
+            if (collision.collisionType == EventType::COLLISION_CAR) {
+                audioManager_->playSound(AudioManager::SFX_COLLISION_CAR);
+            } else if (collision.collisionType == EventType::COLLISION_BUILDING) {
+                audioManager_->playSound(AudioManager::SFX_COLLISION_BUILDING);
+            }
+        }
+    }
+}
+
+void Client::handleBrakeSound_(const Snapshot& snapshot, int myId) {
+    if (!audioManager_) return;
+    
+    bool playerIsBraking = false;
+    for (const auto& car : snapshot.cars) {
+        if (car.car_id == myId && car.isBraking) {
+            playerIsBraking = true;
+            break;
+        }
+    }
+    
+    if (playerIsBraking && brakeChannel_ == -1) {
+        brakeChannel_ = audioManager_->playSound(AudioManager::SFX_BRAKE, 0);
+    } else if (!playerIsBraking && brakeChannel_ != -1) {
+        audioManager_->stopSound(brakeChannel_);
+        brakeChannel_ = -1;
+    }
+}
+
+void Client::handleAudioEffects_(const Snapshot& snapshot, int myId) {
+    // Verificar si el jugador ha terminado
+    bool justFinished = false;
+    for (const auto& rs : snapshot.raceStates) {
+        if (rs.playerId == myId && rs.hasFinished) {
+            if (!hasFinished_) {
+                justFinished = true;
+                hasFinished_ = true;
+            }
+            break;
+        }
+    }
+    
+    // Si acaba de terminar, detener todos los sonidos de movimiento
+    if (justFinished && audioManager_) {
+        if (accelerationChannel_ != -1) {
+            audioManager_->stopSound(accelerationChannel_);
+            accelerationChannel_ = -1;
+        }
+        if (brakeChannel_ != -1) {
+            audioManager_->stopSound(brakeChannel_);
+            brakeChannel_ = -1;
+        }
+    }
+    
+    // Solo reproducir sonidos si no ha terminado
+    if (!hasFinished_) {
+        handleCollisionSounds_(snapshot, myId);
+        handleBrakeSound_(snapshot, myId);
+    }
+}
+
+void Client::updateRaceState_(const Snapshot& snapshot, ClientDibujador& dib, 
+                               bool& musicGameplayStarted, bool& lastRaceFinished, bool& musicGameOverStarted) {
+    // Encontrar el estado de carrera del jugador
+    int myId = selfId.load();
+    const RaceStateDTO* myRace = nullptr;
+    for (const auto& rs : snapshot.raceStates) {
+        if (rs.playerId == myId) {
+            myRace = &rs;
+            break;
+        }
+    }
+
+    if (myRace) {
+        dib.updateRaceState(*myRace);
+    }
+    
+    // Iniciar música de gameplay y resetear flag de terminado
+    if (!musicGameplayStarted && !snapshot.raceFinished && audioManager_) {
+        audioManager_->playMusic(AudioManager::MUSIC_GAMEPLAY, 1500);
+        musicGameplayStarted = true;
+        hasFinished_ = false;  // Resetear al inicio de nueva carrera
+    }
+
+    // Juego terminado
+    if (snapshot.gameFinished) {
+        dib.setGameFinished(true, snapshot.leaderboards, playerName);
+        if (!musicGameOverStarted && audioManager_) {
+            audioManager_->playMusic(AudioManager::MUSIC_LOBBY, 1500);
+            musicGameOverStarted = true;
+        }
+    }
+
+    // Carrera terminada
+    if (snapshot.raceFinished && !lastRaceFinished) {
+        dib.setRaceFinished(true, snapshot.raceStates);
+    }
+    if (!snapshot.raceFinished && lastRaceFinished) {
+        dib.setRaceFinished(false, {});
+        if (dib.isUpgradePopupVisible()) {
+            dib.hideUpgradePopup();
+        }
+        // Resetear flag cuando comienza nueva carrera
+        hasFinished_ = false;
+    }
+    lastRaceFinished = snapshot.raceFinished;
+    
+    // Efectos de audio
+    handleAudioEffects_(snapshot, myId);
+    
+    // Renderizar
+    if (myRace) {
+        dib.renderAll(snapshot.cars, myId, myRace->timeLeftRace, snapshot.raceStates);
+    }
 }

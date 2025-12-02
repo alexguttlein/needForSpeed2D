@@ -128,6 +128,12 @@ public:
     float getSpeed() const;
 
     /*
+    * Obtiene si el auto está frenando
+    *
+    * */
+    bool getIsBraking() const;
+
+    /*
     * calcula la velocidad del auto en el sistema Box2D
     *
     * */

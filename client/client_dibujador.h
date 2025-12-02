@@ -31,7 +31,8 @@ public:
 
     void setFacingDeg(float deg) { facingDeg = deg; }
 
-    void renderAll(const std::vector<CarStateDTO>& cars, int selfId, std::string timeLeftRace);
+    void renderAll(const std::vector<CarStateDTO>& cars, int selfId, std::string timeLeftRace, 
+                   const std::vector<RaceStateDTO>& raceStates = {});
     void updateRaceState(const RaceStateDTO& raceState);
     bool loadCarAtlasForId(int carTypeId, const std::string& pathPng,
                            int cols, int rows, float angle0Deg, bool cw);
@@ -40,7 +41,10 @@ public:
     void setHUDHp(int hp, int maxHp)        { hudHp_ = hp; hudMaxHp_ = maxHp; }
 
     bool loadCheckpoint(const std::string& pathPng);
+    bool loadCheckpointFinish(const std::string& pathPng);
     bool loadHint(const std::string& pathPng);
+    bool loadUpgradeIcons(const std::string& shieldPath, const std::string& accelPath,
+                          const std::string& controlPath, const std::string& speedPath);
 
     void setRaceFinished(bool finished, const std::vector<RaceStateDTO>& standings);
     
@@ -48,7 +52,7 @@ public:
     void hideUpgradePopup();
     bool isUpgradePopupVisible() const { return showUpgradePopup_; }
     
-    void setGameFinished(bool finished, const std::vector<PlayerTime>& leaderboard);
+    void setGameFinished(bool finished, const std::vector<PlayerTime>& leaderboard, const std::string& playerName);
     bool isGameFinished() const { return gameFinished_; }
     
     bool hasPlayerFinishedRace() const { return playerFinishedRace_; }
@@ -66,6 +70,7 @@ private:
     void drawHUD_(std::string timeLeftRace);
     void drawHudSpeed_(int panelX, int panelY);
     void drawHudHealth_(int panelX, int panelY);
+    void drawHudUpgrade_(int panelX, int panelY);
     void drawHudRace_(int panelX, int panelY);
     void drawHudTime_(int panelX, int panelY, int panelW, std::string timeLeftRace);
     void drawMinimap_(const std::vector<CarStateDTO>& cars, int selfId);
@@ -85,6 +90,7 @@ private:
     void renderResultsUpgradesPanel_(const SDL_Rect& panelRect);
     
     void renderUpgradePopup_();
+    SDL_Texture* getUpgradeIcon_(int upgradeId) const;
     std::string getUpgradeName_(int upgradeId) const;
     std::string getUpgradeDescription_(int upgradeId) const;
     
@@ -114,16 +120,25 @@ private:
     int lastX = -1, lastY = -1;
 
     int   currentCheckpoint = 0;      
-    int   numberOfCheckpoints = Constants::NUMBER_OF_CHECKPOINTS;
-    int   hudHp_        = 100;
-    int   hudMaxHp_     = 100;
+    int   numberOfCheckpoints = 0;
+    int   hudHp_        = 0;
+    int   hudMaxHp_     = 0;
     float hudSpeedKph_  = 0.0f;
+    int   hudCurrentUpgradeId_ = 0;
 
     Uint32 raceStartTicks_ = 0;
     bool   raceStarted_    = false;
+    bool   hudMaxHpInitialized_ = false;
 
     SDL_Texture* checkpointTex = nullptr;
+    SDL_Texture* checkpointFinishTex = nullptr;
     SDL_Texture* hintTex       = nullptr;
+
+    // Texturas de iconos de mejoras
+    SDL_Texture* upgradeIconShield_ = nullptr;
+    SDL_Texture* upgradeIconAccel_ = nullptr;
+    SDL_Texture* upgradeIconControl_ = nullptr;
+    SDL_Texture* upgradeIconSpeed_ = nullptr;
 
     int selfScreenX_ = 0;
     int selfScreenY_ = 0;
@@ -143,6 +158,7 @@ private:
     
     bool gameFinished_ = false;
     std::vector<PlayerTime> finalLeaderboard_;
+    std::string selfPlayerName_;
     
     bool playerFinishedRace_ = false;
 
