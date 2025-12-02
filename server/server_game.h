@@ -24,6 +24,7 @@ public:
     void checkGameStart();
     void startGame();
     bool getGameStarted();
+    void setStartGame();
 private:
     int gameId;
     Queue<std::shared_ptr<Message>> sharedQueue;

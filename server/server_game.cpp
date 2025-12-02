@@ -28,6 +28,8 @@ void Game::checkGameStart() {
             q->push(snapshot);
         }
 
+        setStartGame();
+
         // gameLoop acepta la queue compartida, el vector de queues privadas y el mutex de clientes
         gameloop = std::make_unique<GameLoop>(sharedQueue, clientQueues, clientHandlers, mtx, this);
 
@@ -110,4 +112,8 @@ void Game::startGame() {
 
 bool Game::getGameStarted() {
     return gameStarted;
+}
+
+void Game::setStartGame() {
+    gameStarted = true;
 }
