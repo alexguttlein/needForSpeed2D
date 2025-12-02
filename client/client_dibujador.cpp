@@ -259,6 +259,9 @@ void ClientDibujador::renderAll(const std::vector<CarStateDTO>& cars, int selfId
 
     // Autos
     for (const auto& carState : cars) {
+        //si el auto se queda sin vida, no se dibuja
+        if (carState.health <= 0) continue;
+
         int px = int(carState.position.x * Constants::SCALE_METER_TO_PIXEL);
         int py = int(carState.position.y * Constants::SCALE_METER_TO_PIXEL);
 
