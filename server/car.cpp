@@ -217,6 +217,8 @@ void Car::takeDamage(float damage) {
         // detenemos el cuerpo en box2D
         b2Body_SetLinearVelocity(body, {0.0f, 0.0f}); 
         b2Body_SetAngularVelocity(body, 0.0f);
+        // Deshabilitar el cuerpo físico para evitar colisiones
+        b2Body_Disable(body);
         destroyed = true;
     }
 }
@@ -241,7 +243,14 @@ void Car::upgradeHealth(){
 
 
 void Car::setHealth(float newHealth) {
-    health = std::max(0.0f, std::min(newHealth, maxHealth)); 
+    health = std::max(0.0f, std::min(newHealth, maxHealth));
+    
+    // Si restauramos salud y el auto estaba destruido, reactivarlo
+    if (health > Constants::NO_HEALTH && destroyed) {
+        destroyed = false;
+        // Rehabilitar el cuerpo físico
+        b2Body_Enable(body);
+    }
 }
 
 

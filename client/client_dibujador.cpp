@@ -180,8 +180,8 @@ static inline float approachAngle(float curDeg, float targetDeg, float maxStepDe
 }
 
 void ClientDibujador::updateCamera_(int px, int py) {
-    const int marginX = winW / 4;
-    const int marginY = winH / 4;
+    const int marginX = winW / 2;
+    const int marginY = winH / 2;
 
     int left   = camX + marginX;
     int right  = camX + winW - marginX;
